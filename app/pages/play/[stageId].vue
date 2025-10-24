@@ -4,8 +4,20 @@ import { useRoute, useRouter } from "vue-router";
 import CommandEditor from "~/components/editor/CommandEditor.vue";
 import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
+import StageFailModal from "~/components/game/StageFailModal.vue";
 import StatsSummaryModal from "~/components/game/StatsSummaryModal.vue";
 import { useParser, type Rule } from "~/composables/useParser";
+import type { StageData } from "~/composables/useStageLoader";
+import {
+  defaultFailHint,
+  type FailPayload,
+  type FailReason,
+} from "~/types/game";
+
+type Dictionary = {
+  conditions: Record<string, string[]>;
+  actions: Record<string, string[]>;
+};
 
 const route = useRoute();
 const router = useRouter();
@@ -15,19 +27,18 @@ const { loadDictionary } = useDictionary();
 const { stageStart, stageClear, getAll } = useStats();
 const { parseProgram } = useParser();
 
-const stage = ref<any>(null);
-const dict = ref<any>(null);
+const stage = ref<StageData | null>(null);
+const dict = ref<Dictionary | null>(null);
 const loading = ref(true);
 const loadError = ref<string | null>(null);
 const editorRef = ref<InstanceType<typeof CommandEditor> | null>(null);
 const editorLines = ref<string[]>([]);
 const program = ref<Rule[] | undefined>(undefined);
-
-// ★ 実行フラグ（これで GameCanvas を制御）
 const running = ref(false);
-
 const cleared = ref(false);
-const lastSeconds = ref<number>(0);
+const failed = ref(false);
+const failInfo = ref<{ reason: FailReason; hint: string } | null>(null);
+const lastSeconds = ref(0);
 
 function goNext() {
   if (stageId.value === "stage-1") router.push("/play/stage-2");
@@ -35,58 +46,90 @@ function goNext() {
   else router.push("/");
 }
 
+function resolveHint(reason: FailReason): string {
+  const meta = stage.value?.meta;
+  const byReason = meta?.failHints?.[reason];
+  if (typeof byReason === "string" && byReason.trim().length > 0) {
+    return byReason;
+  }
+  const generic = meta?.hint;
+  if (typeof generic === "string" && generic.trim().length > 0) {
+    return generic;
+  }
+  return defaultFailHint(reason);
+}
+
+function closeFail() {
+  failed.value = false;
+  failInfo.value = null;
+}
+
+function retryFail() {
+  closeFail();
+  onRun();
+}
+
 onMounted(async () => {
   loading.value = true;
   try {
-    const [m, st] = await Promise.all([
+    const [manifest, stageData] = await Promise.all([
       getManifest(),
       loadStage(stageId.value),
     ]);
-    stage.value = st;
+    stage.value = stageData;
     dict.value = await loadDictionary({
-      version: m.version,
+      version: manifest.version,
       ttlMs: 24 * 3600 * 1000,
     });
-  } catch (e: any) {
-    loadError.value = e?.message || "読み込みに失敗しました";
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "読み込みに失敗しました";
+    loadError.value = message;
     stage.value = { goal: 800, scrollSpeed: 2.5 };
     dict.value = { conditions: {}, actions: {} };
   } finally {
     loading.value = false;
-    running.value = false; // ★ 初期は停止
+    running.value = false;
   }
 });
 
 function onRun() {
   try {
-    program.value = parseProgram(editorLines.value, dict.value);
+    program.value = parseProgram(editorLines.value, dict.value ?? { conditions: {}, actions: {} });
   } catch {
     program.value = [];
   }
-  stageStart(stageId.value); // ★ 計測はRun時にスタート
-  running.value = true; // ★ 実行開始
+  failed.value = false;
+  failInfo.value = null;
+  cleared.value = false;
+  stageStart(stageId.value);
+  running.value = true;
 }
 
 function onClear() {
   running.value = false;
+  failed.value = false;
+  failInfo.value = null;
   const chars = editorRef.value?.getText().length ?? 0;
-  const rec = stageClear(stageId.value, chars);
-  lastSeconds.value = rec.seconds;
+  const result = stageClear(stageId.value, chars);
+  lastSeconds.value = result.seconds;
   cleared.value = true;
 }
 
-function onFail() {
+function onFail(payload: FailPayload) {
   running.value = false;
-  // 再実行は「▶ 実行」ボタンで
+  const hint = resolveHint(payload.reason);
+  failInfo.value = { reason: payload.reason, hint };
+  failed.value = true;
 }
 </script>
 
 <template>
   <div class="w-full">
     <header class="flex items-center gap-3 mb-3">
-      <NuxtLink to="/" class="text-sm text-slate-600 hover:underline"
-        >← ステージ選択へ</NuxtLink
-      >
+      <NuxtLink to="/" class="text-sm text-slate-600 hover:underline">
+        ← ステージ選択へ
+      </NuxtLink>
       <h1 class="text-xl font-extrabold text-slate-800">
         ステージ: {{ stageId }}
       </h1>
@@ -95,7 +138,7 @@ function onFail() {
     <div v-if="loading" class="text-gray-600">読み込み中…</div>
     <p v-else-if="loadError" class="text-red-600">{{ loadError }}</p>
 
-    <section v-if="stage" class="grid gap-4 md:grid-cols-2">
+    <section v-else-if="stage" class="grid gap-4 md:grid-cols-2">
       <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
         <CommandEditor
           ref="editorRef"
@@ -106,7 +149,6 @@ function onFail() {
       </div>
 
       <div class="rounded-2xl border border-lime-200 bg-lime-50 p-4">
-        <!-- ★ running を渡す -->
         <GameCanvas
           :stage="stage"
           :program="program"
@@ -116,6 +158,14 @@ function onFail() {
         />
       </div>
     </section>
+
+    <StageFailModal
+      v-if="failed && failInfo"
+      :reason="failInfo.reason"
+      :hint="failInfo.hint"
+      @close="closeFail"
+      @retry="retryFail"
+    />
 
     <StageClearModal
       v-if="cleared"

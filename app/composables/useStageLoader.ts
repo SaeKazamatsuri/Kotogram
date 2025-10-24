@@ -1,10 +1,26 @@
-type StageListItem = { id: string; title: string; file: string };
-type StageManifest = { version?: string; stages: StageListItem[] };
-type StageData = {
-  id: string;
-  meta?: { title?: string; bg?: string; scrollSpeed?: number };
-  entities?: { player?: any; goal?: { x: number } };
-  clear?: any;
+import type { FailReason } from "~/types/game";
+
+export type StageListItem = { id: string; title: string; file: string };
+export type StageManifest = { version?: string; stages: StageListItem[] };
+export type StageMeta = {
+  title?: string;
+  bg?: string;
+  scrollSpeed?: number;
+  hint?: string;
+  failHints?: Partial<Record<FailReason, string>>;
+};
+export type StageData = {
+  id?: string;
+  goal?: number;
+  scrollSpeed?: number;
+  walls?: number[];
+  ghosts?: number[];
+  holes?: (number | { x: number; w?: number })[];
+  coins?: number[];
+  meta?: StageMeta;
+  entities?: { player?: unknown; goal?: { x: number } };
+  clear?: unknown;
+  [key: string]: unknown;
 };
 
 export function useStageLoader() {
@@ -15,11 +31,10 @@ export function useStageLoader() {
   async function getManifest(): Promise<StageManifest> {
     if (manifestCache) return manifestCache;
     try {
-      const m = await get<StageManifest>(manifestPath);
-      manifestCache = m;
-      return m;
+      const manifest = await get<StageManifest>(manifestPath);
+      manifestCache = manifest;
+      return manifest;
     } catch {
-      // フォールバック（プレースホルダ）
       manifestCache = {
         version: "fallback",
         stages: [
@@ -30,7 +45,7 @@ export function useStageLoader() {
           },
           {
             id: "stage-2",
-            title: "かべとおばけ",
+            title: "かべとおばけをよけよう",
             file: "/stages/stage-2.json",
           },
           {
@@ -45,27 +60,29 @@ export function useStageLoader() {
   }
 
   async function listStages(): Promise<StageListItem[]> {
-    const m = await getManifest();
-    return m.stages;
+    const manifest = await getManifest();
+    return manifest.stages;
   }
 
   async function loadStage(id: string): Promise<StageData> {
-    const m = await getManifest();
-    const item = m.stages.find((s) => s.id === id);
-    const version = m.version;
+    const manifest = await getManifest();
+    const item = manifest.stages.find((stage) => stage.id === id);
+    const version = manifest.version;
     if (item) {
       try {
         return await get<StageData>(item.file, { version });
-      } catch {}
+      } catch {
+        /* noop */
+      }
     }
-    // 直パス or 最小フォールバック
     try {
       return await get<StageData>(`/stages/${id}.json`, { version });
     } catch {
       return {
         id,
-        meta: { title: "ステージ（仮）", scrollSpeed: 2.5 },
-        entities: { goal: { x: 800 } },
+        goal: 800,
+        scrollSpeed: 2.5,
+        meta: { title: "ステージ（仮）" },
       };
     }
   }

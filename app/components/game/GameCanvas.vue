@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from "vue";
 import type { Rule } from "~/composables/useParser";
+import type { FailPayload } from "~/types/game";
 
 /** ================= スケーリング & 基本定数 ================= */
 const SCALE = 2;
@@ -51,7 +52,7 @@ const props = defineProps<{
   program?: Rule[];
   running?: boolean;
 }>();
-const emit = defineEmits<{ (e: "clear"): void; (e: "fail"): void }>();
+const emit = defineEmits<{ (e: "clear"): void; (e: "fail", payload: FailPayload): void }>();
 
 /** ================= 可変状態 ================= */
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -131,13 +132,22 @@ function normalize() {
         : { x: h.x, w: h.w ?? DEFAULT_HOLE_W }
     )
     .sort((a, b) => a.x - b.x);
-
-  reset();
 }
-watch(() => props.stage, normalize, { immediate: true, deep: true });
+watch(
+  () => props.stage,
+  () => {
+    normalize();
+    reset();
+    draw();
+  },
+  { immediate: true, deep: true }
+);
 watch(
   () => props.program,
-  () => reset(),
+  () => {
+    reset();
+    draw();
+  },
   { deep: true }
 );
 
@@ -210,6 +220,7 @@ function physics() {
   vy += gravity;
   py += vy;
 
+  const now = performance.now();
   const playerFrontX = px + PLAYER_W;
 
   // 地面（穴の上では落下）
@@ -221,16 +232,21 @@ function physics() {
   // 穴落ち
   if (isOverHole(playerFrontX) && py >= GY + PLAYER_H / 2) {
     stop();
-    emit("fail");
+    emit("fail", { reason: "hole" });
     return;
   }
 
   // 壁：初接触フレームのみ判定 → 成功なら cleared:true、失敗なら stop
   const w = walls.find((w) => !w.cleared && playerFrontX >= w.x);
   if (w) {
-    if (GY - py < WALL_H - S(6)) {
+    const crouching = now <= crouchUntil;
+    const playerHeight = crouching ? CROUCH_H : PLAYER_H;
+    const playerTop = py - playerHeight;
+    const wallTop = GY - WALL_H;
+    const clearance = S(6);
+    if (playerTop > wallTop + clearance) {
       stop();
-      emit("fail");
+      emit("fail", { reason: "wall" });
       return;
     }
     w.cleared = true;
@@ -239,11 +255,10 @@ function physics() {
   // ゴースト：初接触のみ判定
   const g = ghosts.find((g) => !g.cleared && playerFrontX >= g.x);
   if (g) {
-    const now = performance.now();
     if (now <= crouchUntil) g.cleared = true;
     else {
       stop();
-      emit("fail");
+      emit("fail", { reason: "enemy" });
       return;
     }
   }
@@ -330,11 +345,13 @@ function draw() {
   }
 
   // ゴール
-  const gx = Math.min(goalX - (px - PSCREEN_X), W - GOAL_W);
-  if (img.goal) ctx.drawImage(img.goal, gx, GY - GOAL_H, GOAL_W, GOAL_H);
-  else {
-    ctx.fillStyle = "#f59e0b";
-    ctx.fillRect(gx, GY - GOAL_H, GOAL_W, GOAL_H);
+  const gx = worldToScreenX(goalX);
+  if (gx < W && gx + GOAL_W > 0) {
+    if (img.goal) ctx.drawImage(img.goal, gx, GY - GOAL_H, GOAL_W, GOAL_H);
+    else {
+      ctx.fillStyle = "#f59e0b";
+      ctx.fillRect(gx, GY - GOAL_H, GOAL_W, GOAL_H);
+    }
   }
 }
 
@@ -347,6 +364,7 @@ function loop() {
 }
 function start() {
   cancelAnimationFrame(raf);
+  normalize();
   reset();
   raf = requestAnimationFrame(loop);
 }
