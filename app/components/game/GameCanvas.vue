@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount, ref, watch } from "vue";
+import type {
+  StageData,
+  StageObject,
+  WallStageObject,
+  GhostStageObject,
+  HoleStageObject,
+  GoalStageObject,
+} from "~/composables/useStageLoader";
 import type { Rule } from "~/composables/useParser";
 import type { FailPayload } from "~/types/game";
 
@@ -34,21 +42,73 @@ const GOAL_H = S(32);
 
 const APPROACH_BASE = S(36);
 
-/** ================= 型 & Props ================= */
-type Stage = {
-  goal: number;
-  scrollSpeed?: number;
-  walls?: number[];
-  ghosts?: number[];
-  holes?: (number | { x: number; w?: number })[];
-  coins?: number[];
+/** ================= ヘルパー ================= */
+const DEFAULT_GOAL_X = 800;
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === "number" && Number.isFinite(value);
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
+
+const ensureStageObjects = (objects: StageData["objects"]): StageObject[] => {
+  if (!Array.isArray(objects)) return [];
+  return objects.filter(
+    (obj): obj is StageObject =>
+      isRecord(obj) && typeof (obj as { type?: unknown }).type === "string"
+  );
 };
+
+const extractNumberArray = (value: unknown): number[] =>
+  Array.isArray(value) ? value.filter(isFiniteNumber) : [];
+
+const isWallObject = (obj: StageObject): obj is WallStageObject =>
+  obj.type === "wall" &&
+  "position" in obj &&
+  isFiniteNumber((obj as { position?: unknown }).position);
+
+const isGhostObject = (obj: StageObject): obj is GhostStageObject =>
+  obj.type === "ghost" &&
+  "position" in obj &&
+  isFiniteNumber((obj as { position?: unknown }).position);
+
+const isHoleObject = (obj: StageObject): obj is HoleStageObject =>
+  obj.type === "hole" &&
+  "position" in obj &&
+  isFiniteNumber((obj as { position?: unknown }).position);
+
+const isGoalObject = (obj: StageObject): obj is GoalStageObject =>
+  obj.type === "goal" &&
+  "position" in obj &&
+  isFiniteNumber((obj as { position?: unknown }).position);
+
+const normalizeLegacyHoles = (value: unknown): HoleObj[] => {
+  if (!Array.isArray(value)) return [];
+  const result: HoleObj[] = [];
+  for (const item of value) {
+    if (isFiniteNumber(item)) {
+      result.push({ x: item, w: DEFAULT_HOLE_W });
+      continue;
+    }
+    if (isRecord(item) && isFiniteNumber((item as { x?: unknown }).x)) {
+      const x = (item as { x: number }).x;
+      const widthCandidate = (item as { w?: unknown }).w;
+      const width = isFiniteNumber(widthCandidate)
+        ? widthCandidate
+        : DEFAULT_HOLE_W;
+      result.push({ x, w: width });
+    }
+  }
+  return result;
+};
+
+/** ================= 型 & Props ================= */
 type WallObj = { x: number; cleared: boolean };
 type GhostObj = { x: number; cleared: boolean };
 type HoleObj = { x: number; w: number };
 
 const props = defineProps<{
-  stage: Stage;
+  stage: StageData;
   program?: Rule[];
   running?: boolean;
 }>();
@@ -73,7 +133,7 @@ let speed = 3.0,
 let walls: WallObj[] = [];
 let ghosts: GhostObj[] = [];
 let holes: HoleObj[] = [];
-let goalX = 800;
+let goalX = DEFAULT_GOAL_X;
 
 // アクション状態
 let jumpReadyAt = 0,
@@ -113,25 +173,54 @@ async function loadSprites() {
 
 /** ================= ステージ正規化 ================= */
 function normalize() {
-  const s = props.stage || { goal: 800 };
-  goalX = s.goal ?? 800;
-  speed = s.scrollSpeed ?? 3.0;
+  const stage = props.stage ?? { goal: DEFAULT_GOAL_X };
+  speed = stage.scrollSpeed ?? 3.0;
 
-  walls = [...(s.walls ?? [])]
+  const stageObjects = ensureStageObjects(stage.objects);
+  const goalObject = stageObjects.find(isGoalObject);
+  const fallbackGoal =
+    typeof stage.goal === "number" && Number.isFinite(stage.goal)
+      ? stage.goal
+      : undefined;
+  goalX = goalObject?.position ?? fallbackGoal ?? DEFAULT_GOAL_X;
+
+  const wallPositions = stageObjects
+    .filter(isWallObject)
+    .map((obj) => obj.position);
+  const legacyWalls =
+    wallPositions.length > 0 ? [] : extractNumberArray(stage["walls"]);
+  const wallSource = wallPositions.length > 0 ? wallPositions : legacyWalls;
+  walls = wallSource
+    .slice()
     .sort((a, b) => a - b)
-    .map((x) => ({ x, cleared: false }));
+    .map((position) => ({ x: position, cleared: false }));
 
-  ghosts = [...(s.ghosts ?? [])]
+  const ghostPositions = stageObjects
+    .filter(isGhostObject)
+    .map((obj) => obj.position);
+  const legacyGhosts =
+    ghostPositions.length > 0 ? [] : extractNumberArray(stage["ghosts"]);
+  const ghostSource =
+    ghostPositions.length > 0 ? ghostPositions : legacyGhosts;
+  ghosts = ghostSource
+    .slice()
     .sort((a, b) => a - b)
-    .map((x) => ({ x, cleared: false }));
+    .map((position) => ({ x: position, cleared: false }));
 
-  holes = (s.holes ?? [])
-    .map((h) =>
-      typeof h === "number"
-        ? { x: h, w: DEFAULT_HOLE_W }
-        : { x: h.x, w: h.w ?? DEFAULT_HOLE_W }
-    )
-    .sort((a, b) => a.x - b.x);
+  const holeObjects = stageObjects.filter(isHoleObject);
+  const holeFromObjects: HoleObj[] = holeObjects.map((obj) => ({
+    x: obj.position,
+    w: isFiniteNumber(obj.width) ? obj.width : DEFAULT_HOLE_W,
+  }));
+  const legacyHoleDefs =
+    holeFromObjects.length > 0 ? [] : normalizeLegacyHoles(stage["holes"]);
+  const holeSource =
+    holeFromObjects.length > 0 ? holeFromObjects : legacyHoleDefs;
+  holes = holeSource.sort((a, b) => a.x - b.x);
+
+  goalX = Math.max(goalX, APPROACH_BASE + (walls.at(-1)?.x ?? 0) + S(80));
+  goalX = Math.max(goalX, APPROACH_BASE + (ghosts.at(-1)?.x ?? 0) + S(80));
+  goalX = Math.max(goalX, APPROACH_BASE + (holes.at(-1)?.x ?? 0) + S(80));
 }
 watch(
   () => props.stage,

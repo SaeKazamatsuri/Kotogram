@@ -1,13 +1,16 @@
 {
   "goal": 2200,
   "scrollSpeed": 3.0,
-  "walls": [620, 1180, 1740],
-  "coins": [360, 940, 1500, 2020],
+  "objects": [
+    { "type": "wall", "position": 620 },
+    { "type": "wall", "position": 1180 },
+    { "type": "wall", "position": 1740 }
+  ],
   "meta": {
     "title": "ジャンプで障害物回避",
-    "hint": "「かべ じゃんぷ」と書いてみよう。",
+    "hint": "「かべ じゃんぷ」と書いてみよう",
     "failHints": {
-      "wall": "かべの手前でジャンプする命令を入れてみよう。"
+      "wall": "かべの手前でジャンプする命令を入れてみよう"
     }
   }
 }

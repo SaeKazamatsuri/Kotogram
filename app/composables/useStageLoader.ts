@@ -9,14 +9,25 @@ export type StageMeta = {
   hint?: string;
   failHints?: Partial<Record<FailReason, string>>;
 };
+export type WallStageObject = { type: "wall"; position: number };
+export type GhostStageObject = { type: "ghost"; position: number };
+export type HoleStageObject = {
+  type: "hole";
+  position: number;
+  width?: number;
+};
+export type GoalStageObject = { type: "goal"; position: number };
+export type StageObject =
+  | WallStageObject
+  | GhostStageObject
+  | HoleStageObject
+  | GoalStageObject
+  | { type: string; [key: string]: unknown };
 export type StageData = {
   id?: string;
   goal?: number;
   scrollSpeed?: number;
-  walls?: number[];
-  ghosts?: number[];
-  holes?: (number | { x: number; w?: number })[];
-  coins?: number[];
+  objects?: StageObject[];
   meta?: StageMeta;
   entities?: { player?: unknown; goal?: { x: number } };
   clear?: unknown;

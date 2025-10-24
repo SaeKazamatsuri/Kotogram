@@ -1,12 +1,19 @@
 {
   "goal": 2000,
   "scrollSpeed": 4.0,
-  "walls": [280, 560, 820, 1080, 1360, 1680],
-  "ghosts": [700, 940, 1500, 1760],
-  "holes": [
-    { "x": 640, "w": 100 },
-    { "x": 1220, "w": 120 },
-    { "x": 1840, "w": 100 }
-  ],
-  "coins": [260, 740, 1240, 1700, 1880]
+  "objects": [
+    { "type": "wall", "position": 280 },
+    { "type": "wall", "position": 560 },
+    { "type": "wall", "position": 820 },
+    { "type": "wall", "position": 1080 },
+    { "type": "wall", "position": 1360 },
+    { "type": "wall", "position": 1680 },
+    { "type": "ghost", "position": 700 },
+    { "type": "ghost", "position": 940 },
+    { "type": "ghost", "position": 1500 },
+    { "type": "ghost", "position": 1760 },
+    { "type": "hole", "position": 640, "width": 100 },
+    { "type": "hole", "position": 1220, "width": 120 },
+    { "type": "hole", "position": 1840, "width": 100 }
+  ]
 }
