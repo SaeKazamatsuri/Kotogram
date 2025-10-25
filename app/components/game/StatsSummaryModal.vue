@@ -1,6 +1,41 @@
 <script setup lang="ts">
-defineProps<{ all: Record<string, { seconds: number; chars: number }> }>();
+import { computed } from "vue";
+
+const props = defineProps<{
+  all: Record<string, { seconds: number; chars: number }>;
+}>();
 const emit = defineEmits<{ (e: "close"): void }>();
+const stageIds = ["stage-1", "stage-2", "stage-3"];
+
+const totals = computed(() => {
+  let secondsSum = 0;
+  let charsSum = 0;
+  let secondsValid = true;
+  let charsValid = true;
+
+  for (const id of stageIds) {
+    const record = props.all?.[id];
+    if (secondsValid) {
+      if (record && typeof record.seconds === "number") {
+        secondsSum += record.seconds;
+      } else {
+        secondsValid = false;
+      }
+    }
+    if (charsValid) {
+      if (record && typeof record.chars === "number") {
+        charsSum += record.chars;
+      } else {
+        charsValid = false;
+      }
+    }
+  }
+
+  return {
+    seconds: secondsValid ? Number(secondsSum.toFixed(1)) : "-",
+    chars: charsValid ? charsSum : "-",
+  };
+});
 </script>
 
 <template>
@@ -23,14 +58,19 @@ const emit = defineEmits<{ (e: "close"): void }>();
           </tr>
         </thead>
         <tbody>
-          <tr v-for="i in [1, 2, 3]" :key="i">
-            <td class="border p-3 text-center">stage-{{ i }}</td>
+          <tr v-for="id in stageIds" :key="id">
+            <td class="border p-3 text-center">{{ id }}</td>
             <td class="border p-3 text-center">
-              {{ all?.[`stage-${i}`]?.seconds ?? "-" }}
+              {{ props.all?.[id]?.seconds ?? "-" }}
             </td>
             <td class="border p-3 text-center">
-              {{ all?.[`stage-${i}`]?.chars ?? "-" }}
+              {{ props.all?.[id]?.chars ?? "-" }}
             </td>
+          </tr>
+          <tr class="bg-sky-100 font-semibold">
+            <td class="border p-3 text-center">ごうけい</td>
+            <td class="border p-3 text-center">{{ totals.seconds }}</td>
+            <td class="border p-3 text-center">{{ totals.chars }}</td>
           </tr>
         </tbody>
       </table>

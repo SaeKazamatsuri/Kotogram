@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CommandEditor from "~/components/editor/CommandEditor.vue";
 import GameCanvas from "~/components/game/GameCanvas.vue";
@@ -24,7 +24,7 @@ const router = useRouter();
 const stageId = computed(() => String(route.params.stageId || "stage-1"));
 const { loadStage, getManifest } = useStageLoader();
 const { loadDictionary } = useDictionary();
-const { stageStart, stageClear, getAll } = useStats();
+const { stageStart, stageClear, getAll, isCleared } = useStats();
 const { parseProgram } = useParser();
 
 const stage = ref<StageData | null>(null);
@@ -39,6 +39,21 @@ const cleared = ref(false);
 const failed = ref(false);
 const failInfo = ref<{ reason: FailReason; hint: string } | null>(null);
 const lastSeconds = ref(0);
+const unlocked = ref(true);
+
+function stageIndexFromId(id: string): number | null {
+  const match = id.match(/^stage-(\d+)$/);
+  if (!match) return null;
+  const index = Number.parseInt(match[1], 10);
+  return Number.isNaN(index) ? null : index;
+}
+
+function isStageUnlocked(id: string): boolean {
+  if (typeof window === "undefined") return true;
+  const index = stageIndexFromId(id);
+  if (!index || index <= 1) return true;
+  return isCleared(`stage-${index - 1}`);
+}
 
 function goNext() {
   if (stageId.value === "stage-1") router.push("/play/stage-2");
@@ -64,13 +79,14 @@ function closeFail() {
   failInfo.value = null;
 }
 
-function retryFail() {
-  closeFail();
-  onRun();
-}
-
 onMounted(async () => {
   loading.value = true;
+  unlocked.value = isStageUnlocked(stageId.value);
+  if (!unlocked.value) {
+    loading.value = false;
+    router.replace("/");
+    return;
+  }
   try {
     const [manifest, stageData] = await Promise.all([
       getManifest(),
@@ -122,6 +138,11 @@ function onFail(payload: FailPayload) {
   failInfo.value = { reason: payload.reason, hint };
   failed.value = true;
 }
+
+watch(stageId, (value) => {
+  unlocked.value = isStageUnlocked(value);
+  if (!unlocked.value) router.replace("/");
+});
 </script>
 
 <template>
@@ -164,7 +185,6 @@ function onFail(payload: FailPayload) {
       :reason="failInfo.reason"
       :hint="failInfo.hint"
       @close="closeFail"
-      @retry="retryFail"
     />
 
     <StageClearModal

@@ -121,7 +121,7 @@ defineExpose({ getText });
         class="rounded-2xl border-2 border-amber-500 bg-amber-400 hover:bg-amber-300 px-4 py-2 text-lg font-bold text-slate-900"
         @click="run"
       >
-        ▶ 実行
+        ▶ はじめる
       </button>
     </div>
 
@@ -143,7 +143,7 @@ defineExpose({ getText });
         :value="text"
         @input="onInput"
         @scroll="onScroll"
-        placeholder="れい） まえにかべなら じゃんぷ&#10;３かい くりかえす&#10;おわり"
+        placeholder="れい） まえにかべなら じゃんぷ"
       />
     </div>
 

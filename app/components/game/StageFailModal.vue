@@ -10,14 +10,13 @@ const props = defineProps<{
   reason: FailReason;
   hint?: string;
 }>();
-const emit = defineEmits<{ (e: "close"): void; (e: "retry"): void }>();
+const emit = defineEmits<{ (e: "close"): void }>();
 
 const message = computed(() => failReasonLabel(props.reason));
-const hintText = computed(
-  () => props.hint && props.hint.trim().length > 0
-    ? props.hint
-    : defaultFailHint(props.reason)
-);
+const hintText = computed(() => {
+  if (props.hint && props.hint.trim().length > 0) return props.hint;
+  return defaultFailHint(props.reason);
+});
 </script>
 
 <template>
@@ -31,18 +30,12 @@ const hintText = computed(
       <h2 class="text-2xl font-extrabold text-rose-600 mb-2">ざんねん！</h2>
       <p class="mb-4 text-lg text-slate-800">{{ message }}</p>
       <p class="mb-6 text-sm text-slate-600 leading-relaxed">{{ hintText }}</p>
-      <div class="flex gap-3">
+      <div class="flex gap-3 justify-end">
         <button
           class="rounded-2xl border-2 border-rose-600 bg-rose-400 hover:bg-rose-300 px-5 py-3 text-lg font-bold text-slate-900"
-          @click="emit('retry')"
-        >
-          もういちど
-        </button>
-        <button
-          class="rounded-2xl border px-5 py-3 text-lg bg-white hover:bg-gray-50"
           @click="emit('close')"
         >
-          とじる
+          もういちど
         </button>
       </div>
     </div>

@@ -418,8 +418,25 @@ function draw() {
     const gy = GY - (GHOST_H + GHOST_CLEAR);
     if (img.ghost) ctx.drawImage(img.ghost, sx, gy, GHOST_W, GHOST_H);
     else {
-      ctx.fillStyle = "#a78bfa";
-      ctx.fillRect(sx, gy, GHOST_W, GHOST_H);
+      const cx = sx + GHOST_W / 2;
+      const headHeight = GHOST_H * 0.65;
+      const neckY = gy + headHeight;
+      const bottomY = gy + GHOST_H;
+      const radiusX = GHOST_W * 0.45;
+      const arcY = gy + headHeight * 0.35;
+      const taperHalf = GHOST_W * 0.2;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(cx - radiusX, arcY);
+      ctx.quadraticCurveTo(cx - radiusX, gy, cx, gy);
+      ctx.quadraticCurveTo(cx + radiusX, gy, cx + radiusX, arcY);
+      ctx.quadraticCurveTo(cx + radiusX * 0.92, neckY, cx + taperHalf, neckY);
+      ctx.quadraticCurveTo(cx + taperHalf * 0.6, bottomY, cx, bottomY);
+      ctx.quadraticCurveTo(cx - taperHalf * 0.6, bottomY, cx - taperHalf, neckY);
+      ctx.quadraticCurveTo(cx - radiusX * 0.92, neckY, cx - radiusX, arcY);
+      ctx.closePath();
+      ctx.fill();
     }
   }
 
