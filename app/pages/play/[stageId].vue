@@ -126,7 +126,8 @@ function onClear() {
   running.value = false;
   failed.value = false;
   failInfo.value = null;
-  const chars = editorRef.value?.getText().length ?? 0;
+  const rawText = editorRef.value?.getText() ?? "";
+  const chars = rawText.replace(/\r?\n/g, "").length;
   const result = stageClear(stageId.value, chars);
   lastSeconds.value = result.seconds;
   cleared.value = true;
