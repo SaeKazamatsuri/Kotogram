@@ -41,6 +41,7 @@ const GOAL_W = S(16);
 const GOAL_H = S(32);
 
 const APPROACH_BASE = S(36);
+const BASE_FRAME_DURATION = 1000 / 60;
 
 /** ================= ヘルパー ================= */
 const DEFAULT_GOAL_X = 800;
@@ -117,6 +118,7 @@ const emit = defineEmits<{ (e: "clear"): void; (e: "fail", payload: FailPayload)
 /** ================= 可変状態 ================= */
 const canvas = ref<HTMLCanvasElement | null>(null);
 let raf = 0;
+let lastFrameTime = 0;
 
 // 位置・速度
 let px = PSCREEN_X,
@@ -241,6 +243,7 @@ watch(
 );
 
 function reset() {
+  lastFrameTime = performance.now();
   px = PSCREEN_X;
   py = GY - EPS;
   vx = speed;
@@ -305,11 +308,17 @@ function applyProgram() {
 
 /** ================= 物理 ================= */
 function physics() {
-  px += vx;
-  vy += gravity;
-  py += vy;
-
   const now = performance.now();
+  const delta =
+    lastFrameTime > 0
+      ? Math.min((now - lastFrameTime) / BASE_FRAME_DURATION, 3)
+      : 1;
+  lastFrameTime = now;
+
+  px += vx * delta;
+  vy += gravity * delta;
+  py += vy * delta;
+
   const playerFrontX = px + PLAYER_W;
 
   // 地面（穴の上では落下）
