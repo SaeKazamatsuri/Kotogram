@@ -2,9 +2,9 @@
   "goal": 2200,
   "scrollSpeed": 3.0,
   "objects": [
-    { "type": "wall", "position": 620 },
-    { "type": "wall", "position": 1180 },
-    { "type": "wall", "position": 1740 }
+    { "type": "wall", "position": 600 },
+    { "type": "wall", "position": 1000 },
+    { "type": "wall", "position": 1400 }
   ],
   "meta": {
     "title": "ジャンプで障害物回避",

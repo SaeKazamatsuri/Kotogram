@@ -1,15 +1,12 @@
 {
-  "goal": 1600,
+  "goal": 3600,
   "scrollSpeed": 3.6,
   "objects": [
-    { "type": "wall", "position": 300 },
-    { "type": "wall", "position": 540 },
-    { "type": "wall", "position": 900 },
-    { "type": "wall", "position": 1180 },
-    { "type": "ghost", "position": 720 },
-    { "type": "ghost", "position": 1000 },
-    { "type": "ghost", "position": 1300 },
-    { "type": "hole", "position": 620, "width": 80 },
-    { "type": "hole", "position": 1100, "width": 100 }
+    { "type": "wall", "position": 600 },
+    { "type": "hole", "position": 1100, "width": 80 },
+    { "type": "wall", "position": 1600 },
+    { "type": "hole", "position": 2100, "width": 100 },
+    { "type": "wall", "position": 2600 },
+    { "type": "wall", "position": 3100 }
   ]
 }

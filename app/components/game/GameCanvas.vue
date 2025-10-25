@@ -35,7 +35,7 @@ const WALL_H = S(40);
 
 const GHOST_W = S(22);
 const GHOST_H = S(40);
-const GHOST_CLEAR = S(14);
+const GHOST_CLEAR = S(20);
 
 const GOAL_W = S(16);
 const GOAL_H = S(32);
