@@ -10,10 +10,10 @@ const reasonLabels: Record<FailReason, string> = {
 };
 
 const reasonHints: Record<FailReason, string> = {
-  hole: "「あな じゃんぷ」など、あなを見つけたらジャンプする命令を試そう。",
+  hole: "「あな じゃんぷ」など、あなを見つけたらジャンプしよう。",
   wall: "「かべ じゃんぷ」と書いて、かべの前でジャンプできるようにしよう。",
   enemy: "「おばけ しゃがむ」と書くと、おばけの下をくぐれるよ。",
-  void: "命令の順番や言葉を見直して、もう一度ためしてみよう。",
+  void: "もう一度ためしてみよう。",
 };
 
 export function failReasonLabel(reason: FailReason): string {
