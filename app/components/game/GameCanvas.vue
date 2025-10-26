@@ -107,6 +107,7 @@ const normalizeLegacyHoles = (value: unknown): HoleObj[] => {
 type WallObj = { x: number; cleared: boolean };
 type GhostObj = { x: number; cleared: boolean };
 type HoleObj = { x: number; w: number };
+type SpriteKey = "player" | "wall" | "ghost" | "goal";
 
 const props = defineProps<{
   stage: StageData;
@@ -142,19 +143,53 @@ let jumpReadyAt = 0,
   crouchUntil = 0;
 
 /** ================= スプライト ================= */
-const img: Record<string, HTMLImageElement | null> = {
+const img: Record<SpriteKey, CanvasImageSource | null> = {
   player: null,
   wall: null,
   ghost: null,
   goal: null,
 };
 
-function loadSprite(name: string, src: string) {
+function ensureOpaque(source: HTMLImageElement): CanvasImageSource {
+  const width = source.naturalWidth;
+  const height = source.naturalHeight;
+  if (width <= 0 || height <= 0) return source;
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return source;
+  ctx.drawImage(source, 0, 0);
+  const imageData = ctx.getImageData(0, 0, width, height);
+  const data = imageData.data;
+  for (let i = 3; i < data.length; i += 4) {
+    const alpha = data[i];
+    if (alpha === 0) continue;
+    if (alpha < 255) {
+      const scale = 255 / alpha;
+      const rIndex = i - 3;
+      const gIndex = i - 2;
+      const bIndex = i - 1;
+      data[rIndex] = Math.min(255, Math.round(data[rIndex] * scale));
+      data[gIndex] = Math.min(255, Math.round(data[gIndex] * scale));
+      data[bIndex] = Math.min(255, Math.round(data[bIndex] * scale));
+      data[i] = 255;
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
+}
+
+function loadSprite(
+  name: SpriteKey,
+  src: string,
+  options?: { forceOpaque?: boolean }
+) {
   return new Promise<void>((resolve) => {
     const i = new Image();
     i.src = src;
     i.onload = () => {
-      img[name] = i;
+      img[name] = options?.forceOpaque ? ensureOpaque(i) : i;
       draw();
       resolve();
     };
@@ -168,7 +203,7 @@ async function loadSprites() {
   await Promise.all([
     loadSprite("player", "/sprites/player.png"),
     loadSprite("wall", "/sprites/wall.png"),
-    loadSprite("ghost", "/sprites/ghost.png"),
+    loadSprite("ghost", "/sprites/ghost.png", { forceOpaque: true }),
     loadSprite("goal", "/sprites/goal.png"),
   ]);
 }
@@ -518,8 +553,5 @@ onBeforeUnmount(() => stop());
       ref="canvas"
       class="w-full rounded-2xl border border-gray-200 bg-white"
     />
-    <div class="text-sm text-gray-600">
-      通過後は画面外で消去。滞空を強めに調整（gravity 0.46 / jumpV -12.2）。
-    </div>
   </div>
 </template>
