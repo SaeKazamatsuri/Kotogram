@@ -2,18 +2,69 @@
   "goal": 5800,
   "scrollSpeed": 4.0,
   "objects": [
-    { "type": "wall", "position": 600 },
-    { "type": "ghost", "position": 1000 },
-    { "type": "hole", "position": 1400, "width": 100 },
-    { "type": "wall", "position": 1800 },
-    { "type": "ghost", "position": 2200 },
-    { "type": "wall", "position": 2600 },
-    { "type": "hole", "position": 3000, "width": 120 },
-    { "type": "ghost", "position": 3400 },
-    { "type": "wall", "position": 3800 },
-    { "type": "ghost", "position": 4200 },
-    { "type": "hole", "position": 4600, "width": 100 },
-    { "type": "wall", "position": 5000 },
-    { "type": "wall", "position": 5400 }
-  ]
+    {
+      "type": "wall",
+      "position": 600
+    },
+    {
+      "type": "ghost",
+      "position": 1000
+    },
+    {
+      "type": "hole",
+      "position": 1400,
+      "width": 100
+    },
+    {
+      "type": "wall",
+      "position": 1800
+    },
+    {
+      "type": "ghost",
+      "position": 2200
+    },
+    {
+      "type": "wall",
+      "position": 2600
+    },
+    {
+      "type": "hole",
+      "position": 3000,
+      "width": 120
+    },
+    {
+      "type": "ghost",
+      "position": 3400
+    },
+    {
+      "type": "wall",
+      "position": 3800
+    },
+    {
+      "type": "ghost",
+      "position": 4200
+    },
+    {
+      "type": "hole",
+      "position": 4600,
+      "width": 100
+    },
+    {
+      "type": "wall",
+      "position": 5000
+    },
+    {
+      "type": "wall",
+      "position": 5400
+    }
+  ],
+  "meta": {
+    "title": "おばけと あなを うまく よけよう",
+    "hint": "「おばけ しゃがむ」と「かべ じゃんぷ」を じゅんばんに ならべてみよう",
+    "failHints": {
+      "enemy": "おばけが きたら しゃがむ めいれいを いれてみよう",
+      "wall": "かべの てまえで じゃんぷする めいれいを いれてみよう",
+      "hole": "あなに ちかづいたら じゃんぷする めいれいを かこう"
+    }
+  }
 }

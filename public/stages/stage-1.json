@@ -2,15 +2,24 @@
   "goal": 2200,
   "scrollSpeed": 3.0,
   "objects": [
-    { "type": "wall", "position": 600 },
-    { "type": "wall", "position": 1000 },
-    { "type": "wall", "position": 1400 }
+    {
+      "type": "wall",
+      "position": 600
+    },
+    {
+      "type": "wall",
+      "position": 1000
+    },
+    {
+      "type": "wall",
+      "position": 1400
+    }
   ],
   "meta": {
-    "title": "ジャンプで障害物回避",
-    "hint": "「かべ じゃんぷ」と書いてみよう",
+    "title": "じゃんぷで しょうがいを よけよう",
+    "hint": "「かべ じゃんぷ」って かいてみよう",
     "failHints": {
-      "wall": "かべの手前でジャンプする命令を入れてみよう"
+      "wall": "かべの てまえで じゃんぷする めいれいを いれてみよう"
     }
   }
 }

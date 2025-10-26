@@ -2,11 +2,39 @@
   "goal": 3600,
   "scrollSpeed": 3.6,
   "objects": [
-    { "type": "wall", "position": 600 },
-    { "type": "hole", "position": 1100, "width": 80 },
-    { "type": "wall", "position": 1600 },
-    { "type": "hole", "position": 2100, "width": 100 },
-    { "type": "wall", "position": 2600 },
-    { "type": "wall", "position": 3100 }
-  ]
+    {
+      "type": "wall",
+      "position": 600
+    },
+    {
+      "type": "hole",
+      "position": 1100,
+      "width": 80
+    },
+    {
+      "type": "wall",
+      "position": 1600
+    },
+    {
+      "type": "hole",
+      "position": 2100,
+      "width": 100
+    },
+    {
+      "type": "wall",
+      "position": 2600
+    },
+    {
+      "type": "wall",
+      "position": 3100
+    }
+  ],
+  "meta": {
+    "title": "かべと あなを よけよう",
+    "hint": "「かべ じゃんぷ」って かこう。 あなも じゃんぷして こえよう",
+    "failHints": {
+      "wall": "かべの てまえで じゃんぷする めいれいを かこう",
+      "hole": "あなに さしかかったら じゃんぷする めいれいを いれてみよう"
+    }
+  }
 }

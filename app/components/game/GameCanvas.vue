@@ -405,8 +405,10 @@ function draw() {
       vx_ = 0;
     }
     if (vx_ + vw_ > W) vw_ = W - vx_;
-    if (vw_ > 0)
-      (ctx as CanvasRenderingContext2D).clearRect(vx_, GY, vw_, GROUND_H);
+    if (vw_ > 0) {
+      ctx.fillStyle = "#1f2937";
+      ctx.fillRect(vx_, GY, vw_, GROUND_H);
+    }
   }
 
   // 壁
