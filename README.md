@@ -1,75 +1,61 @@
-# Nuxt Minimal Starter
+# Kotogram
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Kotogramは、小学生が**ひらがなだけ**でプログラミングの基礎を体験できる学祭向け学習ゲームです。短い命令を書くだけでキャラクターが動き、条件分岐・順序・くりかえしといったコンピューターの考え方を直感的に学べます。
 
-## Setup
+## 体験のコンセプト
+- 自然言語に近い命令を1行ずつ入力すると、キャラクターが即時フィードバック付きで行動します。
+- インデントは使わず、行左のカラーラインでブロック構造を視覚化します。
+- 命令が正しく解釈されると緑、わからない行は赤で表示され、理由をやさしく提示します。
+- 15分の体験で「条件」「順序」「くりかえし」を段階的に理解できるよう設計しています。
 
-Make sure to install dependencies:
+## 学祭体験フロー
+1. 案内役が操作方法を説明し、エディタにひらがな＋数字で命令を書いてもらいます。
+2. 入力中も各行を即時パースし、構文のまとまりやエラーを視覚で示します。
+3. 実行ボタンでゲーム開始。キャラは自動で右へ進み、条件に合致するとジャンプやしゃがむを行います。
+4. ゴール到達やコイン取得で成功演出が入り、失敗してもすぐに再挑戦できます。
 
-```bash
-# npm
+## ステージ構成（学祭版）
+- ステージ1：壁を見たらジャンプする条件を体験。
+- ステージ2：壁とおばけに応じてジャンプ／しゃがむを使い分け、命令の順序を学習。
+- ステージ3：3回くりかえしでコインを取ることで、命令の圧縮と抽象化を体験。
+
+## 主な機能
+- ひらがな・数字のみ入力可能なエディタと、行単位の意味解析。
+- 表記ゆれを許容する語彙辞書と、失敗しても止まらない堅牢なパーサー。
+- JSONベースのステージ定義によるデータ駆動設計。
+- 条件優先度やクールダウンを持つアクション制御で、連続発火を抑止。
+- フォロー役が利用できるヒント表示やアクセシビリティ（ふりがな・読み上げ）機能を想定。
+
+## セットアップ
+依存関係をインストールします。
+
+```powershell
 npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
-# bun
-bun install
 ```
 
-## Development Server
+開発サーバーを起動し、`http://localhost:3000` にアクセスしてください。
 
-Start the development server on `http://localhost:3000`:
-
-```bash
-# npm
+```powershell
 npm run dev
-
-# pnpm
-pnpm dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
 ```
 
-## Production
+## ビルドとプレビュー
+本番ビルドを生成します。
 
-Build the application for production:
-
-```bash
-# npm
+```powershell
 npm run build
-
-# pnpm
-pnpm build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
 
-Locally preview production build:
+生成物をローカルで確認する場合は次を実行します。
 
-```bash
-# npm
+```powershell
 npm run preview
-
-# pnpm
-pnpm preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## ロードマップ（抜粋）
+- 命令・条件語の拡張やElse構文の導入。
+- 自由なマップ作成や作品保存機能。
+- タブレット対応や多言語化、オフライン実行の最適化。
+
+## ライセンス
+教育用途であれば自由に使っていただいて構いません。
