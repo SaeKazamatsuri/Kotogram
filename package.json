@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
+    "deploy": "npm run generate && wrangler deploy",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -19,5 +20,8 @@
     "pinia": "^3.0.3",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3"
+  },
+  "devDependencies": {
+    "wrangler": "^4.87.0"
   }
 }
