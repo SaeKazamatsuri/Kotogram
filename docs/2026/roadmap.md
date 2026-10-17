@@ -170,17 +170,19 @@ P0安定版: 既存ステージ再現 + 同時アクション + 短縮構文 + �
 
 新ギミックや豪華な演出が未完成でも、このラインで本番運用できる状態を早めに確保する。
 
-## 12. 実装タスクのIssue分割の候補
+## 12. 実装Issue一覧
 
-1. Game Core分離と固定tick
-2. Lexer / Parser / AST / 診断
-3. Interpreter（継続監視・回数・同時アクション）
-4. Stage Schemaと自動検証CLI
-5. スコア・独立ベスト記録
-6. Workers API + RankingDO + CounterDO
-7. ステージ別3ランキングUI
-8. ソフトキーボード + IME対応
-9. 新ステージとギミックの制作
-10. キャラクター・演出刷新
-11. 共用端末向けスタッフモード
-12. CI / E2E / リハーサル
+- [#1 Game Core / 固定tick](https://github.com/SaeKazamatsuri/Kotogram/issues/1)
+- [#2 Lexer・Parser・AST](https://github.com/SaeKazamatsuri/Kotogram/issues/2)
+- [#3 ハイブリッドInterpreter](https://github.com/SaeKazamatsuri/Kotogram/issues/3)
+- [#4 ステージ自動検証](https://github.com/SaeKazamatsuri/Kotogram/issues/4)
+- [#5 3種スコア](https://github.com/SaeKazamatsuri/Kotogram/issues/5)
+- [#6 Workers API・Durable Objects](https://github.com/SaeKazamatsuri/Kotogram/issues/6)
+- [#7 ソフトキーボード](https://github.com/SaeKazamatsuri/Kotogram/issues/7)
+- [#8 ランキングUI](https://github.com/SaeKazamatsuri/Kotogram/issues/8)
+- [#9 物理バランス調整](https://github.com/SaeKazamatsuri/Kotogram/issues/9)
+- [#10 ステージ・ギミック追加](https://github.com/SaeKazamatsuri/Kotogram/issues/10)
+- [#11 グラフィック・演出](https://github.com/SaeKazamatsuri/Kotogram/issues/11)
+- [#12 CI・運営リハーサル](https://github.com/SaeKazamatsuri/Kotogram/issues/12)
+
+P0とP1の優先順、依存関係、受け入れ条件は各Issue本文に記載。必要なら個別タスクへさらに分割する。
