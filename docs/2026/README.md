@@ -38,6 +38,23 @@
 | [実装計画](roadmap.md) | Phase、P0/P1/P2、依存関係、作業チェックリスト |
 | [決定事項・未決事項](decisions.md) | 確定した方針、検証中の仮定、変更管理 |
 
+## 実装バックログ（GitHub Issues）
+
+- [#1 Game Core / 固定tick](https://github.com/SaeKazamatsuri/Kotogram/issues/1)
+- [#2 Lexer・Parser・AST](https://github.com/SaeKazamatsuri/Kotogram/issues/2)
+- [#3 ハイブリッドInterpreter](https://github.com/SaeKazamatsuri/Kotogram/issues/3)
+- [#4 ステージ自動検証](https://github.com/SaeKazamatsuri/Kotogram/issues/4)
+- [#5 3種スコア](https://github.com/SaeKazamatsuri/Kotogram/issues/5)
+- [#6 Workers API・Durable Objects](https://github.com/SaeKazamatsuri/Kotogram/issues/6)
+- [#7 ソフトキーボード](https://github.com/SaeKazamatsuri/Kotogram/issues/7)
+- [#8 ランキングUI](https://github.com/SaeKazamatsuri/Kotogram/issues/8)
+- [#9 物理バランス調整](https://github.com/SaeKazamatsuri/Kotogram/issues/9)
+- [#10 ステージ・ギミック追加](https://github.com/SaeKazamatsuri/Kotogram/issues/10)
+- [#11 グラフィック・演出](https://github.com/SaeKazamatsuri/Kotogram/issues/11)
+- [#12 CI・運営リハーサル](https://github.com/SaeKazamatsuri/Kotogram/issues/12)
+
+優先度・完了条件・依存関係は各Issueと [ロードマップ](roadmap.md) に記載する。Issue作成は実装完了を意味しない。
+
 ## 現行実装との関係
 
 2025年版の主要ファイル:
