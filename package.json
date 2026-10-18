@@ -16,7 +16,8 @@
     "validate:stages": "node --experimental-strip-types scripts/validate-stages.mjs",
     "dev:api": "wrangler dev --config wrangler.api.jsonc",
     "deploy:api": "wrangler deploy --config wrangler.api.jsonc --env production",
-    "deploy:api:dev": "wrangler deploy --config wrangler.api.jsonc"
+    "deploy:api:dev": "wrangler deploy --config wrangler.api.jsonc",
+    "explore:stages": "node --experimental-strip-types scripts/explore-stages.mjs"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",
