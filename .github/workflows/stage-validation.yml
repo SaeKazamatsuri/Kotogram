@@ -61,7 +61,7 @@ jobs:
         run: npm ci
       - name: Install pinned Chromium test runner
         run: |
-          npm install --prefix .browser-tools --no-save --no-package-lock playwright@1.56.1
+          npm install --prefix .browser-tools --no-save --no-package-lock playwright@1.56.1 @playwright/test@1.56.1
           .browser-tools/node_modules/.bin/playwright install --with-deps chromium
       - name: Test real browser, local Worker and SQLite Durable Objects
         run: |
@@ -70,7 +70,7 @@ jobs:
           NUXT_PUBLIC_RANKING_API_BASE=http://127.0.0.1:8787 npm run dev -- --host 127.0.0.1 --port 3000 > /tmp/kotogram-app.log 2>&1 &
           APP_PID=$!
           trap 'kill $APP_PID $WORKER_PID 2>/dev/null || true' EXIT
-          if ! npm run test:browser; then
+          if ! npm run test:browser && npm run test:visual; then
             cat /tmp/kotogram-app.log
             cat /tmp/kotogram-worker.log
             exit 1
