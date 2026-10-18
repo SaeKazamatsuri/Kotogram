@@ -118,3 +118,14 @@ test("stage 4 independently verifies its capped watchers, shorter code and faste
   assert.equal(report.improvements.fasterThanBeginner, true);
   assert.equal(report.cases.find((entry) => entry.name === "count-three-fails-at-fourth")?.failureReason, "wall");
 });
+
+test("stage 5 requires concurrent crouch and jump at the same obstacle position", () => {
+  const stage = read("public/stages/stage-5.json");
+  const report = validateStageCases("stage-5", stage, read("stage-checks/stage-5.json"));
+  assert.equal(report.pass, true, JSON.stringify(report.issues));
+  assert.equal(report.improvements.shorterThanBeginner, true);
+  assert.equal(report.improvements.fasterThanBeginner, true);
+  assert.equal(report.bestKnown.ticks, 574);
+  assert.equal(report.cases.find((entry) => entry.name === "jump-alone-fails-on-coincident-ghost")?.failureReason, "enemy");
+  assert.equal(report.cases.find((entry) => entry.name === "crouch-alone-fails-on-coincident-wall")?.failureReason, "wall");
+});

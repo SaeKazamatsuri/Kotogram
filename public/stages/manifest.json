@@ -20,6 +20,11 @@
       "id": "stage-4",
       "title": "かいすうを かぞえて とぼう",
       "file": "/stages/stage-4.json"
+    },
+    {
+      "id": "stage-5",
+      "title": "じゃんぷと しゃがむを いっしょに",
+      "file": "/stages/stage-5.json"
     }
   ]
 }
