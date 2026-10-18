@@ -1,5 +1,6 @@
 import { GAME, createGame, runToCompletion, type GameStage } from "../game/core.ts";
-import { analyzeProgram, normalizeLine } from "../language/parser.ts";
+import { analyzeProgram } from "../language/parser.ts";
+import { countSourceCharacters } from "../scoring/score.ts";
 
 export type ValidationIssue = { path: string; message: string };
 export type CaseRole = "beginner" | "short" | "fast" | "negative" | "regression";
@@ -123,9 +124,7 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
   return issues;
 }
 
-export function countProgramCharacters(source: string): number {
-  return [...normalizeLine(source.replace(/\r\n?/g, "\n")).replace(/\n/g, "")].length;
-}
+export const countProgramCharacters = countSourceCharacters;
 
 export function validateChecks(stageId: string, value: unknown): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
