@@ -211,14 +211,26 @@ watch(stageId, () => {
         ← ステージ選択へ
       </NuxtLink>
       <h1 class="text-xl font-extrabold text-slate-800">
-        ステージ: {{ stageId }}
+        ステージ: {{ stage?.meta?.title || stageId }}
       </h1>
     </header>
 
     <div v-if="loading" class="text-gray-600">読み込み中…</div>
     <p v-else-if="loadError" class="text-red-600">{{ loadError }}</p>
 
-    <section v-else-if="stage" class="grid gap-4 md:grid-cols-2">
+    <div v-else-if="stage">
+      <section class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
+        <h2 class="font-bold text-slate-800">このステージで まなぶこと</h2>
+        <ul v-if="stage.learningObjectives?.length" class="mt-2 list-disc pl-6 text-sm text-slate-700">
+          <li v-for="(objective, index) in stage.learningObjectives" :key="index">{{ objective }}</li>
+        </ul>
+        <p v-else class="mt-2 text-sm text-slate-700">めいれいを かいて ゴールを めざそう</p>
+        <details v-if="stage.meta?.hint" class="mt-3 text-sm text-slate-700">
+          <summary class="cursor-pointer font-bold">ヒントを みる</summary>
+          <p class="mt-2">{{ stage.meta.hint }}</p>
+        </details>
+      </section>
+      <section class="grid gap-4 md:grid-cols-2">
       <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
         <CommandEditor
           :key="stageId"
@@ -239,7 +251,8 @@ watch(stageId, () => {
           @fail="onFail"
         />
       </div>
-    </section>
+      </section>
+    </div>
 
     <StageFailModal
       v-if="failed && failInfo"
@@ -253,6 +266,7 @@ watch(stageId, () => {
       :seconds="lastSeconds"
       :stage-id="String(stageId)"
       :stage-version="stageVersion"
+      :has-next="nextStageId(stageId, stageItems) !== null"
       :api-base="rankingApiBase"
       :saving="saving"
       :saved-name="savedName"

@@ -32,3 +32,12 @@ test("stage loader never substitutes a playable placeholder for unavailable asse
   assert.doesNotMatch(loader, /goal:\s*800/);
   assert.match(loader, /throw new Error\("ステージを よみこめなかったよ/);
 });
+
+test("stage intro shows objectives, optional hints and final-stage navigation", () => {
+  const play = readFileSync(new URL("../app/pages/play/[stageId].vue", import.meta.url), "utf8");
+  const modal = readFileSync(new URL("../app/components/game/StageClearModal.vue", import.meta.url), "utf8");
+  assert.match(play, /stage\.learningObjectives/);
+  assert.match(play, /<details v-if="stage\.meta\?\.hint"/);
+  assert.match(play, /:has-next="nextStageId\(stageId, stageItems\) !== null"/);
+  assert.match(modal, /hasNext \? "つぎへ" : "ステージえらびへ"/);
+});
