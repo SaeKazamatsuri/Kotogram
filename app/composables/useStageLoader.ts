@@ -17,16 +17,19 @@ export type HoleStageObject = {
   width?: number;
 };
 export type GoalStageObject = { type: "goal"; position: number };
+export type CoinStageObject = { type: "coin"; position: number; id?: string };
 export type StageObject =
   | WallStageObject
   | GhostStageObject
   | HoleStageObject
   | GoalStageObject
+  | CoinStageObject
   | { type: string; [key: string]: unknown };
 export type StageData = {
   id?: string;
   goal?: number;
   scrollSpeed?: number;
+  requiredCoins?: number;
   objects?: StageObject[];
   meta?: StageMeta;
   entities?: { player?: unknown; goal?: { x: number } };

@@ -111,3 +111,33 @@ test("stage 3 walls, holes and ghosts can be cleared", () => {
   ]));
   assert.equal(result.status, "cleared");
 });
+
+test("collect watcher picks separate coins once and fulfills the clear requirement", () => {
+  const stage = {
+    goal: 1000, scrollSpeed: 3, requiredCoins: 2,
+    objects: [{ id: "a", type: "coin", position: 280 }, { id: "b", type: "coin", position: 720 }],
+  };
+  const coinRule = [{ cond: "coin", action: "collect" }];
+  const finished = runToCompletion(createGame(stage, coinRule));
+  assert.equal(finished.status, "cleared");
+  assert.equal(finished.coins.filter((coin) => coin.collected).length, 2);
+  assert.equal(finished.fired[0].size, 2);
+  const absent = runToCompletion(createGame(stage, []));
+  assert.equal(absent.status, "failed");
+  assert.equal(absent.failureReason, "coin");
+  assert.equal(absent.coins.filter((coin) => coin.collected).length, 0);
+  assert.equal(runToCompletion(createGame(stage, coinRule)).elapsedTicks, finished.elapsedTicks);
+});
+
+test("collect action does not consume one-shot execution until a coin is reachable", () => {
+  const game = createGame({ goal: 520, scrollSpeed: 3, requiredCoins: 1, objects: [{ type: "coin", position: 280 }] }, {
+    watchers: [], steps: [{ op: "action", action: "collect", count: 1 }],
+  });
+  stepGame(game);
+  assert.equal(game.cursor, 0);
+  assert.equal(game.coins[0].collected, false);
+  const result = runToCompletion(game);
+  assert.equal(result.status, "cleared");
+  assert.equal(result.cursor, 1);
+  assert.equal(result.coins[0].collected, true);
+});

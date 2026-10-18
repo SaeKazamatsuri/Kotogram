@@ -141,3 +141,13 @@ test("all three original stages have verifiable running routes faster than walki
     assert.equal(unprotected?.failureReason, "wall");
   }
 });
+
+test("coin schema checks required count and object identity", () => {
+  const stage = { goal: 1200, scrollSpeed: 3, requiredCoins: 2, objects: [
+    { id: "coin-a", type: "coin", position: 300 },
+    { id: "coin-b", type: "coin", position: 600 },
+  ] };
+  assert.deepEqual(validateStage("stage-coins", stage), []);
+  assert.ok(validateStage("stage-coins", { ...stage, requiredCoins: 3 }).some((issue) => issue.path === "requiredCoins"));
+  assert.ok(validateStage("stage-coins", { ...stage, requiredCoins: -1 }).some((issue) => issue.path === "requiredCoins"));
+});
