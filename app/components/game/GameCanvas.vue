@@ -17,12 +17,6 @@ const emit = defineEmits<{
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
-const sprites: Record<SpriteKey, CanvasImageSource | null> = {
-  player: null,
-  wall: null,
-  ghost: null,
-  goal: null,
-};
 let game: GameState = createGame(props.stage, props.program);
 let frame = 0;
 let previousTimestamp = 0;
