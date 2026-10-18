@@ -215,8 +215,8 @@ watch(stageId, () => {
       <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
         <CommandEditor
           ref="editorRef"
-          :dictionary="dict || undefined"
           v-model:lines="editorLines"
+          :dictionary="dict || undefined"
           @run="onRun"
         />
       </div>

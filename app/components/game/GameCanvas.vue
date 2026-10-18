@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { StageData } from "~/composables/useStageLoader";
-import type { GameProgram } from "~/game/core";
 import type { FailPayload } from "~/types/game";
-import { GAME, createGame, elapsedSeconds, isCrouching, stepGame, worldToScreenX, type GameState } from "~/game/core";
+import { GAME, createGame, elapsedSeconds, isCrouching, stepGame, worldToScreenX, type GameProgram, type GameState } from "~/game/core";
 import { getPlayerPose, type PlayerPose } from "~/game/visuals";
 
 const props = defineProps<{

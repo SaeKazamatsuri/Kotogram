@@ -17,7 +17,10 @@ async function ready() {
     try {
       const result = await fetch(base + "/api/health");
       if (result.ok && (await result.json()).ok === true) return;
-    } catch {}
+    } catch {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      continue;
+    }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
   throw new Error("Wrangler dev was not ready within 45 seconds");

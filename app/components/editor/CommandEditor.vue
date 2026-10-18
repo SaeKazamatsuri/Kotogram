@@ -14,7 +14,7 @@ const composing = ref(false);
 const keyboardVisible = ref(false);
 
 function sanitize(input: string) {
-  return (input.normalize("NFC").match(/[ぁ-ゟー0-9０-９ 　\r\n]/g) ?? []).join("");
+  return (input.normalize("NFC").match(/[ぁ-ゟー0-9０-９ \u3000\r\n]/g) ?? []).join("");
 }
 function acceptInput(target: HTMLTextAreaElement) {
   const original = target.value;
@@ -142,8 +142,8 @@ defineExpose({ getText });
         @input="onInput"
         @compositionstart="composing = true"
         @compositionend="onCompositionEnd"
-        @scroll="onScroll"
         placeholder="れい） かべとあなとぶ"
+        @scroll="onScroll"
       />
     </div>
     <button

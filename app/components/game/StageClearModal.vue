@@ -3,7 +3,7 @@ import { ref } from "vue";
 import type { BestRuns, ScoredRun } from "~/scoring/score";
 import RankingPanel from "./RankingPanel.vue";
 
-const props = defineProps<{
+defineProps<{
   seconds: number;
   stageId: string;
   stageVersion: string;
@@ -17,8 +17,7 @@ const props = defineProps<{
   rankingRefresh?: number;
 }>();
 const emit = defineEmits<{
-  (e: "close"): void;
-  (e: "next"): void;
+  (e: "close" | "next"): void;
   (e: "register", name: string): void;
 }>();
 const nickname = ref("");
@@ -33,7 +32,11 @@ const showRanking = ref(false);
         タイム <span class="text-xl font-bold">{{ seconds.toFixed(1) }}秒</span>
         ／ もじすう <span class="text-xl font-bold">{{ chars }}もじ</span>
       </p>
-      <div v-if="scores" class="grid grid-cols-3 gap-2 mb-4" aria-label="3しゅるいのスコア">
+      <div
+        v-if="scores"
+        class="grid grid-cols-3 gap-2 mb-4"
+        aria-label="3しゅるいのスコア"
+      >
         <div v-for="item in [
           { label: 'タイム', value: scores.time },
           { label: 'もじすう', value: scores.chars },
@@ -62,7 +65,7 @@ const showRanking = ref(false);
             class="w-full rounded-xl border border-amber-300 p-2 bg-white text-base"
             autocomplete="off"
             placeholder="からなら ゲストの なまえ"
-          />
+          >
           <p class="my-2 text-xs text-slate-600">ほんとうの なまえや じゅうしょは かかないでね</p>
           <button
             type="button"
