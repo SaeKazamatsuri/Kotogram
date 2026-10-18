@@ -51,3 +51,12 @@ test("title and stage selection are distinct game scenes", () => {
   assert.match(stages, /stageUnlocked/);
   assert.doesNotMatch(layout, /<header/);
 });
+
+test("play screen keeps the canvas and editor in separate game panels", () => {
+  const source = readFileSync(new URL("../app/pages/play/[stageId].vue", import.meta.url), "utf8");
+  assert.match(source, /WORLD VIEW/);
+  assert.match(source, /MISSION/);
+  assert.match(source, /:key="stageId"/);
+  assert.match(source, /@clear="onClear"/);
+  assert.match(source, /@fail="onFail"/);
+});

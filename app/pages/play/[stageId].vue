@@ -25,6 +25,7 @@ type Dictionary = {
 const route = useRoute();
 const router = useRouter();
 const stageId = computed(() => String(route.params.stageId || "stage-1"));
+const stageNumber = computed(() => Number(stageId.value.replace("stage-", "")) || 1);
 const rankingApiBase = String(useRuntimeConfig().public.rankingApiBase || "");
 const { loadStage, getManifest } = useStageLoader();
 const { loadDictionary } = useDictionary();
@@ -206,62 +207,74 @@ watch(stageId, () => {
 </script>
 
 <template>
-  <div class="w-full">
-    <header class="flex items-center gap-3 mb-3">
-      <NuxtLink to="/stages" class="text-sm text-slate-600 hover:underline">
-        ← ステージ選択へ
-      </NuxtLink>
-      <h1 class="text-xl font-extrabold text-slate-800">
-        ステージ: {{ stage?.meta?.title || stageId }}
-      </h1>
-    </header>
+  <div class="scene-enter mx-auto max-w-[1450px] pb-12">
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+      <NuxtLink to="/stages" class="game-button game-button--night text-sm">← ステージ選択へ</NuxtLink>
+      <div class="flex items-center gap-3">
+        <span class="game-chip">STAGE {{ String(stageNumber).padStart(2, '0') }} / {{ stageItems.length || '—' }}</span>
+        <span class="game-chip" role="status" aria-live="polite">{{ running ? '● うごいているよ' : cleared ? '★ クリア！' : failed ? '！もういちど' : '● じゅんびOK' }}</span>
+      </div>
+    </div>
 
-    <div v-if="loading" class="text-gray-600">読み込み中…</div>
-    <p v-else-if="loadError" class="text-red-600">{{ loadError }}</p>
+    <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="game-kicker mb-2">YOUR NEXT QUEST</p>
+        <h1 class="game-heading text-3xl text-[#fff7e8] md:text-4xl">{{ stage?.meta?.title || 'ステージ ' + stageNumber }}</h1>
+      </div>
+      <p class="max-w-md text-sm font-bold leading-relaxed text-[#cbd6e8]">ひらがなで めいれいを かいて、ゴールを めざそう！</p>
+    </div>
 
-    <div v-else-if="stage">
-      <section class="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-4">
-        <h2 class="font-bold text-slate-800">このステージで まなぶこと</h2>
-        <ul v-if="stage.learningObjectives?.length" class="mt-2 list-disc pl-6 text-sm text-slate-700">
-          <li v-for="(objective, index) in stage.learningObjectives" :key="index">{{ objective }}</li>
-        </ul>
-        <p v-else class="mt-2 text-sm text-slate-700">めいれいを かいて ゴールを めざそう</p>
-        <details v-if="stage.meta?.hint" class="mt-3 text-sm text-slate-700">
-          <summary class="cursor-pointer font-bold">ヒントを みる</summary>
-          <p class="mt-2">{{ stage.meta.hint }}</p>
-        </details>
+    <div v-if="loading" role="status" class="game-panel-dark p-8">ステージを じゅんびしているよ…</div>
+    <div v-else-if="loadError" role="alert" class="game-panel bg-[#fff4e6] p-8 text-[#a63647]">{{ loadError }}</div>
+
+    <div v-else-if="stage" class="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(400px,0.95fr)_minmax(0,1.2fr)]">
+      <section class="order-2 min-w-0 space-y-5 xl:order-1" aria-label="プログラムそうさ">
+        <div class="game-panel overflow-hidden">
+          <CommandEditor
+            :key="stageId"
+            ref="editorRef"
+            v-model:lines="editorLines"
+            :dictionary="dict || undefined"
+            @run="onRun"
+          />
+        </div>
+        <section class="game-panel-dark p-5" aria-label="ステージのもくひょう">
+          <div class="mb-3 flex items-center gap-3">
+            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#ffcd77] text-xl text-[#1e2740]" aria-hidden="true">✦</span>
+            <div><p class="text-[11px] font-black tracking-widest text-[#87e7cc]">MISSION</p><h2 class="font-black">このステージで まなぶこと</h2></div>
+          </div>
+          <ul v-if="stage.learningObjectives?.length" class="space-y-2 text-sm font-bold leading-relaxed text-[#e7e9f2]">
+            <li v-for="(objective, index) in stage.learningObjectives" :key="index" class="flex items-start gap-2"><span class="text-[#ffcd77]" aria-hidden="true">◇</span>{{ objective }}</li>
+          </ul>
+          <p v-else class="text-sm text-[#e3e9f6]">めいれいを かいて ゴールを めざそう</p>
+          <details v-if="stage.meta?.hint" class="mt-4 rounded-xl border border-[#656e90] bg-[#161f38] p-3 text-sm text-[#fff7e8]">
+            <summary class="cursor-pointer font-bold">？ ヒントを みる</summary>
+            <p class="mt-3 leading-relaxed">{{ stage.meta.hint }}</p>
+          </details>
+        </section>
       </section>
-      <section class="grid gap-4 md:grid-cols-2">
-      <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
-        <CommandEditor
-          :key="stageId"
-          ref="editorRef"
-          v-model:lines="editorLines"
-          :dictionary="dict || undefined"
-          @run="onRun"
-        />
-      </div>
-
-      <div class="rounded-2xl border border-lime-200 bg-lime-50 p-4">
-        <GameCanvas
-          :key="stageId"
-          :stage="stage"
-          :program="program"
-          :running="running"
-          @clear="onClear"
-          @fail="onFail"
-        />
-      </div>
+      <section class="order-1 min-w-0 overflow-hidden rounded-[30px] border-[3px] border-[#67769a] bg-[#202b4c] shadow-[0_9px_0_#0a1022] xl:order-2" aria-label="ゲームフィールド">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#49567b] bg-[#242e4c] px-5 py-3">
+          <span class="text-xs font-black tracking-[.18em] text-[#ffcd77]">WORLD VIEW</span>
+          <span class="rounded-full bg-[#131b34] px-3 py-1 text-xs font-bold text-[#e8ebf5]">{{ running ? '▶ プレイちゅう' : '▶ スタートを おしてね' }}</span>
+        </div>
+        <div class="p-2 sm:p-3">
+          <GameCanvas
+            :key="stageId"
+            :stage="stage"
+            :program="program"
+            :running="running"
+            @clear="onClear"
+            @fail="onFail"
+          />
+        </div>
+        <div class="flex items-center justify-between gap-3 border-t-2 border-[#49567b] bg-[#202a48] px-5 py-3 text-xs font-bold text-[#d6deeb]">
+          <span>★ なんどでも ためせるよ</span><span>GOAL →</span>
+        </div>
       </section>
     </div>
 
-    <StageFailModal
-      v-if="failed && failInfo"
-      :reason="failInfo.reason"
-      :hint="failInfo.hint"
-      @close="closeFail"
-    />
-
+    <StageFailModal v-if="failed && failInfo" :reason="failInfo.reason" :hint="failInfo.hint" @close="closeFail" />
     <StageClearModal
       v-if="cleared"
       :seconds="lastSeconds"
