@@ -30,6 +30,10 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci
+      - name: Lint repository
+        run: npm run lint
+      - name: Strict TypeScript checks for shared modules
+        run: npm run typecheck
       - name: Build Nuxt app
         run: npm run build
       - name: Verify Worker bundle without deploying
