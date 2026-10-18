@@ -60,7 +60,7 @@ let sessionGeneration = 0;
 
 function goNext() {
   const next = nextStageId(stageId.value, stageItems.value);
-  router.push(next ? `/play/${next}` : "/");
+  router.push(next ? `/play/${next}` : "/stages");
 }
 
 function resolveHint(reason: FailReason): string {
@@ -208,7 +208,7 @@ watch(stageId, () => {
 <template>
   <div class="w-full">
     <header class="flex items-center gap-3 mb-3">
-      <NuxtLink to="/" class="text-sm text-slate-600 hover:underline">
+      <NuxtLink to="/stages" class="text-sm text-slate-600 hover:underline">
         ← ステージ選択へ
       </NuxtLink>
       <h1 class="text-xl font-extrabold text-slate-800">

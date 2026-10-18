@@ -9,7 +9,7 @@ test("admin route cannot silently mark every stage as cleared", () => {
 });
 
 test("shared-device reset asks for explicit confirmation", () => {
-  const home = readFileSync(new URL("../app/pages/index.vue", import.meta.url), "utf8");
+  const home = readFileSync(new URL("../app/pages/stages.vue", import.meta.url), "utf8");
   assert.match(home, /window\.confirm\(/);
   assert.match(home, /つぎのひと/);
 });
@@ -40,4 +40,14 @@ test("stage intro shows objectives, optional hints and final-stage navigation", 
   assert.match(play, /<details v-if="stage\.meta\?\.hint"/);
   assert.match(play, /:has-next="nextStageId\(stageId, stageItems\) !== null"/);
   assert.match(modal, /hasNext \? "つぎへ" : "ステージえらびへ"/);
+});
+
+test("title and stage selection are distinct game scenes", () => {
+  const title = readFileSync(new URL("../app/pages/index.vue", import.meta.url), "utf8");
+  const stages = readFileSync(new URL("../app/pages/stages.vue", import.meta.url), "utf8");
+  const layout = readFileSync(new URL("../app/layouts/default.vue", import.meta.url), "utf8");
+  assert.match(title, /to="\/stages"/);
+  assert.match(stages, /ぼうけんマップ/);
+  assert.match(stages, /stageUnlocked/);
+  assert.doesNotMatch(layout, /<header/);
 });

@@ -38,6 +38,8 @@ page.on("response", (response) => {
 try {
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto(site, { waitUntil: "domcontentloaded" });
+  await page.getByRole("link", { name: "ぼうけんを はじめる" }).click();
+  await page.waitForURL(/\/stages$/);
   const firstStage = page.getByRole("link", { name: /かべを とびこえよう/ });
   await firstStage.waitFor();
   await page.evaluate(() => localStorage.setItem("external.test.key", "preserved"));
