@@ -30,6 +30,7 @@
 | [要件定義](requirements.md) | 利用者、体験、機能 / 非機能要件、スコープ |
 | [言語仕様](language-spec.md) | 語彙、自由入力、構文、AST、曖昧性、実行モデル |
 | [ゲームエンジン](engine-spec.md) | tick、物理、センシング、複数アクション、状態遷移 |
+| [ハイブリッドInterpreter](interpreter-runtime.md) | 継続監視と逐次命令、複数行・入れ子の繰り返しの実行仕様 |
 | [スコアとランキング](scoring-ranking.md) | 1000点基準、ランキング、ゲスト番号、記録 |
 | [ステージとレベルデザイン](stages-and-validation.md) | JSONモデル、教育設計、ギミック、探索 / 自動検証 |
 | [UI・学園祭運用](ux-event-operations.md) | ソフトキーボード、画面遷移、共用端末、非対象事項 |

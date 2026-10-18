@@ -1,6 +1,14 @@
 export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead";
 export type GameAction = "jump" | "crouch" | "collect";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
+/** Watchers are active from tick zero; the procedure advances in source order. */
+export type GameInstruction =
+  | { op: "action"; action: GameAction; count: number }
+  | { op: "wait"; conds: GameCondition[]; action?: GameAction; count: number }
+  | { op: "repeat-start"; count: number; end: number }
+  | { op: "repeat-end"; start: number };
+export type GameProgram = { watchers: GameRule[]; steps: GameInstruction[] };
+export type LoopFrame = { start: number; remaining: number };
 export type GameStatus = "running" | "cleared" | "failed" | "timeout";
 export type GameFailReason = "hole" | "wall" | "enemy" | "void";
 
@@ -31,6 +39,11 @@ export type GameState = {
   goalX: number;
   program: GameRule[];
   fired: Set<string>[];
+  steps: GameInstruction[];
+  cursor: number;
+  sequenceProgress: number;
+  sequenceConsumed: Set<string>;
+  loops: LoopFrame[];
 };
 
 export const GAME = {
@@ -113,7 +126,9 @@ function makeHoles(stage: GameStage): Hole[] {
   return holes.sort((a, b) => a.x - b.x);
 }
 
-export function createGame(stage: GameStage, program: readonly GameRule[] = []): GameState {
+export function createGame(stage: GameStage, program: readonly GameRule[] | GameProgram = []): GameState {
+  const watchers = Array.isArray(program) ? program : (program as GameProgram).watchers;
+  const steps = Array.isArray(program) ? [] : (program as GameProgram).steps;
   const walls = makeBarriers(stage, "wall", stage.walls);
   const ghosts = makeBarriers(stage, "ghost", stage.ghosts);
   const holes = makeHoles(stage);
@@ -136,8 +151,13 @@ export function createGame(stage: GameStage, program: readonly GameRule[] = []):
     ghosts,
     holes,
     goalX,
-    program: program.map((rule) => ({ ...rule })),
-    fired: program.map(() => new Set<string>()),
+    program: watchers.map((rule) => ({ ...rule, conds: rule.conds ? [...rule.conds] : undefined })),
+    fired: watchers.map(() => new Set<string>()),
+    steps: steps.map((step) => ({ ...step, ...(step.op === "wait" ? { conds: [...step.conds] } : {}) })),
+    cursor: 0,
+    sequenceProgress: 0,
+    sequenceConsumed: new Set<string>(),
+    loops: [],
   };
 }
 
@@ -180,6 +200,18 @@ function issueJump(game: GameState): boolean {
   return true;
 }
 
+/** An action is counted only when the engine accepts it. */
+function acceptAction(game: GameState, action: GameAction): boolean {
+  if (action === "jump") return issueJump(game);
+  if (action === "crouch") {
+    issueCrouch(game);
+    return true;
+  }
+  // Existing collect action remains a placeholder until item mechanics are added.
+  if (action === "collect") return true;
+  return false;
+}
+
 function applyProgram(game: GameState) {
   for (const [index, rule] of game.program.entries()) {
     const history = game.fired[index];
@@ -194,14 +226,62 @@ function applyProgram(game: GameState) {
     }
     const key = target?.id ?? "unconditional";
     if (history.has(key)) continue;
-    let accepted = false;
-    if (rule.action === "jump") accepted = issueJump(game);
-    if (rule.action === "crouch") {
-      issueCrouch(game);
-      accepted = true;
+    if (acceptAction(game, rule.action)) history.add(key);
+  }
+}
+
+/**
+ * The procedural half of the hybrid interpreter.
+ *
+ * - Top-level conditional rules are independent continuous watchers.
+ * - In a multi-statement repeat, conditions become blocking waits for the
+ *   next *distinct* obstacle. A wait consumes its event only after acceptance.
+ * - Actions and nested loops follow their source order without unrolling.
+ * - Multiple non-blocking commands may complete in one tick, but each wait
+ *   consumes at most one event per tick. The step budget prevents spin loops.
+ */
+function applySequence(game: GameState): void {
+  const instructionBudget = 128;
+  for (let stepsTaken = 0; stepsTaken < instructionBudget && game.cursor < game.steps.length; stepsTaken++) {
+    const op = game.steps[game.cursor]!;
+    if (op.op === "repeat-start") {
+      game.loops.push({ start: game.cursor, remaining: op.count });
+      game.cursor++;
+      continue;
     }
-    if (rule.action === "collect") accepted = true;
-    if (accepted) history.add(key);
+    if (op.op === "repeat-end") {
+      const top = game.loops.at(-1);
+      if (!top || top.start !== op.start) throw new Error("Invalid compiled repeat block");
+      if (--top.remaining > 0) {
+        game.cursor = op.start + 1;
+        game.sequenceProgress = 0;
+        return; // Run at most one iteration of this loop per tick.
+      } else {
+        game.loops.pop();
+        game.cursor++;
+      }
+      game.sequenceProgress = 0;
+      continue;
+    }
+    if (op.op === "action") {
+      if (!acceptAction(game, op.action)) return; // Wait until landing / cooldown.
+      if (++game.sequenceProgress >= op.count) {
+        game.sequenceProgress = 0;
+        game.cursor++;
+      }
+      // Limit repeated actions to one successful activation per tick.
+      if (game.sequenceProgress > 0) return;
+      continue;
+    }
+    const target = sensedTargets(game, op.conds).find((item) => !game.sequenceConsumed.has(item.id));
+    if (!target) return;
+    if (op.action && !acceptAction(game, op.action)) return;
+    game.sequenceConsumed.add(target.id);
+    if (++game.sequenceProgress >= op.count) {
+      game.sequenceProgress = 0;
+      game.cursor++;
+    }
+    return; // No obstacle can count twice within the same tick.
   }
 }
 
@@ -217,6 +297,7 @@ function fail(game: GameState, reason: GameFailReason) {
 export function stepGame(game: GameState): GameStatus {
   if (game.status !== "running") return game.status;
   applyProgram(game);
+  applySequence(game);
   game.px += game.vx;
   game.vy += GAME.gravity;
   game.py += game.vy;
