@@ -13,3 +13,7 @@ GitHub ActionsのビルドジョブではWorkerのdry-runのあとに `wrangler 
 本テストはGitHub Actionsの新しい一時的なWrangler環境で実行する。本番環境・実際の複数デバイス・デプロイ済みAPIについて検証済みとはみなさない。
 
 ローカルで再現するには、ひとつのPowerShellで `npm run dev:api` を起動し、別のPowerShellで `node --experimental-strip-types scripts/smoke-ranking-api.mjs` を実行する。実行するたびテスト記録がローカルのDOに残るので、公開用環境では実行しない。
+
+## Workerd互換日付
+
+現行の依存ロックで取得されるWrangler 4.87.0のローカルworkerdは、互換日付2026-05-07まで対応。2026-10-18を指定するとWorkerは起動できない。互換日付はランタイムの対応上限に合わせて2026-05-07に固定する。Wranglerとロックファイルを更新した際に両者の対応関係を再検証する。
