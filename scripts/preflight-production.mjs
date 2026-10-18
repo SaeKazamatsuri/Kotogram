@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
+export const PUBLIC_ORIGIN = "https://kotogram.sae-chan.net";
+
 const bindings = new Map([["RANKING", "StageRanking"], ["COUNTER", "GuestCounter"]]);
 
 export function validateProductionConfig(config) {
@@ -16,6 +18,9 @@ export function validateProductionConfig(config) {
       /\.(example|invalid|test|localhost)$/.test(url.hostname) || url.hostname === "localhost")) {
       problems.push("ALLOWED_ORIGIN must be a concrete public HTTPS origin, not a placeholder.");
     }
+  }
+  if (origin !== PUBLIC_ORIGIN) {
+    problems.push("ALLOWED_ORIGIN must match the official website: " + PUBLIC_ORIGIN);
   }
   if (!production?.name || production.name === config.name) {
     problems.push("Production and development Workers need distinct names.");
