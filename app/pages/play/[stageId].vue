@@ -5,7 +5,7 @@ import CommandEditor from "~/components/editor/CommandEditor.vue";
 import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
-import StatsSummaryModal from "~/components/game/StatsSummaryModal.vue";
+import { calculateScores, countSourceCharacters, getScoreReference, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { useParser } from "~/composables/useParser";
 import type { GameProgram } from "~/game/core";
 import type { StageData } from "~/composables/useStageLoader";
@@ -25,7 +25,7 @@ const router = useRouter();
 const stageId = computed(() => String(route.params.stageId || "stage-1"));
 const { loadStage, getManifest } = useStageLoader();
 const { loadDictionary } = useDictionary();
-const { stageStart, stageClear, getAll, isCleared } = useStats();
+const { stageStart, stageClear, getBestRecords, isCleared } = useStats();
 const { parseProgram } = useParser();
 
 const stage = ref<StageData | null>(null);
@@ -40,6 +40,10 @@ const cleared = ref(false);
 const failed = ref(false);
 const failInfo = ref<{ reason: FailReason; hint: string } | null>(null);
 const lastSeconds = ref(0);
+const lastChars = ref(0);
+const scoreValues = ref<{ time: number; chars: number; overall: number } | null>(null);
+const bests = ref<BestRuns<ScoredRun>>({});
+const stageVersion = ref("2025-10-26");
 const unlocked = ref(true);
 
 function stageIndexFromId(id: string): number | null {
@@ -94,6 +98,7 @@ onMounted(async () => {
       loadStage(stageId.value),
     ]);
     stage.value = stageData;
+    stageVersion.value = manifest.version ?? "unknown";
     dict.value = await loadDictionary({
       version: manifest.version,
       ttlMs: 24 * 3600 * 1000,
@@ -129,9 +134,13 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   failed.value = false;
   failInfo.value = null;
   const rawText = editorRef.value?.getText() ?? "";
-  const chars = rawText.replace(/\r?\n/g, "").length;
-  const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks);
+  const chars = countSourceCharacters(rawText);
+  const reference = getScoreReference(stageId.value, stageVersion.value);
+  const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks, rawText, stageVersion.value);
   lastSeconds.value = result.seconds;
+  lastChars.value = chars;
+  scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars }) : null;
+  bests.value = getBestRecords(stageId.value, stageVersion.value);
   cleared.value = true;
 }
 
@@ -194,13 +203,11 @@ watch(stageId, (value) => {
       v-if="cleared"
       :seconds="lastSeconds"
       :stage-id="String(stageId)"
+      :chars="lastChars"
+      :scores="scoreValues"
+      :bests="bests"
       @close="cleared = false"
       @next="goNext"
-    />
-    <StatsSummaryModal
-      v-if="cleared && stageId === 'stage-3'"
-      :all="getAll()"
-      @close="cleared = false"
     />
   </div>
 </template>
