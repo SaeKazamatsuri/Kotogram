@@ -122,13 +122,13 @@ function onRun() {
   running.value = true;
 }
 
-function onClear() {
+function onClear(timing: { elapsedTicks: number; seconds: number }) {
   running.value = false;
   failed.value = false;
   failInfo.value = null;
   const rawText = editorRef.value?.getText() ?? "";
   const chars = rawText.replace(/\r?\n/g, "").length;
-  const result = stageClear(stageId.value, chars);
+  const result = stageClear(stageId.value, chars, timing.seconds);
   lastSeconds.value = result.seconds;
   cleared.value = true;
 }
