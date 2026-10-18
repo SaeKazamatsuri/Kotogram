@@ -4,7 +4,7 @@ import type { StageData } from "~/composables/useStageLoader";
 import type { FailPayload } from "~/types/game";
 import { GAME, createGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
 import { resolveScenePalette } from "~/game/scenery";
-import { renderGameFrame, type SpriteKey } from "~/game/renderer";
+import { renderGameFrame } from "~/game/renderer";
 
 const props = defineProps<{
   stage: StageData;
@@ -17,62 +17,16 @@ const emit = defineEmits<{
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
-const sprites: Record<SpriteKey, CanvasImageSource | null> = {
-  player: null,
-  wall: null,
-  ghost: null,
-  goal: null,
-};
 let game: GameState = createGame(props.stage, props.program);
 let frame = 0;
 let previousTimestamp = 0;
 let accumulated = 0;
 const STEP_MS = 1000 / GAME.tickRate;
 
-function opaqueSprite(source: HTMLImageElement): CanvasImageSource {
-  const width = source.naturalWidth;
-  const height = source.naturalHeight;
-  if (!width || !height) return source;
-  const buffer = document.createElement("canvas");
-  buffer.width = width;
-  buffer.height = height;
-  const ctx = buffer.getContext("2d");
-  if (!ctx) return source;
-  ctx.drawImage(source, 0, 0);
-  const image = ctx.getImageData(0, 0, width, height);
-  for (let i = 3; i < image.data.length; i += 4) {
-    const alpha = image.data[i];
-    if (alpha === 0 || alpha === 255) continue;
-    const ratio = 255 / alpha;
-    for (let channel = i - 3; channel < i; channel++) {
-      image.data[channel] = Math.min(255, Math.round(image.data[channel] * ratio));
-    }
-    image.data[i] = 255;
-  }
-  ctx.putImageData(image, 0, 0);
-  return buffer;
-}
-
-function loadSprite(name: SpriteKey, path: string, opaque = false): Promise<void> {
-  return new Promise((resolve) => {
-    const image = new Image();
-    image.onload = () => {
-      sprites[name] = opaque ? opaqueSprite(image) : image;
-      draw();
-      resolve();
-    };
-    image.onerror = () => {
-      sprites[name] = null;
-      resolve();
-    };
-    image.src = path;
-  });
-}
-
 function draw() {
   const ctx = canvas.value?.getContext("2d");
   if (!ctx) return;
-  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg), sprites);
+  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg));
 }
 
 function stop() {
@@ -133,21 +87,16 @@ watch(() => props.program, () => {
   }
 }, { deep: true });
 
-onMounted(async () => {
+onMounted(() => {
   if (canvas.value) {
     const dpr = window.devicePixelRatio || 1;
     canvas.value.width = GAME.width * dpr;
     canvas.value.height = GAME.height * dpr;
     canvas.value.getContext("2d")?.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
-  await Promise.all([
-    loadSprite("player", "/sprites/player.png"),
-    loadSprite("wall", "/sprites/wall.png"),
-    loadSprite("ghost", "/sprites/ghost.png", true),
-    loadSprite("goal", "/sprites/goal.png"),
-  ]);
   draw();
 });
+
 onBeforeUnmount(stop);
 </script>
 

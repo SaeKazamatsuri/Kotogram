@@ -1,11 +1,10 @@
 import { GAME, worldToScreenX, type GameState } from "./core.ts";
+import { drawHoles, drawWorldObjects, drawFinish } from "./obstacles.ts";
 import { drawAnimatedCharacter } from "./character.ts";
 import { getPlayerPose, type PlayerPose } from "./visuals.ts";
 import { layerX, type ScenePalette } from "./scenery.ts";
 
-export type SpriteKey = "player" | "wall" | "ghost" | "goal";
-
-export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, sprites: Record<SpriteKey, CanvasImageSource | null>): void {
+export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette): void {
   ctx.clearRect(0, 0, GAME.width, GAME.height);
 
   const background = ctx.createLinearGradient(0, 0, 0, GAME.height);
@@ -85,84 +84,8 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.fillRect(x + 20, GAME.groundY + 50, 25, 5);
   }
 
-  for (const hole of game.holes) {
-    const left = Math.max(0, worldToScreenX(game, hole.x));
-    const right = Math.min(GAME.width, worldToScreenX(game, hole.x + hole.w));
-    if (right > left) {
-      ctx.fillStyle = "#1f2937";
-      ctx.fillRect(left, GAME.groundY, right - left, GAME.groundHeight);
-    }
-  }
-
-  for (const coin of game.coins) {
-    if (coin.collected) continue;
-    const x = worldToScreenX(game, coin.x);
-    if (x < -GAME.coinRadius || x > GAME.width + GAME.coinRadius) continue;
-    ctx.beginPath();
-    ctx.arc(x, GAME.groundY - 34, GAME.coinRadius, 0, Math.PI * 2);
-    ctx.fillStyle = "#facc15";
-    ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = "#854d0e";
-    ctx.stroke();
-  }
-
-  for (const item of game.switches) {
-    const x = worldToScreenX(game, item.x);
-    if (x < -32 || x > GAME.width + 32) continue;
-    ctx.fillStyle = item.activated ? "#4ade80" : "#f97316";
-    ctx.fillRect(x - 11, GAME.groundY - 33, 22, 25);
-    ctx.fillStyle = "#0f172a";
-    ctx.font = "bold 12px sans-serif";
-    ctx.fillText(item.activated ? "○" : "おす", x - 17, GAME.groundY - 42);
-  }
-
-  for (const door of game.doors) {
-    const x = worldToScreenX(game, door.x);
-    if (x < -GAME.doorWidth || x > GAME.width + GAME.doorWidth) continue;
-    ctx.fillStyle = door.open ? "rgba(34,197,94,0.25)" : "#7c3aed";
-    ctx.fillRect(x, GAME.groundY - GAME.doorHeight, GAME.doorWidth, GAME.doorHeight);
-    ctx.strokeStyle = door.open ? "#15803d" : "#4c1d95";
-    ctx.lineWidth = 3;
-    ctx.strokeRect(x, GAME.groundY - GAME.doorHeight, GAME.doorWidth, GAME.doorHeight);
-  }
-
-  for (const wall of game.walls) {
-    const x = worldToScreenX(game, wall.x);
-    if (x < -GAME.wallWidth || x > GAME.width + GAME.wallWidth) continue;
-    if (sprites.wall) ctx.drawImage(sprites.wall, x, GAME.groundY - GAME.wallHeight, GAME.wallWidth, GAME.wallHeight);
-    else {
-      ctx.fillStyle = "#9ca3af";
-      ctx.fillRect(x, GAME.groundY - GAME.wallHeight, GAME.wallWidth, GAME.wallHeight);
-    }
-  }
-
-  for (const ghost of game.ghosts) {
-    const x = worldToScreenX(game, ghost.x);
-    if (x < -GAME.ghostWidth || x > GAME.width + GAME.ghostWidth) continue;
-    const y = GAME.groundY - GAME.ghostHeight - GAME.ghostClearance;
-    if (sprites.ghost) ctx.drawImage(sprites.ghost, x, y, GAME.ghostWidth, GAME.ghostHeight);
-    else {
-      const center = x + GAME.ghostWidth / 2;
-      const headHeight = GAME.ghostHeight * 0.65;
-      const neck = y + headHeight;
-      const bottom = y + GAME.ghostHeight;
-      const radius = GAME.ghostWidth * 0.45;
-      const arc = y + headHeight * 0.35;
-      const taper = GAME.ghostWidth * 0.2;
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.moveTo(center - radius, arc);
-      ctx.quadraticCurveTo(center - radius, y, center, y);
-      ctx.quadraticCurveTo(center + radius, y, center + radius, arc);
-      ctx.quadraticCurveTo(center + radius * 0.92, neck, center + taper, neck);
-      ctx.quadraticCurveTo(center + taper * 0.6, bottom, center, bottom);
-      ctx.quadraticCurveTo(center - taper * 0.6, bottom, center - taper, neck);
-      ctx.quadraticCurveTo(center - radius * 0.92, neck, center - radius, arc);
-      ctx.closePath();
-      ctx.fill();
-    }
-  }
+  drawHoles(ctx, game);
+  drawWorldObjects(ctx, game);
 
   for (const wall of game.walls) {
     if (!game.ghosts.some((ghost) => ghost.x === wall.x)) continue;
@@ -203,13 +126,6 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.fillText("こいん " + collected + " / " + game.requiredCoins, GAME.width - 172, 34);
   }
 
-  const goalX = worldToScreenX(game, game.goalX);
-  if (goalX < GAME.width && goalX + GAME.goalWidth > 0) {
-    if (sprites.goal) ctx.drawImage(sprites.goal, goalX, GAME.groundY - GAME.goalHeight, GAME.goalWidth, GAME.goalHeight);
-    else {
-      ctx.fillStyle = "#f59e0b";
-      ctx.fillRect(goalX, GAME.groundY - GAME.goalHeight, GAME.goalWidth, GAME.goalHeight);
-    }
-  }
+  drawFinish(ctx, game);
 }
 
