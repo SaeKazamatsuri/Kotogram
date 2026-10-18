@@ -70,9 +70,8 @@ test("all registered stage cases pass with frozen tick snapshots", () => {
     assert.ok(report.cases.some((entry) => entry.role === "beginner" && entry.outcome === "cleared"));
     assert.ok(report.cases.some((entry) => entry.role === "negative" && entry.outcome === "failed"));
     assert.equal(report.improvements.shorterThanBeginner, true);
-    const isLegacy = ["stage-1", "stage-2", "stage-3"].includes(id);
-    assert.equal(report.improvements.fasterThanBeginner, !isLegacy);
-    assert.equal(report.warnings.length, isLegacy ? 1 : 0);
+    assert.equal(report.improvements.fasterThanBeginner, true);
+    assert.equal(report.warnings.length, 0);
     assert.ok(report.bestKnown.ticks > 0);
     assert.ok(report.bestKnown.characters > 0);
     assert.ok(report.bestKnown.timeCharactersProduct > 0);
@@ -128,4 +127,17 @@ test("stage 5 requires concurrent crouch and jump at the same obstacle position"
   assert.equal(report.bestKnown.ticks, 574);
   assert.equal(report.cases.find((entry) => entry.name === "jump-alone-fails-on-coincident-ghost")?.failureReason, "enemy");
   assert.equal(report.cases.find((entry) => entry.name === "crouch-alone-fails-on-coincident-wall")?.failureReason, "wall");
+});
+
+test("all three original stages have verifiable running routes faster than walking", () => {
+  for (const id of ["stage-1", "stage-2", "stage-3"]) {
+    const report = validateStageCases(id, read("public/stages/" + id + ".json"), read("stage-checks/" + id + ".json"));
+    assert.equal(report.pass, true);
+    const walking = report.cases.find((entry) => entry.role === "beginner");
+    const running = report.cases.find((entry) => entry.name === "fast-run-with-watchers");
+    assert.equal(running?.outcome, "cleared");
+    assert.ok(running.elapsedTicks < walking.elapsedTicks);
+    const unprotected = report.cases.find((entry) => entry.name === "run-without-jump-still-fails");
+    assert.equal(unprotected?.failureReason, "wall");
+  }
 });
