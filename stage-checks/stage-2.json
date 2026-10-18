@@ -1,0 +1,28 @@
+{
+  "stageId": "stage-2",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-two-rules",
+      "role": "beginner",
+      "source": "かべならじゃんぷ\nあなならじゃんぷ",
+      "expect": "cleared",
+      "expectedTicks": 983
+    },
+    {
+      "name": "short-or-rule",
+      "role": "short",
+      "source": "かべとあなとぶ",
+      "expect": "cleared",
+      "expectedTicks": 983
+    },
+    {
+      "name": "missing-hole",
+      "role": "negative",
+      "source": "かべとぶ",
+      "expect": "failed",
+      "failureReason": "hole",
+      "expectedTicks": 288
+    }
+  ]
+}
