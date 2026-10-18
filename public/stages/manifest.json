@@ -15,6 +15,11 @@
       "id": "stage-3",
       "title": "おばけ をよけよう",
       "file": "/stages/stage-3.json"
+    },
+    {
+      "id": "stage-4",
+      "title": "かいすうを かぞえて とぼう",
+      "file": "/stages/stage-4.json"
     }
   ]
 }

@@ -13,7 +13,7 @@ const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const read = (file) => JSON.parse(readFileSync(join(root, file), "utf8"));
 const manifest = read("public/stages/manifest.json");
 
-test("2025 stage manifest and all 3 stage JSON files are schema-valid", () => {
+test("manifest-listed stage JSON and checks are schema-valid", () => {
   assert.deepEqual(validateManifest(manifest), []);
   for (const { id, file } of manifest.stages) {
     assert.deepEqual(validateStage(id, read("public" + file)), [], id);
@@ -70,8 +70,9 @@ test("all registered stage cases pass with frozen tick snapshots", () => {
     assert.ok(report.cases.some((entry) => entry.role === "beginner" && entry.outcome === "cleared"));
     assert.ok(report.cases.some((entry) => entry.role === "negative" && entry.outcome === "failed"));
     assert.equal(report.improvements.shorterThanBeginner, true);
-    assert.equal(report.improvements.fasterThanBeginner, false);
-    assert.equal(report.warnings.length, 1);
+    const isLegacy = ["stage-1", "stage-2", "stage-3"].includes(id);
+    assert.equal(report.improvements.fasterThanBeginner, !isLegacy);
+    assert.equal(report.warnings.length, isLegacy ? 1 : 0);
     assert.ok(report.bestKnown.ticks > 0);
     assert.ok(report.bestKnown.characters > 0);
     assert.ok(report.bestKnown.timeCharactersProduct > 0);
@@ -107,4 +108,13 @@ test("CLI supports JSON output and targeted validation", () => {
   assert.equal(result.pass, true);
   assert.equal(result.stages.length, 1);
   assert.equal(result.stages[0].stageId, "stage-2");
+});
+
+test("stage 4 independently verifies its capped watchers, shorter code and faster solution", () => {
+  const report = validateStageCases("stage-4", read("public/stages/stage-4.json"), read("stage-checks/stage-4.json"));
+  assert.equal(report.pass, true, JSON.stringify(report.issues));
+  assert.equal(report.bestKnown.ticks, 620);
+  assert.equal(report.improvements.shorterThanBeginner, true);
+  assert.equal(report.improvements.fasterThanBeginner, true);
+  assert.equal(report.cases.find((entry) => entry.name === "count-three-fails-at-fourth")?.failureReason, "wall");
 });
