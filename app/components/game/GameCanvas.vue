@@ -4,6 +4,7 @@ import type { StageData } from "~/composables/useStageLoader";
 import type { GameProgram } from "~/game/core";
 import type { FailPayload } from "~/types/game";
 import { GAME, createGame, elapsedSeconds, isCrouching, stepGame, worldToScreenX, type GameState } from "~/game/core";
+import { getPlayerPose, type PlayerPose } from "~/game/visuals";
 
 const props = defineProps<{
   stage: StageData;
@@ -74,12 +75,26 @@ function draw() {
   if (!ctx) return;
   ctx.clearRect(0, 0, GAME.width, GAME.height);
 
+  const palettes = {
+    day: { sky: ["#dbeafe", "#fef3c7"], hill: "#bae6fd", ground: "#e5e7eb" },
+    sunset: { sky: ["#fcd7ba", "#fde68a"], hill: "#fdba74", ground: "#e9d5b5" },
+    twilight: { sky: ["#312e81", "#64748b"], hill: "#6d72ae", ground: "#a8abb8" },
+  } as const;
+  const palette = palettes[props.stage.meta?.bg === "sunset" ? "sunset" : props.stage.meta?.bg === "twilight" ? "twilight" : "day"];
   const background = ctx.createLinearGradient(0, 0, 0, GAME.height);
-  background.addColorStop(0, "#dbeafe");
-  background.addColorStop(1, "#fef3c7");
+  background.addColorStop(0, palette.sky[0]);
+  background.addColorStop(1, palette.sky[1]);
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, GAME.width, GAME.height);
-  ctx.fillStyle = "#e5e7eb";
+  ctx.fillStyle = palette.hill;
+  ctx.beginPath();
+  ctx.moveTo(0, GAME.groundY);
+  for (let x = 0; x <= GAME.width; x += 24) {
+    ctx.lineTo(x, GAME.groundY - 30 + Math.sin((x + game.px * 0.12) / 120) * 15);
+  }
+  ctx.lineTo(GAME.width, GAME.groundY);
+  ctx.fill();
+  ctx.fillStyle = palette.ground;
   ctx.fillRect(0, GAME.groundY, GAME.width, GAME.groundHeight);
 
   for (const hole of game.holes) {
@@ -128,12 +143,45 @@ function draw() {
     }
   }
 
-  const playerHeight = isCrouching(game) ? GAME.crouchHeight : GAME.playerHeight;
-  if (sprites.player) ctx.drawImage(sprites.player, GAME.playerScreenX, game.py - playerHeight, GAME.playerWidth, playerHeight);
-  else {
-    ctx.fillStyle = "#111827";
-    ctx.fillRect(GAME.playerScreenX, game.py - playerHeight, GAME.playerWidth, playerHeight);
+  for (const wall of game.walls) {
+    if (!game.ghosts.some((ghost) => ghost.x === wall.x)) continue;
+    const x = worldToScreenX(game, wall.x);
+    if (x < -GAME.wallWidth || x > GAME.width) continue;
+    ctx.strokeStyle = "#ea580c";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x - 4, GAME.groundY - GAME.ghostHeight - GAME.ghostClearance - 5, GAME.ghostWidth + 8, GAME.ghostHeight + GAME.ghostClearance + 9);
+    ctx.fillStyle = "#fff7ed";
+    ctx.fillRect(x - 4, GAME.groundY - GAME.ghostHeight - GAME.ghostClearance - 28, 53, 22);
+    ctx.fillStyle = "#9a3412";
+    ctx.font = "bold 13px sans-serif";
+    ctx.fillText("2つ!", x + 2, GAME.groundY - GAME.ghostHeight - GAME.ghostClearance - 12);
   }
+
+  const pose: PlayerPose = getPlayerPose(game);
+  const playerHeight = isCrouching(game) ? GAME.crouchHeight : GAME.playerHeight;
+  const playerTop = game.py - playerHeight;
+  if (sprites.player) {
+    ctx.drawImage(sprites.player, GAME.playerScreenX, playerTop, GAME.playerWidth, playerHeight);
+  } else {
+    ctx.fillStyle = "#f59e0b";
+    ctx.fillRect(GAME.playerScreenX + 4, playerTop, GAME.playerWidth - 8, playerHeight);
+    ctx.fillStyle = "#0f172a";
+    ctx.fillRect(GAME.playerScreenX + 13, playerTop + 10, 5, 5);
+    ctx.fillRect(GAME.playerScreenX + 26, playerTop + 10, 5, 5);
+  }
+
+  const actionLabels: Record<PlayerPose, string> = {
+    walking: "あるく",
+    running: "はしる",
+    jumping: "じゃんぷ",
+    crouching: "しゃがむ",
+    "crouch-jumping": "じゃんぷ＋しゃがむ",
+  };
+  ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+  ctx.fillRect(12, 12, 180, 32);
+  ctx.fillStyle = "#0f172a";
+  ctx.font = "bold 15px sans-serif";
+  ctx.fillText(actionLabels[pose], 22, 34);
 
   const goalX = worldToScreenX(game, game.goalX);
   if (goalX < GAME.width && goalX + GAME.goalWidth > 0) {
