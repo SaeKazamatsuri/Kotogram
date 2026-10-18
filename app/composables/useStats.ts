@@ -1,4 +1,4 @@
-type Stat = { seconds: number; chars: number };
+type Stat = { seconds: number; chars: number; elapsedTicks?: number };
 type AllStats = Record<string, Stat>;
 
 function getStorage(): Storage | null {
@@ -24,10 +24,10 @@ export function useStats() {
     startMap.set(id, performance.now());
   }
 
-  function stageClear(id: string, chars: number): Stat {
+  function stageClear(id: string, chars: number, gameSeconds?: number, elapsedTicks?: number): Stat {
     const start = startMap.get(id) ?? performance.now();
-    const sec = Math.round(((performance.now() - start) / 1000) * 10) / 10;
-    const record: Stat = { seconds: sec, chars };
+    const sec = Math.round((gameSeconds ?? ((performance.now() - start) / 1000)) * 10) / 10;
+    const record: Stat = { seconds: sec, chars, ...(elapsedTicks === undefined ? {} : { elapsedTicks }) };
     const storage = getStorage();
     if (storage) {
       try {
