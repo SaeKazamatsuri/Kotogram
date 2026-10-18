@@ -9,7 +9,8 @@ import { calculateScores, countSourceCharacters, getScoreReference, type BestRun
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
 import type { GameProgram } from "~/game/core";
-import type { StageData } from "~/composables/useStageLoader";
+import type { StageData, StageListItem } from "~/composables/useStageLoader";
+import { canPlayStage, nextStageId } from "~/stage/progression";
 import {
   defaultFailHint,
   type FailPayload,
@@ -31,6 +32,7 @@ const { stageStart, stageClear, getBestRecords, isCleared } = useStats();
 const { parseProgram } = useParser();
 
 const stage = ref<StageData | null>(null);
+const stageItems = ref<StageListItem[]>([]);
 const dict = ref<Dictionary | null>(null);
 const loading = ref(true);
 const loadError = ref<string | null>(null);
@@ -53,25 +55,11 @@ const savedName = ref("");
 const saveError = ref("");
 const rankingRefresh = ref(0);
 let pendingRunId = "";
-
-function stageIndexFromId(id: string): number | null {
-  const match = id.match(/^stage-(\d+)$/);
-  if (!match) return null;
-  const index = Number.parseInt(match[1], 10);
-  return Number.isNaN(index) ? null : index;
-}
-
-function isStageUnlocked(id: string): boolean {
-  if (typeof window === "undefined") return true;
-  const index = stageIndexFromId(id);
-  if (!index || index <= 1) return true;
-  return isCleared(`stage-${index - 1}`);
-}
+let loadRequest = 0;
 
 function goNext() {
-  if (stageId.value === "stage-1") router.push("/play/stage-2");
-  else if (stageId.value === "stage-2") router.push("/play/stage-3");
-  else router.push("/");
+  const next = nextStageId(stageId.value, stageItems.value);
+  router.push(next ? `/play/${next}` : "/");
 }
 
 function resolveHint(reason: FailReason): string {
@@ -92,36 +80,50 @@ function closeFail() {
   failInfo.value = null;
 }
 
-onMounted(async () => {
+async function loadCurrentStage() {
+  const request = ++loadRequest;
+  const id = stageId.value;
   loading.value = true;
-  unlocked.value = isStageUnlocked(stageId.value);
-  if (!unlocked.value) {
-    loading.value = false;
-    router.replace("/");
-    return;
-  }
+  stage.value = null;
+  loadError.value = null;
+  running.value = false;
+  cleared.value = false;
+  failed.value = false;
+  failInfo.value = null;
+  lastRun.value = null;
+  scoreValues.value = null;
+  program.value = undefined;
+  editorLines.value = [];
+  savedName.value = "";
+  saveError.value = "";
+  pendingRunId = "";
   try {
-    const [manifest, stageData] = await Promise.all([
-      getManifest(),
-      loadStage(stageId.value),
+    const manifest = await getManifest();
+    if (request !== loadRequest) return;
+    stageItems.value = manifest.stages;
+    unlocked.value = canPlayStage(id, manifest.stages, isCleared);
+    if (!unlocked.value) {
+      router.replace("/");
+      return;
+    }
+    const [stageData, dictionary] = await Promise.all([
+      loadStage(id),
+      loadDictionary({ version: manifest.version, ttlMs: 24 * 3600 * 1000 }),
     ]);
+    if (request !== loadRequest) return;
     stage.value = stageData;
     stageVersion.value = manifest.version ?? "unknown";
-    dict.value = await loadDictionary({
-      version: manifest.version,
-      ttlMs: 24 * 3600 * 1000,
-    });
+    dict.value = dictionary;
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "読み込みに失敗しました";
-    loadError.value = message;
-    stage.value = { goal: 800, scrollSpeed: 2.5 };
-    dict.value = { conditions: {}, actions: {} };
+    if (request !== loadRequest) return;
+    loadError.value = error instanceof Error ? error.message : "読み込みに失敗しました";
   } finally {
-    loading.value = false;
-    running.value = false;
+    if (request === loadRequest) loading.value = false;
   }
-});
+}
+
+onMounted(() => { void loadCurrentStage(); });
+
 
 function onRun() {
   const result = parseProgram(editorLines.value, dict.value ?? { conditions: {}, actions: {} });
@@ -190,9 +192,8 @@ function onFail(payload: FailPayload) {
   failed.value = true;
 }
 
-watch(stageId, (value) => {
-  unlocked.value = isStageUnlocked(value);
-  if (!unlocked.value) router.replace("/");
+watch(stageId, () => {
+  if (import.meta.client) void loadCurrentStage();
 });
 </script>
 
