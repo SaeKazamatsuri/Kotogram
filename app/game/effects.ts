@@ -1,4 +1,4 @@
-import { GAME, worldToScreenX, type GameState } from "./core.ts";
+import { GAME, type GameState } from "./core.ts";
 
 export function decorativePhase(seed: number, visualTick: number): number {
   return visualTick * 0.065 + seed * 2.39996;
