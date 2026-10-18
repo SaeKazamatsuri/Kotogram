@@ -5,11 +5,10 @@ import { validateProductionConfig } from "../scripts/preflight-production.mjs";
 
 const current = JSON.parse(readFileSync(new URL("../wrangler.api.jsonc", import.meta.url), "utf8"));
 
-test("production deploy cannot use a placeholder or development origin", () => {
-  const placeholder = validateProductionConfig(current);
-  assert.equal(placeholder.ok, false);
-  assert.ok(placeholder.problems.some((line) => line.includes("ALLOWED_ORIGIN")));
-  for (const unsafe of ["http://kotogram.school.jp", "https://configure-your-site.example", "https://localhost", "https://kotogram.school.jp/path"]) {
+test("production deploy must use the official HTTPS origin", () => {
+  const valid = validateProductionConfig(current);
+  assert.equal(valid.ok, true);
+  for (const unsafe of ["http://kotogram.sae-chan.net", "https://configure-your-site.example", "https://localhost", "https://kotogram.sae-chan.net/path", "https://unrelated.example.org"]) {
     const broken = structuredClone(current);
     broken.env.production.vars.ALLOWED_ORIGIN = unsafe;
     assert.equal(validateProductionConfig(broken).ok, false, unsafe);
@@ -18,7 +17,7 @@ test("production deploy cannot use a placeholder or development origin", () => {
 
 test("preflight checks production isolation and SQLite DO bindings", () => {
   const config = structuredClone(current);
-  config.env.production.vars.ALLOWED_ORIGIN = "https://kotogram.school.jp";
+  config.env.production.vars.ALLOWED_ORIGIN = "https://kotogram.sae-chan.net";
   assert.equal(validateProductionConfig(config).ok, true);
   config.env.production.name = config.name;
   assert.ok(validateProductionConfig(config).problems.some((msg) => msg.includes("distinct")));

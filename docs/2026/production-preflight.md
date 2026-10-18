@@ -25,3 +25,27 @@
 - 本番のドメイン/配備先の確定、Cloudflare上の実DO導通、アクセス権限。
 - 大量リクエスト時の制限と保管期間・削除方針。
 - 実機の画面倍率、日本語IME、マウス入力、オフライン→復旧の通し練習。
+
+
+## 2026年の正式な公開URL
+
+フロントエンドの正式な origin は `https://kotogram.sae-chan.net`。Workersの本番 `ALLOWED_ORIGIN` にこれを設定する。
+`NUXT_PUBLIC_RANKING_API_BASE` は実際のAPIのURLが確定してからフロントエンドに設定し、WebサイトのURLと混同しない。
+
+次のコマンドは本番に書き込みを行わず、WebサイトのHTML応答・APIのhealth・CORSヘッダーを検査する。
+
+```powershell
+$env:PRODUCTION_RANKING_API_BASE="https://実際のAPIドメイン"; npm run smoke:production
+```
+
+本番デプロイ前に `npm run preflight:production` とCIを通し、Cloudflareのアカウント・DO migration・APIルートを確認する。
+本番APIが未デプロイの場合、URLを推測して埋めない。書込み・ゲストの競合試験は別途保護された会場用ステージ・テスト条件で実施する。
+今回のコード追加はデプロイそのものではない。
+
+## 現行のCloudflare環境の確認（2026-10-19）
+
+Cloudflareの読み取り専用確認では、`sae-chan.net` ゾーンは active、`kotogram.sae-chan.net` は既存のWorker `kotogram`（production）に紐付いている。一方、ランキングAPIのWorker `kotogram-api` は未登録。現行Workerの更新日時は2026年5月3日で、このPRの内容はまだ配信されていない。
+
+フロントエンド用に `wrangler.jsonc` を追加し、`npm run generate` 後に既存Worker名 `kotogram` へ静的サイトを配信できる設定とした。SPAルートの直アクセスにも `single-page-application` を指定する。
+
+本番APIの公開URL・公開ルート・Cloudflareのworkers.dev有効化状況を確認してから `NUXT_PUBLIC_RANKING_API_BASE` を指定し、ランキングが使える状態でフロントエンドを公開すること。APIをデプロイするまで、既存Workerを誤ってAPIで上書きしない。

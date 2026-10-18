@@ -19,7 +19,7 @@
     "production": {
       "name": "kotogram-api",
       "vars": {
-        "ALLOWED_ORIGIN": "https://configure-your-site.example"
+        "ALLOWED_ORIGIN": "https://kotogram.sae-chan.net"
       },
       "durable_objects": {
         "bindings": [
