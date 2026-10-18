@@ -1,0 +1,57 @@
+{
+  "stageId": "stage-5",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-three-conditions",
+      "role": "beginner",
+      "source": "かべならじゃんぷ\nあなならじゃんぷ\nおばけならしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 746
+    },
+    {
+      "name": "short-compound-conditions",
+      "role": "short",
+      "source": "かべとあなとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 746
+    },
+    {
+      "name": "simultaneous-sensors-independent-actions",
+      "role": "regression",
+      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 746
+    },
+    {
+      "name": "fast-with-simultaneous-actions",
+      "role": "fast",
+      "source": "はしる\nかべとあなとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 574
+    },
+    {
+      "name": "jump-alone-fails-on-coincident-ghost",
+      "role": "negative",
+      "source": "かべとあなとぶ",
+      "expect": "failed",
+      "failureReason": "enemy",
+      "expectedTicks": 164
+    },
+    {
+      "name": "crouch-alone-fails-on-coincident-wall",
+      "role": "negative",
+      "source": "おばけしゃがむ\nあなとぶ",
+      "expect": "failed",
+      "failureReason": "wall",
+      "expectedTicks": 164
+    },
+    {
+      "name": "missing-hole-jump",
+      "role": "negative",
+      "source": "かべとぶ\nおばけしゃがむ",
+      "expect": "failed",
+      "failureReason": "hole"
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "stage-5",
+  "goal": 2300,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "かべと おばけの どうじこうどう",
+    "かべと あなを まとめて とぶ",
+    "おばけでは しゃがむ"
+  ],
+  "objects": [
+    {
+      "id": "combo-wall",
+      "type": "wall",
+      "position": 600
+    },
+    {
+      "id": "combo-ghost",
+      "type": "ghost",
+      "position": 600
+    },
+    {
+      "id": "solo-ghost",
+      "type": "ghost",
+      "position": 1000
+    },
+    {
+      "id": "middle-hole",
+      "type": "hole",
+      "position": 1440,
+      "width": 80
+    },
+    {
+      "id": "finish-wall",
+      "type": "wall",
+      "position": 1800
+    }
+  ],
+  "meta": {
+    "title": "とびながら しゃがんで すすもう",
+    "hint": "かべと おばけが いっしょに くるよ。じゃんぷも しゃがむも かいてみよう",
+    "failHints": {
+      "wall": "かべを こえるには じゃんぷが ひつようだよ",
+      "enemy": "おばけは じゃんぷだけだと ぶつかるよ。しゃがんでね",
+      "hole": "あなも じゃんぷして こえよう"
+    }
+  }
+}
