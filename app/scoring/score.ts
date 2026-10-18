@@ -1,7 +1,7 @@
 import { normalizeLine } from "../language/parser.ts";
 
 export const SCORING_VERSION = "2026-v1";
-export const ENGINE_VERSION = "2026-core-v1";
+export const ENGINE_VERSION = "2026-core-v2";
 export const LANGUAGE_VERSION = "2026-language-v1";
 export const SEASON_ID = "2026-festival";
 
