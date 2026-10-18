@@ -105,6 +105,19 @@ function draw() {
     }
   }
 
+  for (const coin of game.coins) {
+    if (coin.collected) continue;
+    const x = worldToScreenX(game, coin.x);
+    if (x < -GAME.coinRadius || x > GAME.width + GAME.coinRadius) continue;
+    ctx.beginPath();
+    ctx.arc(x, GAME.groundY - 34, GAME.coinRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "#facc15";
+    ctx.fill();
+    ctx.lineWidth = 3;
+    ctx.strokeStyle = "#854d0e";
+    ctx.stroke();
+  }
+
   for (const wall of game.walls) {
     const x = worldToScreenX(game, wall.x);
     if (x < -GAME.wallWidth || x > GAME.width + GAME.wallWidth) continue;
@@ -181,6 +194,15 @@ function draw() {
   ctx.fillStyle = "#0f172a";
   ctx.font = "bold 15px sans-serif";
   ctx.fillText(actionLabels[pose], 22, 34);
+
+  if (game.requiredCoins > 0) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fillRect(GAME.width - 184, 12, 170, 32);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 15px sans-serif";
+    const collected = game.coins.filter((coin) => coin.collected).length;
+    ctx.fillText("こいん " + collected + " / " + game.requiredCoins, GAME.width - 172, 34);
+  }
 
   const goalX = worldToScreenX(game, game.goalX);
   if (goalX < GAME.width && goalX + GAME.goalWidth > 0) {

@@ -33,7 +33,7 @@ test("rejects unsupported types, duplicate obstacles, NaN and invalid dimensions
   const stage = { goal: 3000, scrollSpeed: 3, objects: [
     { type: "wall", position: 600, id: "a" },
     { type: "wall", position: 600, id: "a" },
-    { type: "coin", position: 900 },
+    { type: "switch", position: 900 },
     { type: "hole", position: 1000, width: 0 },
   ] };
   const errors = validateStage("stage-example", stage);
@@ -140,4 +140,14 @@ test("all three original stages have verifiable running routes faster than walki
     const unprotected = report.cases.find((entry) => entry.name === "run-without-jump-still-fails");
     assert.equal(unprotected?.failureReason, "wall");
   }
+});
+
+test("coin schema checks required count and object identity", () => {
+  const stage = { goal: 1200, scrollSpeed: 3, requiredCoins: 2, objects: [
+    { id: "coin-a", type: "coin", position: 300 },
+    { id: "coin-b", type: "coin", position: 600 },
+  ] };
+  assert.deepEqual(validateStage("stage-coins", stage), []);
+  assert.ok(validateStage("stage-coins", { ...stage, requiredCoins: 3 }).some((issue) => issue.path === "requiredCoins"));
+  assert.ok(validateStage("stage-coins", { ...stage, requiredCoins: -1 }).some((issue) => issue.path === "requiredCoins"));
 });

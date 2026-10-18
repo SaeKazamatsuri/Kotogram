@@ -84,12 +84,14 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
   if (typeof value.id === "string" && value.id !== stageId) issues.push({ path: "id", message: "stage ID differs from manifest" });
   if (!isPositiveFinite(value.goal)) issues.push({ path: "goal", message: "goal must be finite and positive" });
   if (!isPositiveFinite(value.scrollSpeed) || value.scrollSpeed > 25) issues.push({ path: "scrollSpeed", message: "speed must be finite and in (0,25]" });
+  if (value.requiredCoins !== undefined && (!Number.isSafeInteger(value.requiredCoins) || (value.requiredCoins as number) < 0)) issues.push({ path: "requiredCoins", message: "requiredCoins must be a nonnegative integer" });
   if (value.objects !== undefined && !Array.isArray(value.objects)) issues.push({ path: "objects", message: "objects must be an array" });
   if (Array.isArray(value.objects)) {
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin"]);
+    let coinCount = 0;
     let explicitGoalCount = 0;
     let furthestObstacle = 0;
     for (const [i, obj] of value.objects.entries()) {
@@ -102,6 +104,7 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
         else if (objectIds.has(obj.id)) issues.push({ path: path + ".id", message: "duplicate object ID" });
         else objectIds.add(obj.id);
       }
+      if (obj.type === "coin") coinCount++;
       if (obj.type === "goal") {
         explicitGoalCount++;
         if (value.goal !== undefined && obj.position !== value.goal) issues.push({ path, message: "goal position disagrees with stage.goal" });
@@ -116,6 +119,7 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
         furthestObstacle = Math.max(furthestObstacle, obj.position);
       }
     }
+    if (Number.isSafeInteger(value.requiredCoins) && (value.requiredCoins as number) > coinCount) issues.push({ path: "requiredCoins", message: "requiredCoins exceeds available coins" });
     if (explicitGoalCount > 1) issues.push({ path: "objects", message: "multiple goals" });
     if (isPositiveFinite(value.goal) && value.goal < furthestObstacle + GAME.approachBase + 160) {
       issues.push({ path: "goal", message: "goal is too close to final obstacle; engine would silently move it" });

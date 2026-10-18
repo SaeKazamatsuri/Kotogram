@@ -10,11 +10,12 @@ export type GameInstruction =
 export type GameProgram = { watchers: GameRule[]; steps: GameInstruction[] };
 export type LoopFrame = { start: number; remaining: number };
 export type GameStatus = "running" | "cleared" | "failed" | "timeout";
-export type GameFailReason = "hole" | "wall" | "enemy" | "void";
+export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "void";
 
 export type GameStage = {
   goal?: number;
   scrollSpeed?: number;
+  requiredCoins?: number;
   objects?: unknown;
   walls?: unknown;
   ghosts?: unknown;
@@ -23,6 +24,7 @@ export type GameStage = {
 
 export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
+export type Coin = { id: string; x: number; collected: boolean };
 export type GameState = {
   status: GameStatus;
   failureReason?: GameFailReason;
@@ -37,6 +39,8 @@ export type GameState = {
   walls: Barrier[];
   ghosts: Barrier[];
   holes: Hole[];
+  coins: Coin[];
+  requiredCoins: number;
   goalX: number;
   program: GameRule[];
   fired: Set<string>[];
@@ -73,6 +77,8 @@ export const GAME = {
   jumpVelocity: -12.2,
   jumpCooldownTicks: 32,
   crouchDurationTicks: 26,
+  coinPickupRange: 48,
+  coinRadius: 13,
   defaultHoleWidth: 80,
   defaultGoal: 800,
 } as const;
@@ -128,14 +134,25 @@ function makeHoles(stage: GameStage): Hole[] {
   return holes.sort((a, b) => a.x - b.x);
 }
 
+function makeCoins(stage: GameStage): Coin[] {
+  return fromStage(stage, "coin")
+    .map((object, index) => ({
+      id: typeof object.id === "string" && object.id ? object.id : "coin:" + index,
+      x: object.position as number,
+      collected: false,
+    }))
+    .sort((a, b) => a.x - b.x);
+}
+
 export function createGame(stage: GameStage, program: readonly GameRule[] | GameProgram = []): GameState {
   const watchers = Array.isArray(program) ? program : (program as GameProgram).watchers;
   const steps = Array.isArray(program) ? [] : (program as GameProgram).steps;
   const walls = makeBarriers(stage, "wall", stage.walls);
   const ghosts = makeBarriers(stage, "ghost", stage.ghosts);
   const holes = makeHoles(stage);
+  const coins = makeCoins(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -153,6 +170,8 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     walls,
     ghosts,
     holes,
+    coins,
+    requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     goalX,
     program: watchers.map((rule) => ({ ...rule, conds: rule.conds ? [...rule.conds] : undefined })),
     fired: watchers.map(() => new Set<string>()),
@@ -180,7 +199,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
   const range = GAME.approachBase + game.vx * GAME.reactionFrames;
   const found = new Map<string, { id: string; x: number }>();
   for (const condition of conditions) {
-    if (condition === "coin") continue;
+    if (condition === "coin") {
+      const target = nextTarget(game.coins.filter((coin) => !coin.collected), game.px);
+      if (target && target.x - game.px <= GAME.coinPickupRange) found.set(target.id, target);
+      continue;
+    }
     const groups = condition === "ahead" ? [game.walls, game.ghosts, game.holes]
       : condition === "wall" ? [game.walls]
       : condition === "enemy" ? [game.ghosts] : [game.holes];
@@ -218,8 +241,15 @@ function acceptAction(game: GameState, action: GameAction): boolean {
     issueCrouch(game);
     return true;
   }
-  // Existing collect action remains a placeholder until item mechanics are added.
-  if (action === "collect") return true;
+  if (action === "collect") {
+    const target = game.coins.find((coin) =>
+      !coin.collected && coin.x + GAME.pad >= game.px &&
+      coin.x - game.px <= GAME.coinPickupRange
+    );
+    if (!target) return false;
+    target.collected = true;
+    return true;
+  }
   return false;
 }
 
@@ -340,7 +370,10 @@ export function stepGame(game: GameState): GameStatus {
       return game.status;
     }
   }
-  if (game.px >= game.goalX) game.status = "cleared";
+  if (game.px >= game.goalX) {
+    if (game.coins.filter((coin) => coin.collected).length < game.requiredCoins) fail(game, "coin");
+    else game.status = "cleared";
+  }
   return game.status;
 }
 
