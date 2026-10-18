@@ -8,26 +8,28 @@ export type CharacterMotion = {
   tilt: number;
   squash: number;
   blink: boolean;
+  breathe: number;
 };
 
-export function resolveCharacterMotion(game: GameState): CharacterMotion {
+export function resolveCharacterMotion(game: GameState, visualTick = game.elapsedTicks, idle = false): CharacterMotion {
   const pose = getPlayerPose(game);
   const running = pose === "running";
   const walking = pose === "walking";
-  const moving = running || walking;
-  const phase = game.elapsedTicks * (running ? 0.55 : 0.34);
+  const moving = (running || walking) && !idle;
+  const phase = visualTick * (running ? 0.55 : 0.34);
   return {
     pose,
     stride: moving ? Math.sin(phase) * (running ? 9 : 6) : 0,
     bounce: moving ? Math.abs(Math.sin(phase)) * (running ? 2.6 : 1.4) : 0,
     tilt: running ? 0.09 : pose === "jumping" ? -0.09 : pose === "crouch-jumping" ? -0.04 : 0,
     squash: pose === "crouching" || pose === "crouch-jumping" ? GAME.crouchHeight / GAME.playerHeight : 1,
-    blink: game.elapsedTicks % 167 < 3,
+    blink: visualTick % 167 < 3,
+    breathe: idle ? Math.sin(visualTick * 0.08) * 1.1 : 0,
   };
 }
 
-export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameState): void {
-  const motion = resolveCharacterMotion(game);
+export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks, idle = false): void {
+  const motion = resolveCharacterMotion(game, visualTick, idle);
   const x = GAME.playerScreenX + GAME.playerWidth / 2;
   const airborne = motion.pose === "jumping" || motion.pose === "crouch-jumping";
   ctx.save();
@@ -35,7 +37,7 @@ export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameS
   ctx.beginPath();
   ctx.ellipse(x, GAME.groundY + 2, airborne ? 14 : 19, 4, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.translate(x, game.py - motion.bounce);
+  ctx.translate(x, game.py - motion.bounce - motion.breathe);
   ctx.rotate(motion.tilt);
   ctx.scale(1, motion.squash);
 

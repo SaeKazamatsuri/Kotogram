@@ -21,19 +21,37 @@ let game: GameState = createGame(props.stage, props.program);
 let frame = 0;
 let previousTimestamp = 0;
 let accumulated = 0;
+let idleFrame = 0;
+let lastIdleDraw = 0;
 const STEP_MS = 1000 / GAME.tickRate;
 
-function draw() {
+function draw(visualTick = game.elapsedTicks) {
   const ctx = canvas.value?.getContext("2d");
   if (!ctx) return;
-  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg));
+  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg), visualTick, !props.running);
 }
 
 function stop() {
+  cancelAnimationFrame(idleFrame);
+  idleFrame = 0;
   cancelAnimationFrame(frame);
   frame = 0;
   previousTimestamp = 0;
   accumulated = 0;
+}
+
+function scheduleIdle() {
+  if (!props.running && canvas.value && !idleFrame) idleFrame = requestAnimationFrame(idleLoop);
+}
+
+function idleLoop(timestamp: number) {
+  idleFrame = 0;
+  if (props.running || !canvas.value) return;
+  if (timestamp - lastIdleDraw >= 1000 / 30) {
+    lastIdleDraw = timestamp;
+    draw(Math.floor(timestamp / STEP_MS));
+  }
+  scheduleIdle();
 }
 
 function loop(timestamp: number) {
@@ -70,13 +88,17 @@ function start() {
 
 watch(() => props.running, (running) => {
   if (running) start();
-  else stop();
+  else {
+    stop();
+    scheduleIdle();
+  }
 }, { immediate: true });
 watch(() => props.stage, () => {
   if (props.running) start();
   else {
     game = createGame(props.stage, props.program);
     draw();
+    scheduleIdle();
   }
 }, { deep: true });
 watch(() => props.program, () => {
@@ -95,6 +117,7 @@ onMounted(() => {
     canvas.value.getContext("2d")?.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   draw();
+  scheduleIdle();
 });
 
 onBeforeUnmount(stop);
