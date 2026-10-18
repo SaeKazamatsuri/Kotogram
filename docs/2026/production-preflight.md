@@ -49,3 +49,23 @@ Cloudflareの読み取り専用確認では、`sae-chan.net` ゾーンは active
 フロントエンド用に `wrangler.jsonc` を追加し、`npm run generate` 後に既存Worker名 `kotogram` へ静的サイトを配信できる設定とした。SPAルートの直アクセスにも `single-page-application` を指定する。
 
 本番APIの公開URL・公開ルート・Cloudflareのworkers.dev有効化状況を確認してから `NUXT_PUBLIC_RANKING_API_BASE` を指定し、ランキングが使える状態でフロントエンドを公開すること。APIをデプロイするまで、既存Workerを誤ってAPIで上書きしない。
+
+## Wranglerの公開URL設定について
+
+`wrangler.jsonc` では `workers_dev: true` と `preview_urls: true` を明示する。
+これは既存の配信時にWranglerがデフォルトで有効化した挙動を維持するための指定であり、予期せず公開URLを閉じたり開いたりしない。
+`https://kotogram.sae-chan.net` の独自ドメインへの配信は変更しない。
+
+今後、独自ドメインだけを公開して `workers.dev` とプレビューURLの公開を止める方針を決めた場合は、この2項目を `false` に変更する。
+その場合は既存の `workers.dev` URLが利用できなくなるので、事前にアクセス先を確認する。
+
+依存データの更新案内（baseline-browser-mapping / caniuse-lite）はこの設定とは別で、次のコマンドをローカルで実行し、`package-lock.json` の変更差分を確認してからPR化する。
+
+```powershell
+npx update-browserslist-db@latest
+npm install -D baseline-browser-mapping@latest
+npm run generate
+```
+
+Nuxtの `ssr: false` と静的生成時の通知はSPAの設計に由来するため、警告の抑制を目的にSSRを変更しない。
+Nitroの `cache-driver.js` 外部化警告は静的生成物への実影響を別途調べ、Nuxt/Nitroの依存更新は独立したPRで検証する。
