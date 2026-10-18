@@ -56,7 +56,7 @@ export class RankingClient {
   private readonly apiBase: string;
   private readonly requester: typeof fetch;
 
-  constructor(apiBase: string, requester: typeof fetch = fetch) {
+  constructor(apiBase: string, requester: typeof fetch = (input, init) => globalThis.fetch(input, init)) {
     this.apiBase = apiBase;
     this.requester = requester;
   }

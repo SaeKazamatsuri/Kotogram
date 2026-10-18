@@ -25,6 +25,15 @@ await Promise.all([waitForServer(site), waitForServer(api + "/api/health")]);
 const browser = await chromium.launch({ headless: true, args: ["--no-sandbox"] });
 const page = await browser.newPage({ viewport: { width: 1366, height: 768 } });
 page.setDefaultTimeout(20000);
+page.on("requestfailed", (request) => console.error("Request failed:", request.url(), request.failure()?.errorText));
+page.on("pageerror", (error) => console.error("Browser page error:", error.message));
+page.on("console", (message) => {
+  if (message.type() === "error") console.error("Browser console error:", message.text());
+});
+page.on("response", (response) => {
+  if (response.url().includes(":8787")) console.log("API response:", response.status(), response.url());
+});
+
 
 try {
   page.on("dialog", (dialog) => dialog.accept());
@@ -46,6 +55,21 @@ try {
   await page.getByRole("button", { name: /はじめる/ }).click();
   await page.getByText("ステージクリア！").waitFor({ timeout: 45000 });
   assert.equal(await page.getByText("このたんまつの じこベスト").count(), 1);
+
+  const browserApiHealth = await page.evaluate(async (base) => {
+    try {
+      const response = await fetch(base + "/api/health");
+      return { status: response.status, body: await response.text() };
+    } catch (error) {
+      return { error: String(error) };
+    }
+  }, api);
+  console.log("Browser API health:", JSON.stringify(browserApiHealth));
+  console.log("Browser security and crypto:", await page.evaluate(() => ({
+    secure: window.isSecureContext,
+    randomUUID: typeof crypto.randomUUID,
+    rankingConfig: window.__NUXT__?.config?.public?.rankingApiBase ?? "not exposed",
+  })));
 
   await page.getByRole("button", { name: "きろくを とうろく" }).click();
   await page.getByText(/で とうろくできたよ！/).waitFor({ timeout: 25000 });
@@ -80,7 +104,8 @@ try {
   assert.equal(storage.external, "preserved");
   for (const field of ["player", "nickname", "stats", "bests"]) assert.equal(storage[field], null);
   console.log("Chromium venue smoke passed: mouse kana, score, SQLite ranking, tabs, stage transition, reset");
-} catch (error) {
+ } catch (error) {
+  console.error("Browser screen:", (await page.locator("body").innerText().catch(() => "")).slice(-3000));
   await mkdir("test-artifacts", { recursive: true });
   await page.screenshot({ path: "test-artifacts/browser-failure.png", fullPage: true }).catch(() => {});
   throw error;
