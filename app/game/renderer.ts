@@ -1,10 +1,11 @@
 import { GAME, worldToScreenX, type GameState } from "./core.ts";
 import { drawHoles, drawWorldObjects, drawFinish } from "./obstacles.ts";
+import { drawAmbientEffects, drawSpeedTrail, drawResultEffects } from "./effects.ts";
 import { drawAnimatedCharacter } from "./character.ts";
 import { getPlayerPose, type PlayerPose } from "./visuals.ts";
 import { layerX, type ScenePalette } from "./scenery.ts";
 
-export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette): void {
+export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false): void {
   ctx.clearRect(0, 0, GAME.width, GAME.height);
 
   const background = ctx.createLinearGradient(0, 0, 0, GAME.height);
@@ -30,7 +31,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   }
 
   for (let i = 0; i < 6; i++) {
-    const x = layerX(i, game.px, 172, 0.11, GAME.width) - 50;
+    const x = layerX(i, game.px + visualTick * 0.25, 172, 0.11, GAME.width) - 50;
     const y = 62 + (i % 3) * 36;
     ctx.fillStyle = palette.cloud;
     ctx.beginPath();
@@ -39,6 +40,8 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.ellipse(x + 24, y + 5, 29, 11, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  drawAmbientEffects(ctx, game, visualTick);
 
   ctx.fillStyle = palette.farHill;
   ctx.beginPath();
@@ -101,8 +104,9 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.fillText("2つ!", x + 2, GAME.groundY - GAME.ghostHeight - GAME.ghostClearance - 12);
   }
 
+  drawSpeedTrail(ctx, game, visualTick, idle);
   const pose: PlayerPose = getPlayerPose(game);
-  drawAnimatedCharacter(ctx, game);
+  drawAnimatedCharacter(ctx, game, visualTick, idle);
 
   const actionLabels: Record<PlayerPose, string> = {
     walking: "あるく",
@@ -127,5 +131,6 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   }
 
   drawFinish(ctx, game);
+  drawResultEffects(ctx, game, visualTick);
 }
 
