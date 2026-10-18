@@ -40,16 +40,13 @@ export type StageData = {
 export function useStageLoader() {
   const { get } = useAssetJson();
   const manifestPath = "/stages/manifest.json";
-  let manifestCache: StageManifest | null = null;
+  const stageCacheTtlMs = 300000;
 
   async function getManifest(): Promise<StageManifest> {
-    if (manifestCache) return manifestCache;
     try {
-      const manifest = await get<StageManifest>(manifestPath);
-      manifestCache = manifest;
-      return manifest;
+      return await get<StageManifest>(manifestPath, { ttlMs: stageCacheTtlMs });
     } catch {
-      manifestCache = {
+      return {
         version: "fallback",
         stages: [
           {
@@ -69,7 +66,6 @@ export function useStageLoader() {
           },
         ],
       };
-      return manifestCache;
     }
   }
 
@@ -83,7 +79,7 @@ export function useStageLoader() {
     const item = manifest.stages.find((stage) => stage.id === id);
     if (!item) throw new Error("ステージが みつからなかったよ");
     try {
-      return await get<StageData>(item.file, { version: manifest.version });
+      return await get<StageData>(item.file, { version: manifest.version, ttlMs: stageCacheTtlMs });
     } catch {
       throw new Error("ステージを よみこめなかったよ。ホームから もういちど ためしてね");
     }
