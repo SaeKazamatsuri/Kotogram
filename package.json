@@ -13,7 +13,10 @@
     "test:language": "node --experimental-strip-types --test tests/language.test.mjs",
     "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "test:stage": "node --experimental-strip-types --test tests/stage-validator.test.mjs",
-    "validate:stages": "node --experimental-strip-types scripts/validate-stages.mjs"
+    "validate:stages": "node --experimental-strip-types scripts/validate-stages.mjs",
+    "dev:api": "wrangler dev --config wrangler.api.jsonc",
+    "deploy:api": "wrangler deploy --config wrangler.api.jsonc --env production",
+    "deploy:api:dev": "wrangler deploy --config wrangler.api.jsonc"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",

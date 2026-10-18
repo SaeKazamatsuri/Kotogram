@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "kotogram-api-dev",
+  "main": "worker/index.mjs",
+  "compatibility_date": "2026-10-18",
+  "vars": {
+    "ALLOWED_ORIGIN": "http://localhost:3000"
+  },
+  "durable_objects": {
+    "bindings": [
+      { "name": "RANKING", "class_name": "StageRanking" },
+      { "name": "COUNTER", "class_name": "GuestCounter" }
+    ]
+  },
+  "migrations": [
+    { "tag": "v1", "new_sqlite_classes": ["StageRanking", "GuestCounter"] }
+  ],
+  "env": {
+    "production": {
+      "name": "kotogram-api",
+      "vars": {
+        "ALLOWED_ORIGIN": "https://configure-your-site.example"
+      },
+      "durable_objects": {
+        "bindings": [
+          { "name": "RANKING", "class_name": "StageRanking" },
+          { "name": "COUNTER", "class_name": "GuestCounter" }
+        ]
+      },
+      "migrations": [
+        { "tag": "v1", "new_sqlite_classes": ["StageRanking", "GuestCounter"] }
+      ]
+    }
+  }
+}
