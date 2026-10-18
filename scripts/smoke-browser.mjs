@@ -125,7 +125,7 @@ try {
   const guest = await page.locator("p").filter({ hasText: /ゲスト\d+.*とうろくできたよ/ }).first().innerText();
   assert.match(guest, /ゲスト\d+/);
   await page.getByRole("button", { name: "ランキングを 見る" }).click();
-  await page.getByText("ランキング").waitFor();
+  await page.getByRole("heading", { name: "ランキング", exact: true }).waitFor();
   const tabs = page.getByRole("group", { name: "ランキングのしゅるい" });
   for (const name of ["文字数", "合計", "タイム"]) {
     const tab = tabs.getByRole("button", { name });
