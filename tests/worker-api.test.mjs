@@ -6,6 +6,7 @@ import { ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID } from "..
 import manifest from "../public/stages/manifest.json" with { type: "json" };
 import stage4 from "../public/stages/stage-4.json" with { type: "json" };
 import stage5 from "../public/stages/stage-5.json" with { type: "json" };
+import stage6 from "../public/stages/stage-6.json" with { type: "json" };
 import { analyzeProgram } from "../app/language/parser.ts";
 import { createGame, runToCompletion } from "../app/game/core.ts";
 
@@ -98,6 +99,7 @@ test("every publicly listed stage has a matching replay configuration", () => {
   for (const [id, stage, source] of [
     ["stage-4", stage4, "かべとぶ\nおばけしゃがむ"],
     ["stage-5", stage5, "かべとあなとぶ\nおばけしゃがむ"],
+    ["stage-6", stage6, "こいんとる\nかべとぶ"],
   ]) {
     const run = runToCompletion(createGame(stage, analyzeProgram(source).program));
     assert.equal(run.status, "cleared");

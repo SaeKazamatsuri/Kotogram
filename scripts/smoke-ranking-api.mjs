@@ -110,6 +110,10 @@ assert.equal(overall.some((entry) => entry.runId === aFirst.runId), true);
 assert.equal(overall.some((entry) => entry.runId === aFaster.runId), false);
 assert.equal(time.some((entry) => "source" in entry || "playerId" in entry), false);
 
+const coinRun = { ...run(randomUUID(), "こいんとる\nかべとぶ", 512), stageId: "stage-6" };
+assert.equal((await post(coinRun)).status, 201);
+assert.equal((await post({ ...coinRun, runId: randomUUID(), elapsedTicks: 511 })).status, 400);
+
 const blocked = await fetch(base + "/api/health", { headers: { Origin: "https://not-allowed.example" } });
 assert.equal(blocked.status, 403);
 

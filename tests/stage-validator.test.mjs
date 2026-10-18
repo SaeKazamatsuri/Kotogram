@@ -151,3 +151,11 @@ test("coin schema checks required count and object identity", () => {
   assert.ok(validateStage("stage-coins", { ...stage, requiredCoins: 3 }).some((issue) => issue.path === "requiredCoins"));
   assert.ok(validateStage("stage-coins", { ...stage, requiredCoins: -1 }).some((issue) => issue.path === "requiredCoins"));
 });
+
+test("stage 6 requires both coins, supports short source and improves speed", () => {
+  const report = validateStageCases("stage-6", read("public/stages/stage-6.json"), read("stage-checks/stage-6.json"));
+  assert.equal(report.pass, true, JSON.stringify(report));
+  assert.equal(report.bestKnown.ticks, 394);
+  assert.equal(report.bestKnown.characters, 9);
+  assert.equal(report.cases.find((entry) => entry.name === "missing-coin-at-goal")?.failureReason, "coin");
+});

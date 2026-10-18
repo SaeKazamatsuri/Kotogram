@@ -39,8 +39,10 @@ export function candidatePrograms(): string[] {
   for (const jump of jumps) {
     for (const crouch of ["", "おばけしゃがむ"]) {
       for (const speed of ["", "はしる"]) {
-        const source = [speed, jump, crouch].filter(Boolean).join("\n");
-        if (source) programs.push(source);
+        for (const coin of ["", "こいんとる"]) {
+          const source = [speed, jump, crouch, coin].filter(Boolean).join("\n");
+          if (source) programs.push(source);
+        }
       }
     }
   }
@@ -49,7 +51,7 @@ export function candidatePrograms(): string[] {
 
 export function exploreStage(stage: GameStage, options: ExplorationLimits = {}): ExplorationReport {
   const limits: Required<ExplorationLimits> = {
-    maxCandidates: limit(options.maxCandidates, 32, 1000, "maxCandidates"),
+    maxCandidates: limit(options.maxCandidates, 64, 1000, "maxCandidates"),
     maxTicks: limit(options.maxTicks, 20000, 100000, "maxTicks"),
     maxCharacters: limit(options.maxCharacters, 100, 2000, "maxCharacters"),
     maxMs: limit(options.maxMs, 3000, 60000, "maxMs"),
