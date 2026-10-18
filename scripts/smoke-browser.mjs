@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { mkdir } from "node:fs/promises";
-import { chromium } from "playwright";
+import { createRequire } from "node:module";
+const browserRequire = createRequire(new URL("../.browser-tools/package.json", import.meta.url));
+const { chromium } = browserRequire("playwright");
 
 const site = process.env.BROWSER_SITE_BASE ?? "http://localhost:3000";
 const api = process.env.WORKER_API_BASE ?? "http://127.0.0.1:8787";

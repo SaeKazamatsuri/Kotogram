@@ -11,8 +11,8 @@ GitHub Actions browser-e2e ジョブで Node 22・Nuxt dev・Wrangler dev・Play
 ## 手元で試す
 
 1. npm ci
-2. npm install --no-save --no-package-lock playwright@1.56.1
-3. npx playwright install chromium
+2. npm install --prefix .browser-tools --no-save --no-package-lock playwright@1.56.1
+3. .browser-tools/node_modules/.bin/playwright install chromium
 4. npm run dev:api（別ターミナル）
 5. NUXT_PUBLIC_RANKING_API_BASE の値を http://127.0.0.1:8787 に設定して npm run dev
 6. npm run test:browser
