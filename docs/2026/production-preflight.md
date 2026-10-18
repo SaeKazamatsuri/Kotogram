@@ -1,51 +1,36 @@
 # 2026年 学園祭本番公開前プリフライト・運用
 
-## デプロイ直前の環境指定
+## 配備先と公開範囲
 
-1. 公開予定のフロントエンドの実URLを確定する。プライベートなプレビューURLや末尾スラッシュ付きURLではなく、厳密なHTTPS originを使用する。
-2. wrangler.api.jsonc の env.production.vars.ALLOWED_ORIGIN をその実際のoriginに変更する。現在の configure-your-site.example のままでは公開不可。
-3. npm run preflight:production を実行し、開発/本番Worker名の分離、RANKING/COUNTER binding、SQLite Durable Objects migrationsの設定を確認する。
-4. NUXT_PUBLIC_RANKING_API_BASE には実際の本番Worker URLを指定してフロントエンドをビルドする。
-5. 本番DBと開発DBの分離を確認し、npm run deploy:api を行う。実行前にCloudflareのログインと対象アカウントを確認する。
-6. 本番フロント/Workerの配備後、/api/health のJSONとCORS、実ブラウザからのテスト投稿・ランキング取得を確認する。
+- 正式なフロントエンド: `https://kotogram.sae-chan.net`。Cloudflare Custom Domain は Worker `kotogram` に接続済み。
+- `wrangler.jsonc` は `workers_dev: false` と `preview_urls: false` を明示し、次回デプロイで `workers.dev` とプレビューURLを閉じる。
+- 2026-10-19 のCloudflare確認時点ではフロントエンドWorkerの両URLはまだ有効。APIによる直接変更は権限エラーで失敗した。コードの変更だけで本番のURLは無効化されない。
+- API Worker `kotogram-api` はCloudflareに存在し、`workers.dev` とプレビューURLが有効だが、Custom Domain/Worker Route は未確認。ランキング停止を防ぐためAPIの公開URLはこのPRでは変更しない。
+- API用に独自ドメインを登録し、`NUXT_PUBLIC_RANKING_API_BASE` のビルド設定を更新し、`/api/health`・CORS・ランキングの動作を検証した後でAPIの `workers.dev` を無効化する。
 
-このプリフライトは静的な構成検査であり、Cloudflare上の権限や実DO配備状態を確認するものではない。
+## デプロイ前
+
+1. `npm ci`、`npm test`、`npm run lint`、`npm run typecheck`、`npm run validate:stages`、`npm run generate` を実行する。
+2. `npm run preflight:production` でAPIのorigin、Durable Objects、開発/本番Workerの分離を確認する。
+3. フロントエンドのデプロイ先は既存Worker `kotogram`、APIのデプロイ先は `kotogram-api`。同じWorkerに上書きしない。
+4. Cloudflareアカウント・Custom Domain・ランキングAPIのURLを確認してから、`npm run deploy` を実行する。
+5. デプロイ後、正式ドメインのステージ直アクセスとゲーム起動を確認し、フロントエンドWorkerの `workers.dev`・Preview URLs が無効であることをCloudflare APIまたはDashboardで確かめる。
+6. API側の変更は独自ドメインとフロントエンドの接続確認後に別途実施する。
 
 ## 会場PC運用
 
-- 体験の最初にホームの「つぎのひと（きろくを けす）」で前の人のデータを消去する。クラウドランキングは維持される。
-- クリア記録の送信に失敗した場合は、ページを閉じず、接続が戻ってから「きろくを とうろく」を再度押す。
-- ゲーム進行だけならネットワークが一時的に切れても続けられる場合がある。初回データ読み込みが失敗した場合は回線復帰後に再読み込みする。
-- 端末で前の人のコードやニックネームが残る場合は、その端末の公開を止めて原因を確認する。
-- 毎日の開場時に代表的なステージを1つ遊び、ランキング3タブとリセットを確認する。
-- 名前には本名・住所・連絡先を書かないように案内する。
+- 次の体験者へ渡す前にホームの「つぎのひと」でアプリ用の個人データを初期化する。クラウドランキングは維持する。
+- 記録の送信失敗時は画面を閉じずにネットワーク復帰後「きろくを とうろく」を再実行する。
+- 端末に前利用者の名前やコードが残る場合は公開を停止し原因を調べる。
+- 開場時は代表ステージの操作、ランキング3種類、リセットを点検する。
+- 名前には本名、住所、連絡先を書かないよう案内する。
 
-## 未完了の公開前作業
+## 保留する実機検証
 
-- 本番のドメイン/配備先の確定、Cloudflare上の実DO導通、アクセス権限。
-- 大量リクエスト時の制限と保管期間・削除方針。
-- 実機の画面倍率、日本語IME、マウス入力、オフライン→復旧の通し練習。
+- 本番APIのCustom Domain割当、Durable Objectsとの導通、CORS・書込み試験。
+- 大量リクエスト制限、ランキング保存期間・削除方針。
+- 実機の画面倍率・IME・マウス・オフライン復帰と学園祭リハーサル。
 
+## 警告の調査
 
-## 2026年の正式な公開URL
-
-フロントエンドの正式な origin は `https://kotogram.sae-chan.net`。Workersの本番 `ALLOWED_ORIGIN` にこれを設定する。
-`NUXT_PUBLIC_RANKING_API_BASE` は実際のAPIのURLが確定してからフロントエンドに設定し、WebサイトのURLと混同しない。
-
-次のコマンドは本番に書き込みを行わず、WebサイトのHTML応答・APIのhealth・CORSヘッダーを検査する。
-
-```powershell
-$env:PRODUCTION_RANKING_API_BASE="https://実際のAPIドメイン"; npm run smoke:production
-```
-
-本番デプロイ前に `npm run preflight:production` とCIを通し、Cloudflareのアカウント・DO migration・APIルートを確認する。
-本番APIが未デプロイの場合、URLを推測して埋めない。書込み・ゲストの競合試験は別途保護された会場用ステージ・テスト条件で実施する。
-今回のコード追加はデプロイそのものではない。
-
-## 現行のCloudflare環境の確認（2026-10-19）
-
-Cloudflareの読み取り専用確認では、`sae-chan.net` ゾーンは active、`kotogram.sae-chan.net` は既存のWorker `kotogram`（production）に紐付いている。一方、ランキングAPIのWorker `kotogram-api` は未登録。現行Workerの更新日時は2026年5月3日で、このPRの内容はまだ配信されていない。
-
-フロントエンド用に `wrangler.jsonc` を追加し、`npm run generate` 後に既存Worker名 `kotogram` へ静的サイトを配信できる設定とした。SPAルートの直アクセスにも `single-page-application` を指定する。
-
-本番APIの公開URL・公開ルート・Cloudflareのworkers.dev有効化状況を確認してから `NUXT_PUBLIC_RANKING_API_BASE` を指定し、ランキングが使える状態でフロントエンドを公開すること。APIをデプロイするまで、既存Workerを誤ってAPIで上書きしない。
+`workers_dev` と `preview_urls` の未指定警告は明示設定で対処する。ブラウザ互換データの更新はローカルで `npx update-browserslist-db@latest`、`npm install -D baseline-browser-mapping@latest` を実行し差分とビルドを検証してから別PRにする。静的SPAの構成は警告抑制のためだけにSSRへ変更しない。
