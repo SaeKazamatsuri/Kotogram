@@ -36,6 +36,10 @@ jobs:
         run: npm run typecheck
       - name: Build Nuxt app
         run: npm run build
+      - name: Generate production static frontend
+        run: npm run generate
+      - name: Verify frontend Worker bundle without deploying
+        run: npx wrangler deploy --config wrangler.jsonc --dry-run
       - name: Verify Worker bundle without deploying
         run: npx wrangler deploy --config wrangler.api.jsonc --dry-run
       - name: Test real local SQLite Durable Objects
