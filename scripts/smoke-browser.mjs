@@ -47,9 +47,9 @@ async function saveScene(page, name) {
 try {
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto(site, { waitUntil: "domcontentloaded" });
-  await page.getByRole("link", { name: "ぼうけんを はじめる" }).waitFor();
+  await page.getByRole("link", { name: "冒険を はじめる" }).waitFor();
   await saveScene(page, "title-desktop");
-  await page.getByRole("link", { name: "ぼうけんを はじめる" }).click();
+  await page.getByRole("link", { name: "冒険を はじめる" }).click();
   await page.waitForURL(/\/stages$/);
   const firstStage = page.getByRole("link", { name: /かべを とびこえよう/ });
   await firstStage.waitFor();
@@ -118,10 +118,10 @@ try {
   await page.waitForURL(/\/play\/stage-2$/);
   await editor.waitFor({ state: "visible" });
   assert.equal(await editor.inputValue(), "");
-  await page.getByRole("link", { name: /ステージ選択へ/ }).click();
+  await page.getByRole("link", { name: /ステージへ/ }).click();
   await page.getByRole("link", { name: /かべ と あな をよけよう/ }).waitFor();
 
-  await page.getByRole("button", { name: /つぎのひと/ }).click();
+  await page.getByRole("button", { name: /次の人へ/ }).click();
   await firstStage.waitFor();
   assert.equal(await page.getByRole("link", { name: /かべ と あな をよけよう/ }).count(), 0);
   const storage = await page.evaluate(() => ({
@@ -135,9 +135,9 @@ try {
   for (const field of ["player", "nickname", "stats", "bests"]) assert.equal(storage[field], null);
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await mobile.goto(site, { waitUntil: "domcontentloaded" });
-  await mobile.getByRole("link", { name: "ぼうけんを はじめる" }).waitFor();
+  await mobile.getByRole("link", { name: "冒険を はじめる" }).waitFor();
   await saveScene(mobile, "title-mobile");
-  await mobile.getByRole("link", { name: "ぼうけんを はじめる" }).click();
+  await mobile.getByRole("link", { name: "冒険を はじめる" }).click();
   await mobile.getByRole("link", { name: /かべを とびこえよう/ }).waitFor();
   await saveScene(mobile, "map-mobile");
   await mobile.getByRole("link", { name: /かべを とびこえよう/ }).click();

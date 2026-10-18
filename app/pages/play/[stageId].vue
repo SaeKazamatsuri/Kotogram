@@ -26,6 +26,7 @@ const route = useRoute();
 const router = useRouter();
 const stageId = computed(() => String(route.params.stageId || "stage-1"));
 const stageNumber = computed(() => Number(stageId.value.replace("stage-", "")) || 1);
+const hintOpen = ref(false);
 const rankingApiBase = String(useRuntimeConfig().public.rankingApiBase || "");
 const { loadStage, getManifest } = useStageLoader();
 const { loadDictionary } = useDictionary();
@@ -89,6 +90,7 @@ async function loadCurrentStage() {
   loading.value = true;
   stage.value = null;
   loadError.value = null;
+  hintOpen.value = false;
   running.value = false;
   cleared.value = false;
   failed.value = false;
@@ -207,29 +209,19 @@ watch(stageId, () => {
 </script>
 
 <template>
-  <div class="scene-enter mx-auto max-w-[1450px] pb-12">
-    <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-      <NuxtLink to="/stages" class="game-button game-button--night text-sm">← ステージ選択へ</NuxtLink>
-      <div class="flex items-center gap-3">
-        <span class="game-chip">STAGE {{ String(stageNumber).padStart(2, '0') }} / {{ stageItems.length || '—' }}</span>
-        <span class="game-chip" role="status" aria-live="polite">{{ running ? '● うごいているよ' : cleared ? '★ クリア！' : failed ? '！もういちど' : '● じゅんびOK' }}</span>
-      </div>
+  <div class="scene-enter mx-auto max-w-[1460px] pb-8">
+    <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+      <NuxtLink to="/stages" class="game-button game-button--night text-sm"><Icon name="lucide:arrow-left" class="game-icon" aria-hidden="true"/> ステージへ</NuxtLink>
+      <span class="game-chip" aria-label="ステージ番号">ステージ {{ stageNumber }} / {{ stageItems.length || '—' }}</span>
     </div>
 
-    <div class="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        <p class="game-kicker mb-2">YOUR NEXT QUEST</p>
-        <h1 class="game-heading text-3xl text-[#fff7e8] md:text-4xl">{{ stage?.meta?.title || 'ステージ ' + stageNumber }}</h1>
-      </div>
-      <p class="max-w-md text-sm font-bold leading-relaxed text-[#cbd6e8]">ひらがなで めいれいを かいて、ゴールを めざそう！</p>
-    </div>
+    <h1 class="game-screen-title mb-5">{{ stage?.meta?.title || 'ステージ ' + stageNumber }}</h1>
+    <div v-if="loading" role="status" class="game-surface p-6">読みこみ中…</div>
+    <div v-else-if="loadError" role="alert" class="game-surface-light p-6 text-[#a53148]">{{ loadError }}</div>
 
-    <div v-if="loading" role="status" class="game-panel-dark p-8">ステージを じゅんびしているよ…</div>
-    <div v-else-if="loadError" role="alert" class="game-panel bg-[#fff4e6] p-8 text-[#a63647]">{{ loadError }}</div>
-
-    <div v-else-if="stage" class="grid min-w-0 items-start gap-6 xl:grid-cols-[minmax(400px,0.95fr)_minmax(0,1.2fr)]">
-      <section class="order-2 min-w-0 space-y-5 xl:order-1" aria-label="プログラムそうさ">
-        <div class="game-panel overflow-hidden">
+    <div v-else-if="stage" class="game-surface overflow-hidden">
+      <div class="game-workspace gap-0">
+        <section class="min-w-0 border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
           <CommandEditor
             :key="stageId"
             ref="editorRef"
@@ -237,41 +229,31 @@ watch(stageId, () => {
             :dictionary="dict || undefined"
             @run="onRun"
           />
-        </div>
-        <section class="game-panel-dark p-5" aria-label="ステージのもくひょう">
-          <div class="mb-3 flex items-center gap-3">
-            <span class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#ffcd77] text-xl text-[#1e2740]" aria-hidden="true">✦</span>
-            <div><p class="text-[11px] font-black tracking-widest text-[#87e7cc]">MISSION</p><h2 class="font-black">このステージで まなぶこと</h2></div>
-          </div>
-          <ul v-if="stage.learningObjectives?.length" class="space-y-2 text-sm font-bold leading-relaxed text-[#e7e9f2]">
-            <li v-for="(objective, index) in stage.learningObjectives" :key="index" class="flex items-start gap-2"><span class="text-[#ffcd77]" aria-hidden="true">◇</span>{{ objective }}</li>
-          </ul>
-          <p v-else class="text-sm text-[#e3e9f6]">めいれいを かいて ゴールを めざそう</p>
-          <details v-if="stage.meta?.hint" class="mt-4 rounded-xl border border-[#656e90] bg-[#161f38] p-3 text-sm text-[#fff7e8]">
-            <summary class="cursor-pointer font-bold">？ ヒントを みる</summary>
-            <p class="mt-3 leading-relaxed">{{ stage.meta.hint }}</p>
-          </details>
         </section>
-      </section>
-      <section class="order-1 min-w-0 overflow-hidden rounded-[30px] border-[3px] border-[#67769a] bg-[#202b4c] shadow-[0_9px_0_#0a1022] xl:order-2" aria-label="ゲームフィールド">
-        <div class="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#49567b] bg-[#242e4c] px-5 py-3">
-          <span class="text-xs font-black tracking-[.18em] text-[#ffcd77]">WORLD VIEW</span>
-          <span class="rounded-full bg-[#131b34] px-3 py-1 text-xs font-bold text-[#e8ebf5]">{{ running ? '▶ プレイちゅう' : '▶ スタートを おしてね' }}</span>
-        </div>
-        <div class="p-2 sm:p-3">
-          <GameCanvas
-            :key="stageId"
-            :stage="stage"
-            :program="program"
-            :running="running"
-            @clear="onClear"
-            @fail="onFail"
-          />
-        </div>
-        <div class="flex items-center justify-between gap-3 border-t-2 border-[#49567b] bg-[#202a48] px-5 py-3 text-xs font-bold text-[#d6deeb]">
-          <span>★ なんどでも ためせるよ</span><span>GOAL →</span>
-        </div>
-      </section>
+        <section class="flex min-w-0 flex-col bg-[#243551]" aria-label="ゲーム画面">
+          <div class="flex min-h-14 items-center justify-between gap-3 border-b border-[#647b9b] px-5 py-3">
+            <span class="flex items-center gap-2 text-base font-black"><Icon name="lucide:monitor-play" class="game-icon text-[#aaf0d0]" aria-hidden="true"/> ゲーム画面</span>
+            <span v-if="running" role="status" class="text-sm font-black text-[#aaf0d0]">動いているよ</span>
+          </div>
+          <div class="flex-1 p-3">
+            <GameCanvas
+              :key="stageId"
+              :stage="stage"
+              :program="program"
+              :running="running"
+              @clear="onClear"
+              @fail="onFail"
+            />
+          </div>
+          <div v-if="stage.meta?.hint" class="border-t border-[#647b9b] px-4 py-3">
+            <button type="button" class="flex min-h-9 items-center gap-2 rounded-xl px-3 text-sm font-black text-[#fffaf1] hover:bg-[#425575]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen">
+              <Icon name="lucide:lightbulb" class="game-icon text-[#ffdc90]" aria-hidden="true"/> ヒント
+              <Icon :name="hintOpen ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/>
+            </button>
+            <p v-if="hintOpen" class="mt-3 rounded-xl bg-[#17263f] p-4 text-sm font-bold leading-relaxed text-white">{{ stage.meta.hint }}</p>
+          </div>
+        </section>
+      </div>
     </div>
 
     <StageFailModal v-if="failed && failInfo" :reason="failInfo.reason" :hint="failInfo.hint" @close="closeFail" />
