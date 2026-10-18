@@ -23,6 +23,20 @@
       "expect": "failed",
       "failureReason": "hole",
       "expectedTicks": 288
+    },
+    {
+      "name": "fast-run-with-watchers",
+      "role": "fast",
+      "source": "はしる\nかべとあなとぶ",
+      "expect": "cleared",
+      "expectedTicks": 756
+    },
+    {
+      "name": "run-without-jump-still-fails",
+      "role": "negative",
+      "source": "はしる",
+      "expect": "failed",
+      "failureReason": "wall"
     }
   ]
 }
