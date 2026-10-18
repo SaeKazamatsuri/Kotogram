@@ -1,7 +1,7 @@
 import {
   ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
   rankingScopeKey, selectBestRuns, type BestRuns, type ScoredRun,
-} from "../scoring/score";
+} from "../scoring/score.ts";
 
 export type Stat = { seconds: number; chars: number; elapsedTicks?: number };
 type AllStats = Record<string, Stat>;
