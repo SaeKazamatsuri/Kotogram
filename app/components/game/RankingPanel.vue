@@ -44,8 +44,8 @@ watch([kind, () => props.refresh, () => props.stageId], load);
 </script>
 
 <template>
-  <section class="mt-4 rounded-xl border border-sky-200 bg-sky-50 p-3" aria-label="ランキング">
-    <h3 class="mb-2 font-bold text-slate-800">みんなの ランキング</h3>
+  <section class="mt-4 rounded-2xl border-2 border-[#aeb9d1] bg-[#f5f4ff] p-4" aria-label="ランキング">
+    <h3 class="mb-3 text-lg font-black text-[#2e3b57]">みんなの ランキング</h3>
     <div class="mb-3 grid grid-cols-3 gap-1" role="group" aria-label="ランキングのしゅるい">
       <button
         v-for="tab in [
@@ -55,20 +55,20 @@ watch([kind, () => props.refresh, () => props.stageId], load);
         ]"
         :key="tab.type"
         type="button"
-        class="rounded-lg border px-2 py-2 text-sm"
-        :class="kind === tab.type ? 'border-sky-600 bg-sky-200' : 'border-sky-200 bg-white'"
+        class="rounded-xl border-2 px-2 py-3 text-sm font-bold"
+        :class="kind === tab.type ? 'border-[#4c6a70] bg-[#b6f0d8]' : 'border-[#b2b9ca] bg-white'"
         :aria-pressed="kind === tab.type"
         @click="kind = tab.type as RankingKind"
       >{{ tab.text }}</button>
     </div>
     <p v-if="loading" role="status" class="text-sm">よみこみちゅう…</p>
-    <p v-else-if="error" role="alert" class="text-sm text-rose-700">ランキングが よめないよ。あとで ためしてね。</p>
-    <p v-else-if="rows.length === 0" class="text-sm text-slate-700">まだ きろくが ないよ。</p>
+    <p v-else-if="error" role="alert" class="text-sm font-bold text-[#b23350]">ランキングが よめないよ。あとで ためしてね。</p>
+    <p v-else-if="rows.length === 0" class="text-sm text-[#4a536b]">まだ きろくが ないよ。</p>
     <div v-else class="max-h-52 overflow-auto">
-      <table class="w-full text-sm">
+      <table class="w-full text-sm text-[#2e3b57]">
         <thead><tr class="text-left"><th class="p-2">じゅんい</th><th class="p-2">なまえ</th><th class="p-2">とくてん</th></tr></thead>
         <tbody>
-          <tr v-for="row in rows" :key="row.runId" class="border-t border-sky-200">
+          <tr v-for="row in rows" :key="row.runId" class="border-t border-[#bdc4d6]">
             <td class="p-2">{{ row.rank }}</td>
             <td class="p-2 break-all">{{ row.nickname }}</td>
             <td class="p-2 whitespace-nowrap">{{ displayScore(row) }}</td>
@@ -76,6 +76,6 @@ watch([kind, () => props.refresh, () => props.stageId], load);
         </tbody>
       </table>
     </div>
-    <button type="button" class="mt-2 rounded-lg border border-sky-300 bg-white px-3 py-2 text-sm" @click="load">もういちど よむ</button>
+    <button type="button" class="game-button game-button--ghost mt-3 text-sm" @click="load">もういちど よむ</button>
   </section>
 </template>
