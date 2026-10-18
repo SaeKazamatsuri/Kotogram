@@ -1,0 +1,28 @@
+{
+  "stageId": "stage-3",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-three-rules",
+      "role": "beginner",
+      "source": "かべならじゃんぷ\nあなならじゃんぷ\nおばけならしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 1434
+    },
+    {
+      "name": "short-or-plus-ghost",
+      "role": "short",
+      "source": "かべとあなとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 1434
+    },
+    {
+      "name": "missing-crouch",
+      "role": "negative",
+      "source": "かべとあなとぶ",
+      "expect": "failed",
+      "failureReason": "enemy",
+      "expectedTicks": 223
+    }
+  ]
+}

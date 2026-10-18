@@ -1,0 +1,28 @@
+{
+  "stageId": "stage-1",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-explicit",
+      "role": "beginner",
+      "source": "まえにかべがあったらじゃんぷ",
+      "expect": "cleared",
+      "expectedTicks": 712
+    },
+    {
+      "name": "short-conditional",
+      "role": "short",
+      "source": "かべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 712
+    },
+    {
+      "name": "missing-jump",
+      "role": "negative",
+      "source": "おばけしゃがむ",
+      "expect": "failed",
+      "failureReason": "wall",
+      "expectedTicks": 164
+    }
+  ]
+}

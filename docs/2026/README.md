@@ -33,6 +33,7 @@
 | [ハイブリッドInterpreter](interpreter-runtime.md) | 継続監視と逐次命令、複数行・入れ子の繰り返しの実行仕様 |
 | [スコアとランキング](scoring-ranking.md) | 1000点基準、ランキング、ゲスト番号、記録 |
 | [ステージとレベルデザイン](stages-and-validation.md) | JSONモデル、教育設計、ギミック、探索 / 自動検証 |
+| [ステージ検証CLI](stage-validation-cli.md) | 既存3ステージの基準解法、検証コマンド、検証項目と出力 |
 | [UI・学園祭運用](ux-event-operations.md) | ソフトキーボード、画面遷移、共用端末、非対象事項 |
 | [システム構成・API](architecture-data.md) | Nuxt、Workers、Durable Objects、API、データ設計 |
 | [テストと品質](quality-testing.md) | テスト戦略、決定性、CI、受入・運用試験 |

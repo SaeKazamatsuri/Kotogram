@@ -1,0 +1,20 @@
+name: Stage validation
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  validate-stages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      # Headless tests only use built-in Node modules and TypeScript stripping.
+      # No npm install is required here.
+      - name: Run game and parser regression tests
+        run: npm test
+      - name: Validate all published stages
+        run: npm run validate:stages
