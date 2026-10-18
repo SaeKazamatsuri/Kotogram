@@ -184,3 +184,14 @@ test("stage 7 requires switches before doors and jump after opening", () => {
   assert.equal(report.bestKnown.characters, 10);
   assert.equal(report.cases.find((item) => item.name === "count-limited-switch")?.failureReason, "door");
 });
+
+test("stage learning objectives must be meaningful and bounded", () => {
+  const source = { goal: 800, scrollSpeed: 3 };
+  assert.deepEqual(validateStage("stage-learning", { ...source, learningObjectives: ["かべを とぶ"] }), []);
+  assert.ok(validateStage("stage-learning", { ...source, learningObjectives: [""] })
+    .some((issue) => issue.path === "learningObjectives"));
+  assert.ok(validateStage("stage-learning", { ...source, learningObjectives: "ひらがな" })
+    .some((issue) => issue.path === "learningObjectives"));
+  assert.ok(validateStage("stage-learning", { ...source, learningObjectives: Array(6).fill("とぶ") })
+    .some((issue) => issue.path === "learningObjectives"));
+});

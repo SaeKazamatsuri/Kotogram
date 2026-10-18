@@ -84,6 +84,11 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
   if (typeof value.id === "string" && value.id !== stageId) issues.push({ path: "id", message: "stage ID differs from manifest" });
   if (!isPositiveFinite(value.goal)) issues.push({ path: "goal", message: "goal must be finite and positive" });
   if (!isPositiveFinite(value.scrollSpeed) || value.scrollSpeed > 25) issues.push({ path: "scrollSpeed", message: "speed must be finite and in (0,25]" });
+  if (value.learningObjectives !== undefined && (
+    !Array.isArray(value.learningObjectives) ||
+    value.learningObjectives.length > 5 ||
+    value.learningObjectives.some((item: unknown) => typeof item !== "string" || !item.trim() || item.length > 100)
+  )) issues.push({ path: "learningObjectives", message: "provide up to five short learning objectives" });
   if (value.requiredCoins !== undefined && (!Number.isSafeInteger(value.requiredCoins) || (value.requiredCoins as number) < 0)) issues.push({ path: "requiredCoins", message: "requiredCoins must be a nonnegative integer" });
   if (value.objects !== undefined && !Array.isArray(value.objects)) issues.push({ path: "objects", message: "objects must be an array" });
   if (Array.isArray(value.objects)) {

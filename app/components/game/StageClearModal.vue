@@ -7,6 +7,7 @@ defineProps<{
   seconds: number;
   stageId: string;
   stageVersion: string;
+  hasNext: boolean;
   chars: number;
   scores?: { time: number; chars: number; overall: number } | null;
   bests?: BestRuns<ScoredRun>;
@@ -83,7 +84,7 @@ const showRanking = ref(false);
       <p v-else class="mb-3 text-sm text-slate-600">オンラインランキングは じゅんびちゅう。たんまつの きろくは のこるよ。</p>
       <RankingPanel v-if="showRanking && apiBase" :stage-id="stageId" :stage-version="stageVersion" :api-base="apiBase" :refresh="rankingRefresh ?? 0" />
       <div class="mt-4 flex flex-wrap gap-3">
-        <button class="rounded-2xl border-2 border-lime-600 bg-lime-400 hover:bg-lime-300 px-5 py-3 text-lg font-bold text-slate-900" @click="emit('next')">つぎへ</button>
+        <button class="rounded-2xl border-2 border-lime-600 bg-lime-400 hover:bg-lime-300 px-5 py-3 text-lg font-bold text-slate-900" @click="emit('next')">{{ hasNext ? "つぎへ" : "ステージえらびへ" }}</button>
         <button class="rounded-2xl border px-5 py-3 text-lg bg-white hover:bg-gray-50" @click="emit('close')">コードを なおす</button>
       </div>
     </div>
