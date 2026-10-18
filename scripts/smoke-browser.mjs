@@ -61,16 +61,16 @@ try {
   const editor = page.locator("textarea");
   await editor.waitFor({ state: "visible" });
   await saveScene(page, "play-desktop");
-  await page.getByRole("button", { name: "ひらがなキーボードを ひらく" }).click();
+  await page.getByRole("button", { name: "かな入力" }).click();
   for (const [kana, mark] of [["か", false], ["へ", true], ["と", false], ["ふ", true]]) {
     await page.getByRole("button", { name: kana + " をにゅうりょく" }).click();
     if (mark) await page.getByRole("button", { name: "゛" }).click();
   }
   assert.equal(await editor.inputValue(), "かべとぶ");
-  await page.getByRole("button", { name: /はじめる/ }).click();
+  await page.getByRole("button", { name: "動かす" }).click();
   await page.getByText("ステージクリア！").waitFor({ timeout: 45000 });
   await saveScene(page, "clear-desktop");
-  assert.equal(await page.getByText("このたんまつの じこベスト").count(), 1);
+  assert.equal(await page.getByText("自分の ベスト").count(), 1);
 
   const browserApiHealth = await page.evaluate(async (base) => {
     try {
@@ -96,25 +96,25 @@ try {
       await route.continue();
     }
   });
-  await page.getByRole("button", { name: "きろくを とうろく" }).click();
+  await page.getByRole("button", { name: "きろくを 送る" }).click();
   await page.getByText(/きろくを おくれなかったよ/).waitFor();
   assert.equal(rejectedFirstSave, true);
-  assert.equal(await page.getByText("このたんまつの じこベスト").count(), 1);
+  assert.equal(await page.getByText("自分の ベスト").count(), 1);
   await page.unroute("**/api/results");
-  await page.getByRole("button", { name: "きろくを とうろく" }).click();
+  await page.getByRole("button", { name: "きろくを 送る" }).click();
   await page.getByText(/で とうろくできたよ！/).waitFor({ timeout: 25000 });
   const guest = await page.locator("p").filter({ hasText: /ゲスト\d+.*とうろくできたよ/ }).first().innerText();
   assert.match(guest, /ゲスト\d+/);
-  await page.getByRole("button", { name: "ランキングを みる" }).click();
-  await page.getByText("みんなの ランキング").waitFor();
+  await page.getByRole("button", { name: "ランキングを 見る" }).click();
+  await page.getByRole("heading", { name: "ランキング", exact: true }).waitFor();
   const tabs = page.getByRole("group", { name: "ランキングのしゅるい" });
-  for (const name of ["もじすう", "そうごう", "タイム"]) {
+  for (const name of ["文字数", "合計", "タイム"]) {
     const tab = tabs.getByRole("button", { name });
     await tab.click();
     assert.equal(await tab.getAttribute("aria-pressed"), "true");
   }
 
-  await page.getByRole("button", { name: "つぎへ" }).click();
+  await page.getByRole("button", { name: "次へ" }).click();
   await page.waitForURL(/\/play\/stage-2$/);
   await editor.waitFor({ state: "visible" });
   assert.equal(await editor.inputValue(), "");

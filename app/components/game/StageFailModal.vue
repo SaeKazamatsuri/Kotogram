@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import {
   defaultFailHint,
   failReasonLabel,
@@ -11,6 +11,7 @@ const props = defineProps<{
   hint?: string;
 }>();
 const emit = defineEmits<{ (e: "close"): void }>();
+const hintOpen = ref(false);
 
 const message = computed(() => failReasonLabel(props.reason));
 const hintText = computed(() => {
@@ -20,19 +21,16 @@ const hintText = computed(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-[#090d23]/85 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ステージしっぱい" @click.self="emit('close')">
-    <div class="game-panel relative w-[min(560px,96vw)] border-[#fa967b] bg-[#fff7e8] p-6 text-[#27334b] sm:p-8">
-      <p class="game-kicker mb-3 text-[#ac5663]">TRY AGAIN</p>
+  <div class="fixed inset-0 z-50 grid place-items-center bg-[#090e1d]/90 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ステージしっぱい" @click.self="emit('close')">
+    <div class="game-panel w-[min(500px,96vw)] p-6 sm:p-8">
       <div class="mb-5 flex items-center gap-4">
-        <span class="flex h-20 w-20 shrink-0 items-center justify-center rounded-[24px] border-[3px] border-[#35344e] bg-[#ffaf97] text-5xl" aria-hidden="true">↶</span>
-        <div><h2 class="game-heading text-3xl text-[#a43d55]">ざんねん！</h2><p class="mt-1 text-sm font-bold text-[#645f76]">だいじょうぶ、なんどでも ためせるよ。</p></div>
+        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#ffb59f] text-[#842b40]"><Icon name="lucide:rotate-ccw" class="text-4xl" aria-hidden="true"/></div>
+        <h2 class="game-heading text-3xl text-[#962d47]">もう一度！</h2>
       </div>
-      <p class="mb-4 rounded-xl bg-[#ffe3d7] p-4 text-lg font-black text-[#723f4b]">{{ message }}</p>
-      <div class="mb-6 rounded-xl border-2 border-[#c0ceca] bg-[#edf8f0] p-4">
-        <p class="mb-2 text-xs font-black tracking-widest text-[#367660]">HINT / ヒント</p>
-        <p class="text-sm font-bold leading-relaxed text-[#2e4e4d]">{{ hintText }}</p>
-      </div>
-      <button type="button" class="game-button game-button--coral w-full text-lg" @click="emit('close')">↶ もういちど</button>
+      <p class="mb-4 rounded-xl bg-[#ffefea] p-4 text-lg font-black text-[#7d263d]">{{ message }}</p>
+      <button type="button" class="mb-3 flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-black text-[#2f5972]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen"><Icon name="lucide:lightbulb" class="game-icon" aria-hidden="true"/> ヒント <Icon :name="hintOpen ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>
+      <p v-if="hintOpen" class="mb-4 rounded-xl bg-[#eaf4ec] p-4 text-sm font-bold leading-relaxed text-[#1b5141]">{{ hintText }}</p>
+      <button type="button" class="game-button game-button--coral w-full text-lg" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
     </div>
   </div>
 </template>
