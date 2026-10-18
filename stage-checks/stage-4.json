@@ -1,0 +1,49 @@
+{
+  "stageId": "stage-4",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-four-walls-and-ghost",
+      "role": "beginner",
+      "source": "かべならじゃんぷ\nおばけならしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 806
+    },
+    {
+      "name": "short-watchers",
+      "role": "short",
+      "source": "かべとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 806
+    },
+    {
+      "name": "count-exactly-four",
+      "role": "regression",
+      "source": "かべ4かいとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 806
+    },
+    {
+      "name": "fast-run",
+      "role": "fast",
+      "source": "はしる\nかべとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 620
+    },
+    {
+      "name": "count-three-fails-at-fourth",
+      "role": "negative",
+      "source": "かべ3かいとぶ\nおばけしゃがむ",
+      "expect": "failed",
+      "failureReason": "wall",
+      "expectedTicks": 518
+    },
+    {
+      "name": "missing-crouch",
+      "role": "negative",
+      "source": "かべとぶ",
+      "expect": "failed",
+      "failureReason": "enemy"
+    }
+  ]
+}

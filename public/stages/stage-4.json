@@ -1,0 +1,45 @@
+{
+  "id": "stage-4",
+  "goal": 2480,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "かいすうを きめて とぶ",
+    "おばけが きたら しゃがむ",
+    "はしると はやさが かわる"
+  ],
+  "objects": [
+    {
+      "id": "wall-first",
+      "type": "wall",
+      "position": 520
+    },
+    {
+      "id": "wall-second",
+      "type": "wall",
+      "position": 900
+    },
+    {
+      "id": "wall-third",
+      "type": "wall",
+      "position": 1280
+    },
+    {
+      "id": "wall-fourth",
+      "type": "wall",
+      "position": 1660
+    },
+    {
+      "id": "ghost-last",
+      "type": "ghost",
+      "position": 2020
+    }
+  ],
+  "meta": {
+    "title": "4つの かべを こえて おばけも よけよう",
+    "hint": "かべは 4つあるよ。「かべ4かいとぶ」でも ぜんぶの かべを とべるよ",
+    "failHints": {
+      "wall": "なんかい とべたかな？ かべは 4つ あるよ",
+      "enemy": "おばけには「おばけしゃがむ」を つかってね"
+    }
+  }
+}
