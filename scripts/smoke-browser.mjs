@@ -34,20 +34,33 @@ page.on("response", (response) => {
   if (response.url().includes(":8787")) console.log("API response:", response.status(), response.url());
 });
 
+async function saveScene(page, name) {
+  await mkdir("test-artifacts", { recursive: true });
+  const bounds = await page.evaluate(() => ({
+    pageWidth: document.documentElement.scrollWidth,
+    viewport: window.innerWidth,
+  }));
+  assert.ok(bounds.pageWidth <= bounds.viewport + 3, name + " has horizontal overflow: " + JSON.stringify(bounds));
+  await page.screenshot({ path: "test-artifacts/ui-" + name + ".png", fullPage: true, animations: "disabled" });
+}
 
 try {
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto(site, { waitUntil: "domcontentloaded" });
+  await page.getByRole("link", { name: "ぼうけんを はじめる" }).waitFor();
+  await saveScene(page, "title-desktop");
   await page.getByRole("link", { name: "ぼうけんを はじめる" }).click();
   await page.waitForURL(/\/stages$/);
   const firstStage = page.getByRole("link", { name: /かべを とびこえよう/ });
   await firstStage.waitFor();
+  await saveScene(page, "map-desktop");
   await page.evaluate(() => localStorage.setItem("external.test.key", "preserved"));
   assert.equal(await page.getByRole("link", { name: /かべ と あな をよけよう/ }).count(), 0);
 
   await firstStage.click();
   const editor = page.locator("textarea");
   await editor.waitFor({ state: "visible" });
+  await saveScene(page, "play-desktop");
   await page.getByRole("button", { name: "ひらがなキーボードを ひらく" }).click();
   for (const [kana, mark] of [["か", false], ["へ", true], ["と", false], ["ふ", true]]) {
     await page.getByRole("button", { name: kana + " をにゅうりょく" }).click();
@@ -56,6 +69,7 @@ try {
   assert.equal(await editor.inputValue(), "かべとぶ");
   await page.getByRole("button", { name: /はじめる/ }).click();
   await page.getByText("ステージクリア！").waitFor({ timeout: 45000 });
+  await saveScene(page, "clear-desktop");
   assert.equal(await page.getByText("このたんまつの じこベスト").count(), 1);
 
   const browserApiHealth = await page.evaluate(async (base) => {
@@ -119,7 +133,18 @@ try {
   }));
   assert.equal(storage.external, "preserved");
   for (const field of ["player", "nickname", "stats", "bests"]) assert.equal(storage[field], null);
-  console.log("Chromium venue smoke passed: mouse kana, score, offline save retry, SQLite ranking, tabs, stage transition, reset");
+  const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  await mobile.goto(site, { waitUntil: "domcontentloaded" });
+  await mobile.getByRole("link", { name: "ぼうけんを はじめる" }).waitFor();
+  await saveScene(mobile, "title-mobile");
+  await mobile.getByRole("link", { name: "ぼうけんを はじめる" }).click();
+  await mobile.getByRole("link", { name: /かべを とびこえよう/ }).waitFor();
+  await saveScene(mobile, "map-mobile");
+  await mobile.getByRole("link", { name: /かべを とびこえよう/ }).click();
+  await mobile.locator("textarea").waitFor();
+  await saveScene(mobile, "play-mobile");
+  await mobile.close();
+  console.log("Chromium scene QA passed: desktop + mobile layout snapshots, kana, score, retry, SQLite leaderboard, stage routing, reset");
  } catch (error) {
   console.error("Browser screen:", (await page.locator("body").innerText().catch(() => "")).slice(-3000));
   await mkdir("test-artifacts", { recursive: true });
