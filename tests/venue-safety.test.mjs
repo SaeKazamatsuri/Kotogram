@@ -24,7 +24,7 @@ test("changing stages remounts the editor and ignores stale ranking submissions"
   assert.match(play, /<CommandEditor\s+:key="stageId"/);
   assert.match(play, /const session = sessionGeneration/);
   assert.match(play, /if \(session !== sessionGeneration\) return/);
-  assert.match(play, /if \(session === sessionGeneration\) savedName/);
+  assert.match(play, /if \(session !== sessionGeneration\) return;\s*savedName\.value/);
 });
 
 test("stage loader never substitutes a playable placeholder for unavailable assets", () => {
