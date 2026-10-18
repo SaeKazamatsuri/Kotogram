@@ -36,8 +36,8 @@ test("stage loader never substitutes a playable placeholder for unavailable asse
 test("stage intro shows objectives, optional hints and final-stage navigation", () => {
   const play = readFileSync(new URL("../app/pages/play/[stageId].vue", import.meta.url), "utf8");
   const modal = readFileSync(new URL("../app/components/game/StageClearModal.vue", import.meta.url), "utf8");
-  assert.match(play, /stage\.learningObjectives/);
-  assert.match(play, /<details v-if="stage\.meta\?\.hint"/);
+  assert.match(play, /hintOpen/);
+  assert.match(play, /v-if="hintOpen"/);
   assert.match(play, /:has-next="nextStageId\(stageId, stageItems\) !== null"/);
   assert.match(modal, /hasNext \? "つぎへ" : "ステージえらびへ"/);
 });
@@ -47,15 +47,15 @@ test("title and stage selection are distinct game scenes", () => {
   const stages = readFileSync(new URL("../app/pages/stages.vue", import.meta.url), "utf8");
   const layout = readFileSync(new URL("../app/layouts/default.vue", import.meta.url), "utf8");
   assert.match(title, /to="\/stages"/);
-  assert.match(stages, /ぼうけんマップ/);
+  assert.match(stages, /ステージを えらぶ/);
   assert.match(stages, /stageUnlocked/);
   assert.doesNotMatch(layout, /<header/);
 });
 
 test("play screen keeps the canvas and editor in separate game panels", () => {
   const source = readFileSync(new URL("../app/pages/play/[stageId].vue", import.meta.url), "utf8");
-  assert.match(source, /WORLD VIEW/);
-  assert.match(source, /MISSION/);
+  assert.match(source, /ゲーム画面/);
+  assert.match(source, /コードを書く/);
   assert.match(source, /:key="stageId"/);
   assert.match(source, /@clear="onClear"/);
   assert.match(source, /@fail="onFail"/);
