@@ -25,8 +25,8 @@ const controls: { label: string; key: SoftKey }[] = [
 </script>
 
 <template>
-  <section aria-label="ひらがなキーボード" class="rounded-xl border border-sky-200 bg-white p-2">
-    <p class="mb-2 text-sm text-slate-600">もじを おして かいてね</p>
+  <section aria-label="ひらがなキーボード" class="rounded-2xl border-2 border-[#646b89] bg-[#25304d] p-3 text-[#fff7e8]">
+    <p class="mb-3 text-sm font-bold text-[#d5e8e1]">もじを おして かいてね</p>
     <div class="overflow-x-auto pb-1" @pointerdown.prevent>
       <div class="min-w-[430px]">
         <div class="grid grid-cols-10 gap-1">
@@ -36,7 +36,7 @@ const controls: { label: string; key: SoftKey }[] = [
                 v-if="kana && kana !== '、'"
                 type="button"
                 :disabled="disabled"
-                class="h-10 rounded-lg border border-sky-200 bg-sky-50 text-lg hover:bg-sky-100 focus-visible:outline-2 focus-visible:outline-sky-600 disabled:opacity-40"
+                class="h-11 rounded-xl border-2 border-[#b7c8cb] bg-[#fff7e8] text-lg font-black text-[#25354a] shadow-[0_3px_0_#17253d] hover:bg-[#e0ffed] focus-visible:outline-2 focus-visible:outline-[#ffcd77] disabled:opacity-40"
                 :aria-label="`${kana} をにゅうりょく`"
                 @click="emit('press', { kind: 'insert', text: kana })"
               >{{ kana }}</button>
@@ -50,7 +50,7 @@ const controls: { label: string; key: SoftKey }[] = [
             :key="digit"
             type="button"
             :disabled="disabled"
-            class="h-9 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-40"
+            class="h-10 rounded-lg border border-[#8a97ac] bg-[#dae6ef] font-bold text-[#273449] hover:bg-white disabled:opacity-40"
             @click="emit('press', { kind: 'insert', text: digit })"
           >{{ digit }}</button>
         </div>
@@ -62,7 +62,7 @@ const controls: { label: string; key: SoftKey }[] = [
         :key="i"
         type="button"
         :disabled="disabled"
-        class="min-h-10 rounded-lg border border-amber-200 bg-amber-50 px-2 text-sm hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-amber-600 disabled:opacity-40"
+        class="min-h-11 rounded-xl border-2 border-[#3b495d] bg-[#ffcd77] px-2 text-sm font-black text-[#273449] hover:bg-[#ffdf9e] focus-visible:outline-2 focus-visible:outline-[#fff7e8] disabled:opacity-40"
         @pointerdown.prevent
         @click="emit('press', control.key)"
       >{{ control.label }}</button>
