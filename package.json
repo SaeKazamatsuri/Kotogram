@@ -19,7 +19,7 @@
     "deploy:api:dev": "wrangler deploy --config wrangler.api.jsonc",
     "explore:stages": "node --experimental-strip-types scripts/explore-stages.mjs",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --allowImportingTsExtensions app/game/core.ts app/game/visuals.ts app/game/character.ts app/game/renderer.ts app/language/parser.ts app/scoring/score.ts app/stage/validator.ts app/stage/progression.ts app/stage/explorer.ts app/editor/text-input.ts app/ranking/client.ts",
+    "typecheck": "tsc --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --allowImportingTsExtensions app/game/core.ts app/game/visuals.ts app/game/character.ts app/game/obstacles.ts app/game/renderer.ts app/language/parser.ts app/scoring/score.ts app/stage/validator.ts app/stage/progression.ts app/stage/explorer.ts app/editor/text-input.ts app/ranking/client.ts",
     "test:browser": "node scripts/smoke-browser.mjs",
     "test:visual": "node .browser-tools/node_modules/@playwright/test/cli.js test --config playwright.config.mjs",
     "preflight:production": "node scripts/preflight-production.mjs"
