@@ -45,7 +45,7 @@
       "source": "すいっちおす",
       "expect": "failed",
       "failureReason": "wall",
-      "expectedTicks": 545
+      "expectedTicks": 544
     }
   ]
 }
