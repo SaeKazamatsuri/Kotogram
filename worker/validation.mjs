@@ -9,6 +9,7 @@ import stage2 from "../public/stages/stage-2.json" with { type: "json" };
 import stage3 from "../public/stages/stage-3.json" with { type: "json" };
 import stage4 from "../public/stages/stage-4.json" with { type: "json" };
 import stage5 from "../public/stages/stage-5.json" with { type: "json" };
+import stage6 from "../public/stages/stage-6.json" with { type: "json" };
 
 const identity = /^[a-f0-9]{8}-[a-f0-9-]{27,50}$/i;
 const safeName = /^[^\p{Cc}\p{Cf}<>]*$/u;
@@ -18,6 +19,7 @@ const replayStages = new Map([
   ["stage-3", stage3],
   ["stage-4", stage4],
   ["stage-5", stage5],
+  ["stage-6", stage6],
 ]);
 export const replayStageIds = [...replayStages.keys()];
 const MAX_REPLAY_TICKS = 20000;

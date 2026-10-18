@@ -1,0 +1,43 @@
+{
+  "stageId": "stage-6",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-coin-wall",
+      "role": "beginner",
+      "source": "こいんならとる\nかべならじゃんぷ",
+      "expect": "cleared",
+      "expectedTicks": 512
+    },
+    {
+      "name": "short-coin-wall",
+      "role": "short",
+      "source": "こいんとる\nかべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 512
+    },
+    {
+      "name": "fast-coin-wall",
+      "role": "fast",
+      "source": "はしる\nこいんとる\nかべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 394
+    },
+    {
+      "name": "missing-coin-at-goal",
+      "role": "negative",
+      "source": "かべとぶ",
+      "expect": "failed",
+      "failureReason": "coin",
+      "expectedTicks": 512
+    },
+    {
+      "name": "missing-jump-at-wall",
+      "role": "negative",
+      "source": "こいんとる",
+      "expect": "failed",
+      "failureReason": "wall",
+      "expectedTicks": 218
+    }
+  ]
+}

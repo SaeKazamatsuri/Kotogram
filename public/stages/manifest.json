@@ -25,6 +25,11 @@
       "id": "stage-5",
       "title": "じゃんぷと しゃがむを いっしょに",
       "file": "/stages/stage-5.json"
+    },
+    {
+      "id": "stage-6",
+      "title": "こいんを あつめて ゴール",
+      "file": "/stages/stage-6.json"
     }
   ]
 }

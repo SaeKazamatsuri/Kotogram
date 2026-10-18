@@ -34,3 +34,11 @@ test("CLI produces machine-readable reports for a selected stage", () => {
   assert.equal(result.reports[0].stageId, "stage-4");
   assert.equal(result.reports[0].best.time.elapsedTicks, 620);
 });
+
+test("bounded explorer proposes a valid collection route for stage 6", () => {
+  const coins = JSON.parse(readFileSync(new URL("../public/stages/stage-6.json", import.meta.url), "utf8"));
+  const result = exploreStage(coins, { maxCandidates: 32 });
+  assert.ok(result.cleared > 0);
+  assert.ok(result.best.time?.elapsedTicks <= 512);
+  assert.match(result.best.time?.source ?? "", /こいんとる/);
+});

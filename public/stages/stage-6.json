@@ -1,0 +1,37 @@
+{
+  "id": "stage-6",
+  "goal": 1600,
+  "scrollSpeed": 3,
+  "requiredCoins": 2,
+  "learningObjectives": [
+    "こいんが きたら とる",
+    "こいんを とりながら かべを とぶ",
+    "はしると はやさが かわる"
+  ],
+  "objects": [
+    {
+      "id": "coin-first",
+      "type": "coin",
+      "position": 300
+    },
+    {
+      "id": "wall-middle",
+      "type": "wall",
+      "position": 760
+    },
+    {
+      "id": "coin-last",
+      "type": "coin",
+      "position": 1140
+    }
+  ],
+  "meta": {
+    "title": "こいんを 2まい あつめよう",
+    "bg": "sunset",
+    "hint": "「こいんとる」で あつめよう。かべは「かべとぶ」だよ",
+    "failHints": {
+      "coin": "こいんは 2まい あるよ。「こいんとる」を いれてね",
+      "wall": "かべを とびこす めいれいも かいてね"
+    }
+  }
+}
