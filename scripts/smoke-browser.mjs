@@ -71,6 +71,20 @@ try {
     rankingConfig: window.__NUXT__?.config?.public?.rankingApiBase ?? "not exposed",
   })));
 
+  let rejectedFirstSave = false;
+  await page.route("**/api/results", async (route) => {
+    if (!rejectedFirstSave) {
+      rejectedFirstSave = true;
+      await route.abort("failed");
+    } else {
+      await route.continue();
+    }
+  });
+  await page.getByRole("button", { name: "きろくを とうろく" }).click();
+  await page.getByText(/きろくを おくれなかったよ/).waitFor();
+  assert.equal(rejectedFirstSave, true);
+  assert.equal(await page.getByText("このたんまつの じこベスト").count(), 1);
+  await page.unroute("**/api/results");
   await page.getByRole("button", { name: "きろくを とうろく" }).click();
   await page.getByText(/で とうろくできたよ！/).waitFor({ timeout: 25000 });
   const guest = await page.locator("p").filter({ hasText: /ゲスト\d+.*とうろくできたよ/ }).first().innerText();
@@ -103,7 +117,7 @@ try {
   }));
   assert.equal(storage.external, "preserved");
   for (const field of ["player", "nickname", "stats", "bests"]) assert.equal(storage[field], null);
-  console.log("Chromium venue smoke passed: mouse kana, score, SQLite ranking, tabs, stage transition, reset");
+  console.log("Chromium venue smoke passed: mouse kana, score, offline save retry, SQLite ranking, tabs, stage transition, reset");
  } catch (error) {
   console.error("Browser screen:", (await page.locator("body").innerText().catch(() => "")).slice(-3000));
   await mkdir("test-artifacts", { recursive: true });
