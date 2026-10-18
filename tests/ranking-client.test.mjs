@@ -59,3 +59,26 @@ test("offline errors do not destroy client data or trigger automatic retries", a
   await assert.rejects(() => client.list(createScope("stage-1", "2025-10-26"), "time"), /ranking_api_unavailable/);
   await assert.rejects(() => new RankingClient("", async () => { throw new Error("not called"); }).list(createScope("stage-1", "v"), "time"), /not configured/);
 });
+
+test("default browser fetch keeps its global receiver", async () => {
+  const original = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = function(input, init) {
+    assert.equal(this, globalThis);
+    calls.push({ input, init });
+    return Promise.resolve(new Response(JSON.stringify({ ok: true, nickname: "ゲスト1", runId: "x", duplicate: false }), {
+      status: 201,
+      headers: { "Content-Type": "application/json" },
+    }));
+  };
+  try {
+    const client = new RankingClient("http://localhost:8787");
+    const submission = { ...createScope("stage-1", "2025-10-26"), runId: "x", playerId: "y", nickname: "", elapsedTicks: 712, charCount: 4, source: "かべとぶ" };
+    const result = await client.submit(submission);
+    assert.equal(result.nickname, "ゲスト1");
+    assert.equal(calls.length, 1);
+    assert.match(calls[0].input, /\/api\/results$/);
+  } finally {
+    globalThis.fetch = original;
+  }
+});
