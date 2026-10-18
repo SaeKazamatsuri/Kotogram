@@ -39,7 +39,7 @@ test("stage intro shows objectives, optional hints and final-stage navigation", 
   assert.match(play, /hintOpen/);
   assert.match(play, /v-if="hintOpen"/);
   assert.match(play, /:has-next="nextStageId\(stageId, stageItems\) !== null"/);
-  assert.match(modal, /hasNext \? "つぎへ" : "ステージえらびへ"/);
+  assert.match(modal, /hasNext \? '次へ' : 'ステージへ'/);
 });
 
 test("title and stage selection are distinct game scenes", () => {

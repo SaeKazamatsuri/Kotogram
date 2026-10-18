@@ -45,13 +45,13 @@ watch([kind, () => props.refresh, () => props.stageId], load);
 
 <template>
   <section class="mt-4 rounded-2xl border-2 border-[#aeb9d1] bg-[#f5f4ff] p-4" aria-label="ランキング">
-    <h3 class="mb-3 text-lg font-black text-[#2e3b57]">みんなの ランキング</h3>
+    <h3 class="mb-3 text-lg font-black text-[#2e3b57]">ランキング</h3>
     <div class="mb-3 grid grid-cols-3 gap-1" role="group" aria-label="ランキングのしゅるい">
       <button
         v-for="tab in [
           { type: 'time', text: 'タイム' },
-          { type: 'chars', text: 'もじすう' },
-          { type: 'overall', text: 'そうごう' },
+          { type: 'chars', text: '文字数' },
+          { type: 'overall', text: '合計' },
         ]"
         :key="tab.type"
         type="button"
@@ -61,12 +61,12 @@ watch([kind, () => props.refresh, () => props.stageId], load);
         @click="kind = tab.type as RankingKind"
       >{{ tab.text }}</button>
     </div>
-    <p v-if="loading" role="status" class="text-sm">よみこみちゅう…</p>
-    <p v-else-if="error" role="alert" class="text-sm font-bold text-[#b23350]">ランキングが よめないよ。あとで ためしてね。</p>
-    <p v-else-if="rows.length === 0" class="text-sm text-[#4a536b]">まだ きろくが ないよ。</p>
+    <p v-if="loading" role="status" class="text-sm">読みこみ中…</p>
+    <p v-else-if="error" role="alert" class="text-sm font-bold text-[#b23350]">読みこめませんでした</p>
+    <p v-else-if="rows.length === 0" class="text-sm text-[#4a536b]">きろくなし</p>
     <div v-else class="max-h-52 overflow-auto">
       <table class="w-full text-sm text-[#2e3b57]">
-        <thead><tr class="text-left"><th class="p-2">じゅんい</th><th class="p-2">なまえ</th><th class="p-2">とくてん</th></tr></thead>
+        <thead><tr class="text-left"><th class="p-2">順番</th><th class="p-2">名前</th><th class="p-2">点数</th></tr></thead>
         <tbody>
           <tr v-for="row in rows" :key="row.runId" class="border-t border-[#bdc4d6]">
             <td class="p-2">{{ row.rank }}</td>
@@ -76,6 +76,6 @@ watch([kind, () => props.refresh, () => props.stageId], load);
         </tbody>
       </table>
     </div>
-    <button type="button" class="game-button game-button--ghost mt-3 text-sm" @click="load">もういちど よむ</button>
+    <button type="button" class="game-button game-button--ghost mt-3 text-sm" @click="load">読み直す</button>
   </section>
 </template>
