@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from "vue";
+import { onMounted, ref } from "vue";
+import { canPlayStage } from "~/stage/progression";
 const { listStages, getManifest } = useStageLoader();
 const { getAll, reset } = useStats();
 type Item = { id: string; title: string; file: string };
@@ -8,22 +9,10 @@ const error = ref<string | null>(null);
 const stages = ref<Item[]>([]);
 const version = ref<string | undefined>();
 const stats = ref<Record<string, { seconds: number; chars: number }>>({});
-const visibleStages = computed(() =>
-  stages.value.filter((stage) => stageUnlocked(stage.id))
-);
-
-function stageIndexFromId(id: string): number | null {
-  const match = id.match(/^stage-(\d+)$/);
-  if (!match) return null;
-  const index = Number.parseInt(match[1], 10);
-  return Number.isNaN(index) ? null : index;
-}
-
 function stageUnlocked(id: string): boolean {
-  const index = stageIndexFromId(id);
-  if (!index || index <= 1) return true;
-  const prevId = `stage-${index - 1}`;
-  return typeof stats.value[prevId]?.seconds === "number";
+  return canPlayStage(id, stages.value, (previousId) =>
+    typeof stats.value[previousId]?.seconds === "number"
+  );
 }
 
 function onReset() {
@@ -68,7 +57,7 @@ onMounted(async () => {
 
     <section class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
       <NuxtLink
-        v-for="stage in visibleStages"
+        v-for="stage in stages.filter((item) => stageUnlocked(item.id))"
         :key="stage.id"
         :to="`/play/${stage.id}`"
         class="block rounded-2xl border border-amber-200 bg-amber-50 hover:bg-amber-100 p-5 transition"
@@ -76,6 +65,15 @@ onMounted(async () => {
         <h2 class="font-bold text-slate-800">{{ stage.title }}</h2>
         <p class="text-xs text-slate-600">ID: {{ stage.id }}</p>
       </NuxtLink>
+      <div
+        v-for="stage in stages.filter((item) => !stageUnlocked(item.id))"
+        :key="stage.id"
+        class="rounded-2xl border border-slate-200 bg-slate-100 p-5 text-slate-500"
+        aria-disabled="true"
+      >
+        <h2 class="font-bold">{{ stage.title }}</h2>
+        <p class="mt-2 text-sm">ひとつまえの ステージを クリアすると あそべるよ</p>
+      </div>
     </section>
 
     <div v-if="version" class="mt-3 text-xs text-slate-500">
