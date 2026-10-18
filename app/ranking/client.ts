@@ -53,10 +53,13 @@ export function getOrCreatePlayerId(storage: Pick<Storage, "getItem" | "setItem"
 }
 
 export class RankingClient {
-  constructor(
-    private readonly apiBase: string,
-    private readonly requester: typeof fetch = fetch,
-  ) {}
+  private readonly apiBase: string;
+  private readonly requester: typeof fetch;
+
+  constructor(apiBase: string, requester: typeof fetch = fetch) {
+    this.apiBase = apiBase;
+    this.requester = requester;
+  }
 
   private endpoint(path: string): string {
     const trimmed = this.apiBase.trim().replace(/\/+$/, "");
