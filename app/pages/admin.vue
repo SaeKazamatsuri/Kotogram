@@ -1,21 +1,7 @@
-<script setup lang="ts">
-import { onMounted } from "vue";
-
-const { listStages } = useStageLoader();
-const { stageClear } = useStats();
-
-onMounted(async () => {
-  const stages = await listStages();
-  for (const stage of stages) {
-    stageClear(stage.id, 0);
-  }
-  await navigateTo("/", { replace: true });
-});
-</script>
-
 <template>
-  <div class="flex h-full items-center justify-center p-6 text-slate-600">
-    リダイレクトしています…
-  </div>
+  <main class="mx-auto max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 text-slate-700">
+    <h1 class="mb-3 text-xl font-bold">かんりメニューは じゅんびちゅう</h1>
+    <p class="mb-4">このページを ひらいただけでは、きろくは かわらないよ。</p>
+    <NuxtLink to="/" class="inline-block rounded-xl border border-sky-300 bg-sky-50 px-4 py-2">ステージえらびへ もどる</NuxtLink>
+  </main>
 </template>
-

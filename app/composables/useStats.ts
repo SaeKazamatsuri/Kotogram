@@ -105,7 +105,7 @@ export function useStats() {
   function reset() {
     const storage = getStorage();
     if (!storage) return;
-    for (const key of [STATS_KEY, BESTS_KEY, "kotogram.player", "kotogram.nickname", "kotogram.editor"]) {
+    for (const key of [STATS_KEY, BESTS_KEY, "kotogram.player", "kotogram.nickname", "kotogram.editor", "kotogram.ui"]) {
       try {
         storage.removeItem(key);
       } catch {}

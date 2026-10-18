@@ -27,6 +27,7 @@ function stageUnlocked(id: string): boolean {
 }
 
 function onReset() {
+  if (typeof window !== "undefined" && !window.confirm("つぎのひとの ために、きろくを けしても いい？")) return;
   reset();
   stats.value = {};
   if (typeof window !== "undefined") window.location.reload();
@@ -59,7 +60,7 @@ onMounted(async () => {
         class="self-start rounded-full border border-slate-400 px-4 py-2 text-sm text-slate-700 hover:bg-slate-100"
         @click="onReset"
       >
-        リセット
+        つぎのひと（きろくを けす）
       </button>
     </div>
     <div v-if="loading" class="text-gray-600">読み込み中…</div>
