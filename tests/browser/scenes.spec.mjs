@@ -33,3 +33,20 @@ test("ステージ画面の描画が見え、画面の横はみ出しがない",
   await mkdir("test-artifacts", { recursive: true });
   await canvas.screenshot({ path: `test-artifacts/visual-${testInfo.project.name}.png`, animations: "disabled" });
 });
+
+test("ステージの通信失敗後に画面から再読みこみできる", async ({ page }) => {
+  let failedOnce = false;
+  await page.route("**/stages/stage-1.json", async (route) => {
+    if (!failedOnce) {
+      failedOnce = true;
+      await route.abort("failed");
+      return;
+    }
+    await route.continue();
+  });
+  await page.goto("/play/stage-1");
+  await expect(page.getByRole("alert")).toContainText("ステージを読みこめませんでした");
+  await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
+  await expect(page.locator("canvas")).toBeVisible();
+  expect(failedOnce).toBe(true);
+});

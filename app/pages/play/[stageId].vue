@@ -217,7 +217,10 @@ watch(stageId, () => {
 
     <h1 class="game-screen-title mb-5">{{ stage?.meta?.title || 'ステージ ' + stageNumber }}</h1>
     <div v-if="loading" role="status" class="game-surface p-6">読みこみ中…</div>
-    <div v-else-if="loadError" role="alert" class="game-surface-light p-6 text-[#a53148]">{{ loadError }}</div>
+    <div v-else-if="loadError" role="alert" class="game-surface-light flex flex-wrap items-center justify-between gap-4 p-6 text-[#a53148]">
+      <p class="font-bold">ステージを読みこめませんでした</p>
+      <button type="button" class="game-button game-button--night" @click="loadCurrentStage">もう一度 読みこむ</button>
+    </div>
 
     <div v-else-if="stage" class="game-surface overflow-hidden">
       <div class="game-workspace gap-0">
