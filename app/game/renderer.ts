@@ -1,4 +1,5 @@
-import { GAME, isCrouching, worldToScreenX, type GameState } from "./core.ts";
+import { GAME, worldToScreenX, type GameState } from "./core.ts";
+import { drawAnimatedCharacter } from "./character.ts";
 import { getPlayerPose, type PlayerPose } from "./visuals.ts";
 import { layerX, type ScenePalette } from "./scenery.ts";
 
@@ -178,17 +179,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   }
 
   const pose: PlayerPose = getPlayerPose(game);
-  const playerHeight = isCrouching(game) ? GAME.crouchHeight : GAME.playerHeight;
-  const playerTop = game.py - playerHeight;
-  if (sprites.player) {
-    ctx.drawImage(sprites.player, GAME.playerScreenX, playerTop, GAME.playerWidth, playerHeight);
-  } else {
-    ctx.fillStyle = "#f59e0b";
-    ctx.fillRect(GAME.playerScreenX + 4, playerTop, GAME.playerWidth - 8, playerHeight);
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(GAME.playerScreenX + 13, playerTop + 10, 5, 5);
-    ctx.fillRect(GAME.playerScreenX + 26, playerTop + 10, 5, 5);
-  }
+  drawAnimatedCharacter(ctx, game);
 
   const actionLabels: Record<PlayerPose, string> = {
     walking: "あるく",
