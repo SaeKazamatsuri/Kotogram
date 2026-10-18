@@ -20,24 +20,19 @@ const hintText = computed(() => {
 </script>
 
 <template>
-  <div
-    class="fixed inset-0 bg-black/40 grid place-items-center"
-    @click.self="emit('close')"
-  >
-    <div
-      class="bg-white rounded-3xl w-[min(520px,92vw)] p-6 shadow-xl border-2 border-rose-300"
-    >
-      <h2 class="text-2xl font-extrabold text-rose-600 mb-2">ざんねん！</h2>
-      <p class="mb-4 text-lg text-slate-800">{{ message }}</p>
-      <p class="mb-6 text-sm text-slate-600 leading-relaxed">{{ hintText }}</p>
-      <div class="flex gap-3 justify-end">
-        <button
-          class="rounded-2xl border-2 border-rose-600 bg-rose-400 hover:bg-rose-300 px-5 py-3 text-lg font-bold text-slate-900"
-          @click="emit('close')"
-        >
-          もういちど
-        </button>
+  <div class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-[#090d23]/85 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ステージしっぱい" @click.self="emit('close')">
+    <div class="game-panel relative w-[min(560px,96vw)] border-[#fa967b] bg-[#fff7e8] p-6 text-[#27334b] sm:p-8">
+      <p class="game-kicker mb-3 text-[#ac5663]">TRY AGAIN</p>
+      <div class="mb-5 flex items-center gap-4">
+        <span class="flex h-20 w-20 shrink-0 items-center justify-center rounded-[24px] border-[3px] border-[#35344e] bg-[#ffaf97] text-5xl" aria-hidden="true">↶</span>
+        <div><h2 class="game-heading text-3xl text-[#a43d55]">ざんねん！</h2><p class="mt-1 text-sm font-bold text-[#645f76]">だいじょうぶ、なんどでも ためせるよ。</p></div>
       </div>
+      <p class="mb-4 rounded-xl bg-[#ffe3d7] p-4 text-lg font-black text-[#723f4b]">{{ message }}</p>
+      <div class="mb-6 rounded-xl border-2 border-[#c0ceca] bg-[#edf8f0] p-4">
+        <p class="mb-2 text-xs font-black tracking-widest text-[#367660]">HINT / ヒント</p>
+        <p class="text-sm font-bold leading-relaxed text-[#2e4e4d]">{{ hintText }}</p>
+      </div>
+      <button type="button" class="game-button game-button--coral w-full text-lg" @click="emit('close')">↶ もういちど</button>
     </div>
   </div>
 </template>

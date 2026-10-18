@@ -4,6 +4,7 @@ import type { StageData } from "~/composables/useStageLoader";
 import type { FailPayload } from "~/types/game";
 import { GAME, createGame, elapsedSeconds, isCrouching, stepGame, worldToScreenX, type GameProgram, type GameState } from "~/game/core";
 import { getPlayerPose, type PlayerPose } from "~/game/visuals";
+import { layerX, resolveScenePalette } from "~/game/scenery";
 
 const props = defineProps<{
   stage: StageData;
@@ -74,27 +75,83 @@ function draw() {
   if (!ctx) return;
   ctx.clearRect(0, 0, GAME.width, GAME.height);
 
-  const palettes = {
-    day: { sky: ["#dbeafe", "#fef3c7"], hill: "#bae6fd", ground: "#e5e7eb" },
-    sunset: { sky: ["#fcd7ba", "#fde68a"], hill: "#fdba74", ground: "#e9d5b5" },
-    twilight: { sky: ["#312e81", "#64748b"], hill: "#6d72ae", ground: "#a8abb8" },
-  } as const;
-  const palette = palettes[props.stage.meta?.bg === "sunset" ? "sunset" : props.stage.meta?.bg === "twilight" ? "twilight" : "day"];
+  const palette = resolveScenePalette(props.stage.meta?.bg);
   const background = ctx.createLinearGradient(0, 0, 0, GAME.height);
-  background.addColorStop(0, palette.sky[0]);
-  background.addColorStop(1, palette.sky[1]);
+  background.addColorStop(0, palette.skyTop);
+  background.addColorStop(1, palette.skyBottom);
   ctx.fillStyle = background;
   ctx.fillRect(0, 0, GAME.width, GAME.height);
-  ctx.fillStyle = palette.hill;
+
+  ctx.fillStyle = palette.sunGlow;
+  ctx.beginPath();
+  ctx.arc(GAME.width - 123, 88, 62, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = palette.sun;
+  ctx.beginPath();
+  ctx.arc(GAME.width - 123, 88, 34, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let i = 0; i < 12; i++) {
+    const x = layerX(i, game.px, 63, 0.06, GAME.width);
+    const y = 24 + (i * 47) % 125;
+    ctx.fillStyle = palette.stars;
+    ctx.fillRect(x, y, 3 + i % 2, 3 + i % 2);
+  }
+
+  for (let i = 0; i < 6; i++) {
+    const x = layerX(i, game.px, 172, 0.11, GAME.width) - 50;
+    const y = 62 + (i % 3) * 36;
+    ctx.fillStyle = palette.cloud;
+    ctx.beginPath();
+    ctx.ellipse(x, y, 42, 13, 0, 0, Math.PI * 2);
+    ctx.ellipse(x - 20, y + 4, 28, 11, 0, 0, Math.PI * 2);
+    ctx.ellipse(x + 24, y + 5, 29, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  ctx.fillStyle = palette.farHill;
   ctx.beginPath();
   ctx.moveTo(0, GAME.groundY);
-  for (let x = 0; x <= GAME.width; x += 24) {
-    ctx.lineTo(x, GAME.groundY - 30 + Math.sin((x + game.px * 0.12) / 120) * 15);
+  for (let x = 0; x <= GAME.width + 24; x += 16) {
+    ctx.lineTo(x, GAME.groundY - 70 + Math.sin((x + game.px * 0.12) / 86) * 21 + Math.cos((x + game.px * 0.08) / 41) * 9);
   }
   ctx.lineTo(GAME.width, GAME.groundY);
   ctx.fill();
+
+  ctx.fillStyle = palette.nearHill;
+  ctx.beginPath();
+  ctx.moveTo(0, GAME.groundY);
+  for (let x = 0; x <= GAME.width + 16; x += 12) {
+    ctx.lineTo(x, GAME.groundY - 33 + Math.sin((x + game.px * 0.24) / 77) * 14);
+  }
+  ctx.lineTo(GAME.width, GAME.groundY);
+  ctx.fill();
+
+  for (let i = 0; i < 8; i++) {
+    const x = layerX(i, game.px, 126, 0.28, GAME.width);
+    const height = 27 + (i % 4) * 13;
+    const base = GAME.groundY - 6;
+    ctx.fillStyle = palette.trunk;
+    ctx.fillRect(x - 3, base - height + 14, 7, height);
+    ctx.fillStyle = palette.trees;
+    ctx.beginPath();
+    ctx.moveTo(x, base - height - 14);
+    ctx.lineTo(x - 17, base - height + 19);
+    ctx.lineTo(x + 17, base - height + 19);
+    ctx.closePath();
+    ctx.fill();
+  }
+
   ctx.fillStyle = palette.ground;
   ctx.fillRect(0, GAME.groundY, GAME.width, GAME.groundHeight);
+  ctx.fillStyle = palette.grass;
+  ctx.fillRect(0, GAME.groundY, GAME.width, 12);
+  ctx.fillStyle = palette.groundTile;
+  for (let i = 0; i < 17; i++) {
+    const x = layerX(i, game.px, 52, 1, GAME.width) - 14;
+    ctx.fillRect(x, GAME.groundY + 23, 31, 5);
+    ctx.fillRect(x + 20, GAME.groundY + 50, 25, 5);
+  }
 
   for (const hole of game.holes) {
     const left = Math.max(0, worldToScreenX(game, hole.x));
