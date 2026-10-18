@@ -17,7 +17,7 @@ test("2025 stage manifest and all 3 stage JSON files are schema-valid", () => {
   assert.deepEqual(validateManifest(manifest), []);
   for (const { id, file } of manifest.stages) {
     assert.deepEqual(validateStage(id, read("public" + file)), [], id);
-    assert.deepEqual(validateChecks(id, read(`stage-checks/${id}.json⟧)), [], id);
+    assert.deepEqual(validateChecks(id, read(`stage-checks/${id}.json`)), [], id);
   }
 });
 
@@ -65,7 +65,7 @@ test("invalid references and duplicate test case names are reported", () => {
 
 test("all registered stage cases pass with frozen tick snapshots", () => {
   for (const { id, file } of manifest.stages) {
-    const report = validateStageCases(id, read("public" + file), read(`stage-checks/${id}.json⟧));
+    const report = validateStageCases(id, read("public" + file), read(`stage-checks/${id}.json`));
     assert.equal(report.pass, true, JSON.stringify(report.issues));
     assert.ok(report.cases.some((entry) => entry.role === "beginner" && entry.outcome === "cleared"));
     assert.ok(report.cases.some((entry) => entry.role === "negative" && entry.outcome === "failed"));

@@ -59,7 +59,7 @@ export function validateManifest(value: unknown): ValidationIssue[] {
   const ids = new Set<string>();
   const paths = new Set<string>();
   for (const [i, entry] of value.stages.entries()) {
-    const root = `manifest.stages[${i}]⟧;
+    const root = `manifest.stages[${i}]`;
     if (!isObject(entry)) { issues.push({ path: root, message: "stage descriptor required" }); continue; }
     if (typeof entry.id !== "string" || !stageIdPattern.test(entry.id)) issues.push({ path: root + ".id", message: "invalid stage ID" });
     else if (ids.has(entry.id)) issues.push({ path: root + ".id", message: "duplicate stage ID" });
@@ -69,7 +69,7 @@ export function validateManifest(value: unknown): ValidationIssue[] {
       issues.push({ path: root + ".file", message: "file must be an absolute /stages/stage-*.json path" });
     } else if (paths.has(entry.file)) issues.push({ path: root + ".file", message: "duplicate filename" });
     else paths.add(entry.file);
-    if (typeof entry.id === "string" && typeof entry.file === "string" && entry.file !== `/stages/${entry.id}.json⟧) {
+    if (typeof entry.id === "string" && typeof entry.file === "string" && entry.file !== `/stages/${entry.id}.json`) {
       issues.push({ path: root + ".file", message: "filename must match stage ID" });
     }
   }
@@ -92,7 +92,7 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
     let explicitGoalCount = 0;
     let furthestObstacle = 0;
     for (const [i, obj] of value.objects.entries()) {
-      const path = `objects[${i}]⟧;
+      const path = `objects[${i}]`;
       if (!isObject(obj)) { issues.push({ path, message: "object required" }); continue; }
       if (typeof obj.type !== "string" || !knownTypes.has(obj.type)) issues.push({ path: path + ".type", message: "unsupported obstacle type" });
       if (!isNonnegativeFinite(obj.position)) issues.push({ path: path + ".position", message: "position must be finite and nonnegative" });
@@ -109,7 +109,7 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
         if (obj.width !== undefined && !isPositiveFinite(obj.width)) issues.push({ path: path + ".width", message: "hole width must be positive" });
       } else if (obj.width !== undefined) issues.push({ path: path + ".width", message: "width is only supported for holes" });
       if (isNonnegativeFinite(obj.position) && obj.type !== "goal" && typeof obj.type === "string" && knownTypes.has(obj.type)) {
-        const positionKey = `${obj.type}@${obj.position}⟧;
+        const positionKey = `${obj.type}@${obj.position}`;
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
         furthestObstacle = Math.max(furthestObstacle, obj.position);
@@ -139,7 +139,7 @@ export function validateChecks(stageId: string, value: unknown): ValidationIssue
   const names = new Set<string>();
   const roles = new Set(["beginner", "short", "fast", "negative", "regression"]);
   for (const [i, entry] of value.cases.entries()) {
-    const path = `checks.cases[${i}]⟧;
+    const path = `checks.cases[${i}]`;
     if (!isObject(entry)) { issues.push({ path, message: "test object required" }); continue; }
     if (typeof entry.name !== "string" || !entry.name.trim()) issues.push({ path: path + ".name", message: "test name required" });
     else if (names.has(entry.name)) issues.push({ path: path + ".name", message: "duplicate test name" });
@@ -167,7 +167,7 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
   for (const entry of data.cases) {
     const errors: string[] = [];
     const analysis = analyzeProgram(entry.source);
-    const diagnostics = analysis.diagnostics.map((d) => `${d.line}:${d.column} ${d.message}⟧);
+    const diagnostics = analysis.diagnostics.map((d) => `${d.line}:${d.column} ${d.message}`);
     const characters = countProgramCharacters(entry.source);
     if (characters === 0) errors.push("empty program cannot be ranked");
     let outcome: CaseResult["outcome"] = "invalid";
@@ -179,9 +179,9 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
       outcome = run.status === "running" ? "timeout" : run.status;
       elapsedTicks = run.elapsedTicks;
       failureReason = run.failureReason;
-      if (outcome !== entry.expect) errors.push(`expected ${entry.expect}, observed ${outcome}⟧);
-      if (entry.failureReason !== undefined && failureReason !== entry.failureReason) errors.push(`expected ${entry.failureReason} failure, observed ${failureReason ?? "none"}⟧);
-      if (entry.expectedTicks !== undefined && elapsedTicks !== entry.expectedTicks) errors.push(`expected ${entry.expectedTicks} ticks, observed ${elapsedTicks}⟧);
+      if (outcome !== entry.expect) errors.push(`expected ${entry.expect}, observed ${outcome}`);
+      if (entry.failureReason !== undefined && failureReason !== entry.failureReason) errors.push(`expected ${entry.failureReason} failure, observed ${failureReason ?? "none"}`);
+      if (entry.expectedTicks !== undefined && elapsedTicks !== entry.expectedTicks) errors.push(`expected ${entry.expectedTicks} ticks, observed ${elapsedTicks}`);
       const replay = runToCompletion(createGame(source, analysis.program), maxTicks);
       if (replay.status !== outcome || replay.elapsedTicks !== elapsedTicks || replay.failureReason !== failureReason) errors.push("non-deterministic replay");
     }
