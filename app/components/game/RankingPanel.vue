@@ -18,9 +18,13 @@ let generation = 0;
 
 async function load() {
   const id = ++generation;
-  if (!props.apiBase) return;
-  loading.value = true;
+  rows.value = [];
   error.value = false;
+  if (!props.apiBase) {
+    loading.value = false;
+    return;
+  }
+  loading.value = true;
   try {
     const result = await new RankingClient(props.apiBase).list(createScope(props.stageId, props.stageVersion), kind.value);
     if (id === generation) rows.value = result.rows;
@@ -40,7 +44,7 @@ function displayScore(row: RankingRow) {
 
 onMounted(load);
 onUnmounted(() => generation++);
-watch([kind, () => props.refresh, () => props.stageId], load);
+watch([kind, () => props.refresh, () => props.stageId, () => props.stageVersion, () => props.apiBase], load);
 </script>
 
 <template>
