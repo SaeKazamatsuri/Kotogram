@@ -3,37 +3,37 @@
   "stages": [
     {
       "id": "stage-1",
-      "title": "かべを とびこえよう",
+      "title": "ジャンプで かべを こえる",
       "file": "/stages/stage-1.json"
     },
     {
       "id": "stage-2",
-      "title": "かべ と あな をよけよう",
+      "title": "かべと あなを よける",
       "file": "/stages/stage-2.json"
     },
     {
       "id": "stage-3",
-      "title": "おばけ をよけよう",
+      "title": "おばけを よける",
       "file": "/stages/stage-3.json"
     },
     {
       "id": "stage-4",
-      "title": "かいすうを かぞえて とぼう",
+      "title": "回数を かぞえて とぶ",
       "file": "/stages/stage-4.json"
     },
     {
       "id": "stage-5",
-      "title": "じゃんぷと しゃがむを いっしょに",
+      "title": "ジャンプと しゃがむを 組み合わせる",
       "file": "/stages/stage-5.json"
     },
     {
       "id": "stage-6",
-      "title": "こいんを あつめて ゴール",
+      "title": "コインを 集めて ゴール",
       "file": "/stages/stage-6.json"
     },
     {
       "id": "stage-7",
-      "title": "すいっちで とびらを あけよう",
+      "title": "スイッチで とびらを 開ける",
       "file": "/stages/stage-7.json"
     }
   ]

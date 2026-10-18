@@ -1,6 +1,6 @@
 {
   "goal": 2200,
-  "scrollSpeed": 3.0,
+  "scrollSpeed": 3,
   "objects": [
     {
       "type": "wall",
@@ -16,7 +16,7 @@
     }
   ],
   "meta": {
-    "title": "じゃんぷで しょうがいを よけよう",
+    "title": "ジャンプで かべを こえる",
     "hint": "「かべ じゃんぷ」って かいてみよう",
     "failHints": {
       "wall": "かべの てまえで じゃんぷする めいれいを いれてみよう"

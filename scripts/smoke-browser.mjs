@@ -34,7 +34,26 @@ page.on("response", (response) => {
   if (response.url().includes(":8787")) console.log("API response:", response.status(), response.url());
 });
 
+
+async function assertReadableJapanese(page, scene) {
+  const result = await page.evaluate(() => {
+    const root = document.querySelector(".game-shell");
+    const body = document.body;
+    return {
+      background: root ? getComputedStyle(root).backgroundImage : "none",
+      bodyBackground: getComputedStyle(body).backgroundColor,
+      visibleText: body.innerText,
+      icons: document.querySelectorAll("svg").length,
+    };
+  });
+  assert.ok(result.background.includes("gradient"), scene + ": game background stylesheet not applied");
+  assert.notEqual(result.bodyBackground, "rgb(255, 255, 255)", scene + ": body turned white");
+  assert.ok(result.icons > 0, scene + ": Nuxt Icon symbols did not render");
+  assert.doesNotMatch(result.visibleText, /\b[A-Za-z]{2,}\b/, scene + ": contains an English label");
+}
+
 async function saveScene(page, name) {
+  await assertReadableJapanese(page, name);
   await mkdir("test-artifacts", { recursive: true });
   const bounds = await page.evaluate(() => ({
     pageWidth: document.documentElement.scrollWidth,
@@ -47,15 +66,15 @@ async function saveScene(page, name) {
 try {
   page.on("dialog", (dialog) => dialog.accept());
   await page.goto(site, { waitUntil: "domcontentloaded" });
-  await page.getByRole("link", { name: "冒険を はじめる" }).waitFor();
+  await page.getByRole("link", { name: "遊ぶ" }).waitFor();
   await saveScene(page, "title-desktop");
-  await page.getByRole("link", { name: "冒険を はじめる" }).click();
+  await page.getByRole("link", { name: "遊ぶ" }).click();
   await page.waitForURL(/\/stages$/);
-  const firstStage = page.getByRole("link", { name: /かべを とびこえよう/ });
+  const firstStage = page.getByRole("link", { name: /ジャンプで かべを こえる/ });
   await firstStage.waitFor();
   await saveScene(page, "map-desktop");
   await page.evaluate(() => localStorage.setItem("external.test.key", "preserved"));
-  assert.equal(await page.getByRole("link", { name: /かべ と あな をよけよう/ }).count(), 0);
+  assert.equal(await page.getByRole("link", { name: /かべと あなを よける/ }).count(), 0);
 
   await firstStage.click();
   const editor = page.locator("textarea");
@@ -119,11 +138,11 @@ try {
   await editor.waitFor({ state: "visible" });
   assert.equal(await editor.inputValue(), "");
   await page.getByRole("link", { name: /ステージへ/ }).click();
-  await page.getByRole("link", { name: /かべ と あな をよけよう/ }).waitFor();
+  await page.getByRole("link", { name: /かべと あなを よける/ }).waitFor();
 
   await page.getByRole("button", { name: /次の人へ/ }).click();
   await firstStage.waitFor();
-  assert.equal(await page.getByRole("link", { name: /かべ と あな をよけよう/ }).count(), 0);
+  assert.equal(await page.getByRole("link", { name: /かべと あなを よける/ }).count(), 0);
   const storage = await page.evaluate(() => ({
     external: localStorage.getItem("external.test.key"),
     player: localStorage.getItem("kotogram.player"),
@@ -135,12 +154,12 @@ try {
   for (const field of ["player", "nickname", "stats", "bests"]) assert.equal(storage[field], null);
   const mobile = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   await mobile.goto(site, { waitUntil: "domcontentloaded" });
-  await mobile.getByRole("link", { name: "冒険を はじめる" }).waitFor();
+  await mobile.getByRole("link", { name: "遊ぶ" }).waitFor();
   await saveScene(mobile, "title-mobile");
-  await mobile.getByRole("link", { name: "冒険を はじめる" }).click();
-  await mobile.getByRole("link", { name: /かべを とびこえよう/ }).waitFor();
+  await mobile.getByRole("link", { name: "遊ぶ" }).click();
+  await mobile.getByRole("link", { name: /ジャンプで かべを こえる/ }).waitFor();
   await saveScene(mobile, "map-mobile");
-  await mobile.getByRole("link", { name: /かべを とびこえよう/ }).click();
+  await mobile.getByRole("link", { name: /ジャンプで かべを こえる/ }).click();
   await mobile.locator("textarea").waitFor();
   await saveScene(mobile, "play-mobile");
   await mobile.close();

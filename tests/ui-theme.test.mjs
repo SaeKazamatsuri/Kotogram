@@ -21,3 +21,22 @@ test("Nuxt loads the game's real stylesheet and bundles icon components", () => 
   assert.match(css, /\.game-shell\s*\{/);
   assert.match(css, /\.game-workspace\s*\{/);
 });
+
+test("visible scenes omit English and stage titles use elementary kanji", () => {
+  const files = [
+    "app/pages/index.vue", "app/pages/stages.vue", "app/pages/play/[stageId].vue",
+    "app/components/editor/CommandEditor.vue", "app/components/game/StageClearModal.vue",
+    "app/components/game/StageFailModal.vue", "app/components/game/RankingPanel.vue",
+  ];
+  for (const name of files) {
+    const source = read(name);
+    for (const label of ["YOUR NEXT QUEST", "CODE CONSOLE", "WORLD VIEW", "MISSION COMPLETE", "TRY AGAIN", "YOUR SCORE", "Ctrl + Enter"]) {
+      assert.equal(source.includes(label), false, name + ": " + label);
+    }
+  }
+  const manifest = JSON.parse(read("public/stages/manifest.json"));
+  assert.equal(manifest.stages.length, 7);
+  assert.match(manifest.stages[3].title, /回数/);
+  assert.match(manifest.stages[5].title, /集めて/);
+  assert.match(manifest.stages[6].title, /開ける/);
+});
