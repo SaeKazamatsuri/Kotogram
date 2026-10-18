@@ -7,7 +7,7 @@ test("game tokens, accessible motion fallbacks and app directory class scanning 
   const css = read("app/assets/css/tailwind.css");
   const tailwind = read("tailwind.config.ts");
   const layout = read("app/layouts/default.vue");
-  assert.match(css, /--mint:\s*#81e3bd/);
+  assert.match(css, /--mint:\s*#94f0c7/);
   assert.match(css, /prefers-reduced-motion: reduce/);
   assert.match(tailwind, /\.\/app\/\*\*\/\*\.\{vue,ts\}/);
   assert.doesNotMatch(layout, /<header/);
