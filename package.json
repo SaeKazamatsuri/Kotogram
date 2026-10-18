@@ -37,6 +37,7 @@
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "baseline-browser-mapping": "^2.11.29",
     "wrangler": "^4.87.0"
   }
 }
