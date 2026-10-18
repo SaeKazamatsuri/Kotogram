@@ -176,3 +176,11 @@ test("switch and door require valid ID references and reaction room", () => {
   assert.ok(validateStage("stage-switch", { goal: 1200, scrollSpeed: 3, objects: noId })
     .some((item) => item.path.endsWith(".id")));
 });
+
+test("stage 7 requires switches before doors and jump after opening", () => {
+  const report = validateStageCases("stage-7", read("public/stages/stage-7.json"), read("stage-checks/stage-7.json"));
+  assert.equal(report.pass, true, JSON.stringify(report));
+  assert.equal(report.bestKnown.ticks, 523);
+  assert.equal(report.bestKnown.characters, 10);
+  assert.equal(report.cases.find((item) => item.name === "count-limited-switch")?.failureReason, "door");
+});

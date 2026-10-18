@@ -1,0 +1,51 @@
+{
+  "stageId": "stage-7",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-switch-walls",
+      "role": "beginner",
+      "source": "すいっちならおす\nかべならじゃんぷ",
+      "expect": "cleared",
+      "expectedTicks": 679
+    },
+    {
+      "name": "short-switch-walls",
+      "role": "short",
+      "source": "すいっちおす\nかべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 679
+    },
+    {
+      "name": "fast-switch-walls",
+      "role": "fast",
+      "source": "はしる\nすいっちおす\nかべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 523
+    },
+    {
+      "name": "missing-switch",
+      "role": "negative",
+      "source": "かべとぶ",
+      "expect": "failed",
+      "failureReason": "door",
+      "expectedTicks": 198
+    },
+    {
+      "name": "count-limited-switch",
+      "role": "negative",
+      "source": "すいっち1かいおす\nかべとぶ",
+      "expect": "failed",
+      "failureReason": "door",
+      "expectedTicks": 431
+    },
+    {
+      "name": "missing-wall-jump",
+      "role": "negative",
+      "source": "すいっちおす",
+      "expect": "failed",
+      "failureReason": "wall",
+      "expectedTicks": 545
+    }
+  ]
+}

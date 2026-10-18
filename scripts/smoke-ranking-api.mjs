@@ -114,6 +114,10 @@ const coinRun = { ...run(randomUUID(), "こいんとる\nかべとぶ", 512), st
 assert.equal((await post(coinRun)).status, 201);
 assert.equal((await post({ ...coinRun, runId: randomUUID(), elapsedTicks: 511 })).status, 400);
 
+const switchRun = { ...run(randomUUID(), "すいっちおす\nかべとぶ", 679), stageId: "stage-7" };
+assert.equal((await post(switchRun)).status, 201);
+assert.equal((await post({ ...switchRun, runId: randomUUID(), elapsedTicks: 678 })).status, 400);
+
 const blocked = await fetch(base + "/api/health", { headers: { Origin: "https://not-allowed.example" } });
 assert.equal(blocked.status, 403);
 

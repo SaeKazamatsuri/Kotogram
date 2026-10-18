@@ -35,6 +35,7 @@ const knownReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-4": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 806, characters: 11, product: 8866 },
   "stage-5": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 746, characters: 14, product: 10444 },
   "stage-6": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 512, characters: 9, product: 4608 },
+  "stage-7": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 679, characters: 10, product: 6790 },
 };
 
 export function getScoreReference(stageId: string, stageVersion: string): ScoreReference | null {
