@@ -1,5 +1,5 @@
 export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead";
-export type GameAction = "jump" | "crouch" | "collect";
+export type GameAction = "jump" | "crouch" | "collect" | "run" | "walk";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 /** Watchers are active from tick zero; the procedure advances in source order. */
 export type GameInstruction =
@@ -31,6 +31,7 @@ export type GameState = {
   py: number;
   vy: number;
   vx: number;
+  baseSpeed: number;
   crouchUntilTick: number;
   jumpReadyTick: number;
   walls: Barrier[];
@@ -67,6 +68,7 @@ export const GAME = {
   epsilon: 8,
   approachBase: 72,
   reactionFrames: 14,
+  runMultiplier: 1.3,
   gravity: 0.46,
   jumpVelocity: -12.2,
   jumpCooldownTicks: 32,
@@ -145,6 +147,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     py: GAME.groundY - GAME.epsilon,
     vy: 0,
     vx: isFiniteNumber(stage.scrollSpeed) && stage.scrollSpeed > 0 ? stage.scrollSpeed : 3,
+    baseSpeed: isFiniteNumber(stage.scrollSpeed) && stage.scrollSpeed > 0 ? stage.scrollSpeed : 3,
     crouchUntilTick: -1,
     jumpReadyTick: 0,
     walls,
@@ -202,6 +205,14 @@ function issueJump(game: GameState): boolean {
 
 /** An action is counted only when the engine accepts it. */
 function acceptAction(game: GameState, action: GameAction): boolean {
+  if (action === "run") {
+    game.vx = game.baseSpeed * GAME.runMultiplier;
+    return true;
+  }
+  if (action === "walk") {
+    game.vx = game.baseSpeed;
+    return true;
+  }
   if (action === "jump") return issueJump(game);
   if (action === "crouch") {
     issueCrouch(game);

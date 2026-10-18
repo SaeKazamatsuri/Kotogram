@@ -205,7 +205,7 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
     report.improvements.shorterThanBeginner = cleared.some((entry) => entry.characters < beginner.characters);
     report.improvements.fasterThanBeginner = cleared.some((entry) => entry.elapsedTicks! < beginner.elapsedTicks!);
     if (!report.improvements.shorterThanBeginner) report.warnings.push("no tested solution is shorter than the beginner example");
-    if (!report.improvements.fasterThanBeginner) report.warnings.push("no tested solution is faster than the beginner example (speed commands are not yet implemented)");
+    if (!report.improvements.fasterThanBeginner) report.warnings.push("no tested solution is faster than the beginner example");
   }
   if (!report.cases.some((entry) => entry.role === "negative")) report.warnings.push("no negative test case registered");
   report.pass = !report.issues.length && report.cases.every((entry) => entry.pass);
