@@ -12,3 +12,12 @@ test("game tokens, accessible motion fallbacks and app directory class scanning 
   assert.match(tailwind, /\.\/app\/\*\*\/\*\.\{vue,ts\}/);
   assert.doesNotMatch(layout, /<header/);
 });
+
+test("Nuxt loads the game's real stylesheet and bundles icon components", () => {
+  const config = read("nuxt.config.ts");
+  assert.match(config, /css: \["~\/assets\/css\/tailwind\.css"\]/);
+  assert.match(config, /serverBundle: \{ collections: \["lucide"\] \}/);
+  const css = read("app/assets/css/tailwind.css");
+  assert.match(css, /\.game-shell\s*\{/);
+  assert.match(css, /\.game-workspace\s*\{/);
+});
