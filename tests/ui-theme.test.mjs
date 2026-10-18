@@ -40,3 +40,7 @@ test("visible scenes omit English and stage titles use elementary kanji", () => 
   assert.match(manifest.stages[5].title, /集めて/);
   assert.match(manifest.stages[6].title, /開ける/);
 });
+
+test("devtools launcher is not visible in the public game UI", () => {
+  assert.match(read("nuxt.config.ts"), /devtools: \{ enabled: false \}/);
+});

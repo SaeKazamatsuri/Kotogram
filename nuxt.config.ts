@@ -1,7 +1,7 @@
 export default defineNuxtConfig({
   ssr: false,
   compatibilityDate: "2025-07-15",
-  devtools: { enabled: true },
+  devtools: { enabled: false },
   app: { head: { title: "ことグラム" } },
   modules: ["@nuxt/eslint", "@nuxt/icon", "@nuxtjs/tailwindcss"],
   css: ["~/assets/css/tailwind.css"],
