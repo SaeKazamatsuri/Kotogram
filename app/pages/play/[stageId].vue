@@ -128,7 +128,7 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   failInfo.value = null;
   const rawText = editorRef.value?.getText() ?? "";
   const chars = rawText.replace(/\r?\n/g, "").length;
-  const result = stageClear(stageId.value, chars, timing.seconds);
+  const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks);
   lastSeconds.value = result.seconds;
   cleared.value = true;
 }
