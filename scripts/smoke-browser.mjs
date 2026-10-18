@@ -65,6 +65,12 @@ try {
     }
   }, api);
   console.log("Browser API health:", JSON.stringify(browserApiHealth));
+  console.log("Browser security and crypto:", await page.evaluate(() => ({
+    secure: window.isSecureContext,
+    randomUUID: typeof crypto.randomUUID,
+    rankingConfig: window.__NUXT__?.config?.public?.rankingApiBase ?? "not exposed",
+  })));
+
   await page.getByRole("button", { name: "きろくを とうろく" }).click();
   await page.getByText(/で とうろくできたよ！/).waitFor({ timeout: 25000 });
   const guest = await page.locator("p").filter({ hasText: /ゲスト\d+.*とうろくできたよ/ }).first().innerText();
