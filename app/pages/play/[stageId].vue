@@ -6,6 +6,7 @@ import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
 import { calculateScores, countSourceCharacters, getScoreReference, type BestRuns, type ScoredRun } from "~/scoring/score";
+import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
 import type { GameProgram } from "~/game/core";
 import type { StageData } from "~/composables/useStageLoader";
@@ -23,6 +24,7 @@ type Dictionary = {
 const route = useRoute();
 const router = useRouter();
 const stageId = computed(() => String(route.params.stageId || "stage-1"));
+const rankingApiBase = String(useRuntimeConfig().public.rankingApiBase || "");
 const { loadStage, getManifest } = useStageLoader();
 const { loadDictionary } = useDictionary();
 const { stageStart, stageClear, getBestRecords, isCleared } = useStats();
@@ -45,6 +47,12 @@ const scoreValues = ref<{ time: number; chars: number; overall: number } | null>
 const bests = ref<BestRuns<ScoredRun>>({});
 const stageVersion = ref("2025-10-26");
 const unlocked = ref(true);
+const lastRun = ref<{ source: string; elapsedTicks: number; charCount: number } | null>(null);
+const saving = ref(false);
+const savedName = ref("");
+const saveError = ref("");
+const rankingRefresh = ref(0);
+let pendingRunId = "";
 
 function stageIndexFromId(id: string): number | null {
   const match = id.match(/^stage-(\d+)$/);
@@ -125,6 +133,11 @@ function onRun() {
   failed.value = false;
   failInfo.value = null;
   cleared.value = false;
+  lastRun.value = null;
+  saving.value = false;
+  savedName.value = "";
+  saveError.value = "";
+  pendingRunId = "";
   stageStart(stageId.value);
   running.value = true;
 }
@@ -139,9 +152,35 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks, rawText, stageVersion.value);
   lastSeconds.value = result.seconds;
   lastChars.value = chars;
+  lastRun.value = { source: rawText, elapsedTicks: timing.elapsedTicks, charCount: chars };
   scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars }) : null;
   bests.value = getBestRecords(stageId.value, stageVersion.value);
   cleared.value = true;
+}
+
+async function onRegister(nickname: string) {
+  if (saving.value || savedName.value || !lastRun.value || !rankingApiBase) return;
+  saving.value = true;
+  saveError.value = "";
+  try {
+    if (!pendingRunId) pendingRunId = crypto.randomUUID();
+    const playerId = getOrCreatePlayerId(window.localStorage, () => crypto.randomUUID());
+    const input: RunSubmission = {
+      ...createScope(stageId.value, stageVersion.value),
+      ...lastRun.value,
+      runId: pendingRunId,
+      playerId,
+      nickname: nickname.trim(),
+    };
+    const saved = await new RankingClient(rankingApiBase).submit(input);
+    savedName.value = saved.nickname;
+    window.localStorage.setItem("kotogram.nickname", saved.nickname);
+    rankingRefresh.value++;
+  } catch {
+    saveError.value = "きろくを おくれなかったよ。";
+  } finally {
+    saving.value = false;
+  }
 }
 
 function onFail(payload: FailPayload) {
@@ -203,11 +242,18 @@ watch(stageId, (value) => {
       v-if="cleared"
       :seconds="lastSeconds"
       :stage-id="String(stageId)"
+      :stage-version="stageVersion"
+      :api-base="rankingApiBase"
+      :saving="saving"
+      :saved-name="savedName"
+      :save-error="saveError"
+      :ranking-refresh="rankingRefresh"
       :chars="lastChars"
       :scores="scoreValues"
       :bests="bests"
       @close="cleared = false"
       @next="goNext"
+      @register="onRegister"
     />
   </div>
 </template>
