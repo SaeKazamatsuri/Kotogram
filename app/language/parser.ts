@@ -1,6 +1,6 @@
 import type { GameInstruction, GameProgram } from "../game/core";
-export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin";
-export type Action = "jump" | "crouch" | "collect" | "run" | "walk";
+export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin" | "switch";
+export type Action = "jump" | "crouch" | "collect" | "run" | "walk" | "press";
 export type Vocabulary = {
   conditions?: Record<string, string[]>;
   actions?: Record<string, string[]>;
@@ -35,11 +35,11 @@ export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; dia
 
 const DEFAULT_CONDITIONS: Record<Condition, string[]> = {
   wall: ["かべ"], hole: ["あな"], enemy: ["おばけ", "てき"],
-  ahead: ["まえ"], coin: ["こいん"],
+  ahead: ["まえ"], coin: ["こいん"], switch: ["すいっち"],
 };
 const DEFAULT_ACTIONS: Record<Action, string[]> = {
   jump: ["じゃんぷ", "とぶ"], crouch: ["しゃがむ", "かがむ"], collect: ["とる"],
-  run: ["はしる"], walk: ["あるく"],
+  run: ["はしる"], walk: ["あるく"], press: ["おす"],
 };
 const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "くりかえす", kind: "repeat" },

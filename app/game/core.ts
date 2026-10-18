@@ -1,5 +1,5 @@
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead";
-export type GameAction = "jump" | "crouch" | "collect" | "run" | "walk";
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch";
+export type GameAction = "jump" | "crouch" | "collect" | "run" | "walk" | "press";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 /** Watchers are active from tick zero; the procedure advances in source order. */
 export type GameInstruction =
@@ -10,7 +10,7 @@ export type GameInstruction =
 export type GameProgram = { watchers: GameRule[]; steps: GameInstruction[] };
 export type LoopFrame = { start: number; remaining: number };
 export type GameStatus = "running" | "cleared" | "failed" | "timeout";
-export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "void";
+export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "void";
 
 export type GameStage = {
   goal?: number;
@@ -25,6 +25,8 @@ export type GameStage = {
 export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
+export type Door = { id: string; x: number; open: boolean };
+export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean };
 export type GameState = {
   status: GameStatus;
   failureReason?: GameFailReason;
@@ -40,6 +42,8 @@ export type GameState = {
   ghosts: Barrier[];
   holes: Hole[];
   coins: Coin[];
+  doors: Door[];
+  switches: Switch[];
   requiredCoins: number;
   goalX: number;
   program: GameRule[];
@@ -78,6 +82,9 @@ export const GAME = {
   jumpCooldownTicks: 32,
   crouchDurationTicks: 26,
   coinPickupRange: 48,
+  switchPressRange: 48,
+  doorWidth: 30,
+  doorHeight: 112,
   coinRadius: 13,
   defaultHoleWidth: 80,
   defaultGoal: 800,
@@ -144,6 +151,23 @@ function makeCoins(stage: GameStage): Coin[] {
     .sort((a, b) => a.x - b.x);
 }
 
+function makeDoors(stage: GameStage): Door[] {
+  return fromStage(stage, "door")
+    .map((object) => ({ id: object.id as string, x: object.position as number, open: false }))
+    .sort((a, b) => a.x - b.x);
+}
+
+function makeSwitches(stage: GameStage): Switch[] {
+  return fromStage(stage, "switch")
+    .map((object) => ({
+      id: object.id as string,
+      x: object.position as number,
+      targetDoorId: object.targetDoorId as string,
+      activated: false,
+    }))
+    .sort((a, b) => a.x - b.x);
+}
+
 export function createGame(stage: GameStage, program: readonly GameRule[] | GameProgram = []): GameState {
   const watchers = Array.isArray(program) ? program : (program as GameProgram).watchers;
   const steps = Array.isArray(program) ? [] : (program as GameProgram).steps;
@@ -151,8 +175,10 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const ghosts = makeBarriers(stage, "ghost", stage.ghosts);
   const holes = makeHoles(stage);
   const coins = makeCoins(stage);
+  const doors = makeDoors(stage);
+  const switches = makeSwitches(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -171,6 +197,8 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     ghosts,
     holes,
     coins,
+    doors,
+    switches,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     goalX,
     program: watchers.map((rule) => ({ ...rule, conds: rule.conds ? [...rule.conds] : undefined })),
@@ -199,12 +227,17 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
   const range = GAME.approachBase + game.vx * GAME.reactionFrames;
   const found = new Map<string, { id: string; x: number }>();
   for (const condition of conditions) {
+    if (condition === "switch") {
+      const target = nextTarget(game.switches.filter((item) => !item.activated), game.px);
+      if (target && target.x - game.px <= GAME.switchPressRange) found.set(target.id, target);
+      continue;
+    }
     if (condition === "coin") {
       const target = nextTarget(game.coins.filter((coin) => !coin.collected), game.px);
       if (target && target.x - game.px <= GAME.coinPickupRange) found.set(target.id, target);
       continue;
     }
-    const groups = condition === "ahead" ? [game.walls, game.ghosts, game.holes]
+    const groups = condition === "ahead" ? [game.walls, game.ghosts, game.holes, game.doors.filter((door) => !door.open)]
       : condition === "wall" ? [game.walls]
       : condition === "enemy" ? [game.ghosts] : [game.holes];
     for (const objects of groups) {
@@ -239,6 +272,18 @@ function acceptAction(game: GameState, action: GameAction): boolean {
   if (action === "jump") return issueJump(game);
   if (action === "crouch") {
     issueCrouch(game);
+    return true;
+  }
+  if (action === "press") {
+    const target = game.switches.find((item) =>
+      !item.activated && item.x + GAME.pad >= game.px &&
+      item.x - game.px <= GAME.switchPressRange
+    );
+    if (!target) return false;
+    const door = game.doors.find((item) => item.id === target.targetDoorId);
+    if (!door) return false;
+    target.activated = true;
+    door.open = true;
     return true;
   }
   if (action === "collect") {
@@ -361,6 +406,11 @@ export function stepGame(game: GameState): GameStatus {
       return game.status;
     }
     wall.cleared = true;
+  }
+  const door = game.doors.find((item) => !item.open && front >= item.x);
+  if (door) {
+    fail(game, "door");
+    return game.status;
   }
   const ghost = game.ghosts.find((g) => !g.cleared && front >= g.x);
   if (ghost) {

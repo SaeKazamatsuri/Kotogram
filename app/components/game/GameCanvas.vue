@@ -118,6 +118,26 @@ function draw() {
     ctx.stroke();
   }
 
+  for (const item of game.switches) {
+    const x = worldToScreenX(game, item.x);
+    if (x < -32 || x > GAME.width + 32) continue;
+    ctx.fillStyle = item.activated ? "#4ade80" : "#f97316";
+    ctx.fillRect(x - 11, GAME.groundY - 33, 22, 25);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 12px sans-serif";
+    ctx.fillText(item.activated ? "ON" : "PUSH", x - 17, GAME.groundY - 42);
+  }
+
+  for (const door of game.doors) {
+    const x = worldToScreenX(game, door.x);
+    if (x < -GAME.doorWidth || x > GAME.width + GAME.doorWidth) continue;
+    ctx.fillStyle = door.open ? "rgba(34,197,94,0.25)" : "#7c3aed";
+    ctx.fillRect(x, GAME.groundY - GAME.doorHeight, GAME.doorWidth, GAME.doorHeight);
+    ctx.strokeStyle = door.open ? "#15803d" : "#4c1d95";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(x, GAME.groundY - GAME.doorHeight, GAME.doorWidth, GAME.doorHeight);
+  }
+
   for (const wall of game.walls) {
     const x = worldToScreenX(game, wall.x);
     if (x < -GAME.wallWidth || x > GAME.width + GAME.wallWidth) continue;

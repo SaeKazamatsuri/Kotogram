@@ -90,7 +90,9 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door"]);
+    const doors = new Map<string, number>();
+    const switches: { x: number; target: string; path: string }[] = [];
     let coinCount = 0;
     let explicitGoalCount = 0;
     let furthestObstacle = 0;
@@ -104,6 +106,17 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
         else if (objectIds.has(obj.id)) issues.push({ path: path + ".id", message: "duplicate object ID" });
         else objectIds.add(obj.id);
       }
+      if (obj.type === "door" && typeof obj.id === "string" && isNonnegativeFinite(obj.position)) {
+        doors.set(obj.id, obj.position);
+      }
+      if (obj.type === "switch") {
+        if (typeof obj.id !== "string" || !obj.id.trim()) issues.push({ path: path + ".id", message: "switch ID required" });
+        if (typeof obj.targetDoorId !== "string" || !obj.targetDoorId.trim()) issues.push({ path: path + ".targetDoorId", message: "target door required" });
+        if (isNonnegativeFinite(obj.position) && typeof obj.targetDoorId === "string") {
+          switches.push({ x: obj.position, target: obj.targetDoorId, path });
+        }
+      }
+      if (obj.type === "door" && (typeof obj.id !== "string" || !obj.id.trim())) issues.push({ path: path + ".id", message: "door ID required" });
       if (obj.type === "coin") coinCount++;
       if (obj.type === "goal") {
         explicitGoalCount++;
@@ -117,6 +130,13 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
         furthestObstacle = Math.max(furthestObstacle, obj.position);
+      }
+    }
+    for (const item of switches) {
+      const targetX = doors.get(item.target);
+      if (targetX === undefined) issues.push({ path: item.path + ".targetDoorId", message: "target door does not exist" });
+      else if (item.x >= targetX - GAME.playerWidth - GAME.switchPressRange) {
+        issues.push({ path: item.path + ".position", message: "switch must provide approach space before its door" });
       }
     }
     if (Number.isSafeInteger(value.requiredCoins) && (value.requiredCoins as number) > coinCount) issues.push({ path: "requiredCoins", message: "requiredCoins exceeds available coins" });
