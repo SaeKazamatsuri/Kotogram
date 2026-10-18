@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>描画ライブラリ比較</title>
+<style>
+  :root { font-family: system-ui, sans-serif; background: #17233c; color: #f5f1e8; }
+  body { max-width: 880px; margin: 2rem auto; padding: 0 1rem; }
+  button, select { padding: .65rem 1rem; margin-right: .5rem; border: 1px solid #95b9cb; border-radius: .5rem; background: #faf2da; color: #28334d; font-size: 1rem; }
+  button:disabled { opacity: .55; }
+  #stage { max-width: 720px; margin-top: 1rem; background: #273b59; }
+  #stage canvas { display: block; width: 100%; height: auto; }
+  #result { line-height: 1.8; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>描画ライブラリ比較</h1>
+<p>同じ240個の円を動かし、描画要求時間と画面更新を測ります。正式なゲーム画面ではありません。</p>
+<label for="driver">描画方法</label>
+<select id="driver"><option value="canvas">Canvas 2D</option><option value="p5">p5.js</option><option value="pixi">PixiJS</option></select>
+<button id="start">5秒間 計測</button>
+<button id="stop" disabled>停止</button>
+<div id="stage"></div>
+<pre id="result" role="status">計測する方法を選んでください。</pre>
+<script type="module">
+const stage = document.querySelector("#stage");
+const status = document.querySelector("#result");
+const startButton = document.querySelector("#start");
+const stopButton = document.querySelector("#stop");
+const objects = Array.from({ length: 240 }, (_, index) => ({
+  x: (index * 71 + 22) % 720,
+  y: (index * 47 + 18) % 360,
+  phase: index * 0.43,
+}));
+let active = null;
+let frame = 0;
+let halted = true;
+let samples = [];
+let frameIntervals = [];
+let previousFrame = 0;
+let startTime = 0;
+let tick = 0;
+
+function position(object, time) {
+  return { x: object.x + Math.sin(time * 0.03 + object.phase) * 12, y: object.y + Math.cos(time * 0.04 + object.phase) * 7 };
+}
+function loadScript(url) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = url;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error("ライブラリを読み込めませんでした"));
+    document.head.append(script);
+  });
+}
+async function createCanvasDriver() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 720;
+  canvas.height = 360;
+  stage.append(canvas);
+  const ctx = canvas.getContext("2d");
+  return {
+    draw(time) {
+      ctx.fillStyle = "#273b59";
+      ctx.fillRect(0, 0, 720, 360);
+      ctx.fillStyle = "#f3d38d";
+      for (const item of objects) {
+        const { x, y } = position(item, time);
+        ctx.beginPath();
+        ctx.arc(x, y, 7, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    },
+    destroy() { canvas.remove(); },
+  };
+}
+async function createP5Driver() {
+  if (!window.p5) await loadScript("https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.min.js");
+  let currentTime = 0;
+  const sketch = new window.p5((p) => {
+    p.setup = () => {
+      p.createCanvas(720, 360);
+      p.noLoop();
+    };
+    p.draw = () => {
+      p.background("#273b59");
+      p.noStroke();
+      p.fill("#f3d38d");
+      for (const item of objects) {
+        const { x, y } = position(item, currentTime);
+        p.circle(x, y, 14);
+      }
+    };
+  }, stage);
+  return {
+    draw(time) { currentTime = time; sketch.redraw(); },
+    destroy() { sketch.remove(); },
+  };
+}
+async function createPixiDriver() {
+  const { Application, Graphics } = await import("https://cdn.jsdelivr.net/npm/pixi.js@8.13.2/dist/pixi.min.mjs");
+  const app = new Application();
+  await app.init({ width: 720, height: 360, background: "#273b59", autoStart: false, preference: "webgl" });
+  stage.append(app.canvas);
+  const shapes = objects.map(() => {
+    const shape = new Graphics().circle(0, 0, 7).fill(0xf3d38d);
+    app.stage.addChild(shape);
+    return shape;
+  });
+  return {
+    draw(time) {
+      for (let i = 0; i < objects.length; i++) {
+        const { x, y } = position(objects[i], time);
+        shapes[i].position.set(x, y);
+      }
+      app.renderer.render(app.stage);
+    },
+    destroy() { app.destroy(true, { children: true }); },
+  };
+}
+function report() {
+  const sorted = [...samples].sort((a, b) => a - b);
+  const avg = samples.reduce((a, b) => a + b, 0) / Math.max(1, samples.length);
+  const fps = frameIntervals.length ? 1000 / (frameIntervals.reduce((a, b) => a + b, 0) / frameIntervals.length) : 0;
+  status.textContent = [
+    "描画方法: " + document.querySelector("#driver").selectedOptions[0].textContent,
+    "描画要求の平均: " + avg.toFixed(2) + " ms",
+    "描画要求の95パーセンタイル: " + (sorted[Math.floor(sorted.length * 0.95)] ?? 0).toFixed(2) + " ms",
+    "画面更新の平均: " + fps.toFixed(1) + " 回/秒",
+    "測定フレーム: " + samples.length,
+    "※ GPU完了時間ではありません。端末・電源設定・回線によって変わります。",
+  ].join("\n");
+}
+function stop() {
+  halted = true;
+  cancelAnimationFrame(frame);
+  frame = 0;
+  startButton.disabled = false;
+  stopButton.disabled = true;
+  report();
+}
+function step(timestamp) {
+  if (halted) return;
+  if (!startTime) startTime = timestamp;
+  if (previousFrame) frameIntervals.push(timestamp - previousFrame);
+  previousFrame = timestamp;
+  const before = performance.now();
+  active.draw(tick++);
+  samples.push(performance.now() - before);
+  if (timestamp - startTime < 5000) frame = requestAnimationFrame(step);
+  else stop();
+}
+startButton.addEventListener("click", async () => {
+  startButton.disabled = true;
+  status.textContent = "準備中";
+  try {
+    if (active) active.destroy();
+    stage.replaceChildren();
+    const choice = document.querySelector("#driver").value;
+    active = choice === "p5" ? await createP5Driver() : choice === "pixi" ? await createPixiDriver() : await createCanvasDriver();
+    halted = false;
+    samples = [];
+    frameIntervals = [];
+    previousFrame = 0;
+    startTime = 0;
+    tick = 0;
+    stopButton.disabled = false;
+    frame = requestAnimationFrame(step);
+  } catch (error) {
+    halted = true;
+    startButton.disabled = false;
+    stopButton.disabled = true;
+    status.textContent = String(error);
+  }
+});
+stopButton.addEventListener("click", stop);
+</script>
+</body>
+</html>
