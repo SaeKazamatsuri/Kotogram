@@ -33,7 +33,7 @@ test("rejects unsupported types, duplicate obstacles, NaN and invalid dimensions
   const stage = { goal: 3000, scrollSpeed: 3, objects: [
     { type: "wall", position: 600, id: "a" },
     { type: "wall", position: 600, id: "a" },
-    { type: "switch", position: 900 },
+    { type: "laser", position: 900 },
     { type: "hole", position: 1000, width: 0 },
   ] };
   const errors = validateStage("stage-example", stage);
@@ -158,4 +158,21 @@ test("stage 6 requires both coins, supports short source and improves speed", ()
   assert.equal(report.bestKnown.ticks, 394);
   assert.equal(report.bestKnown.characters, 9);
   assert.equal(report.cases.find((entry) => entry.name === "missing-coin-at-goal")?.failureReason, "coin");
+});
+
+test("switch and door require valid ID references and reaction room", () => {
+  const objects = [
+    { type: "switch", id: "sw", position: 280, targetDoorId: "gate" },
+    { type: "door", id: "gate", position: 750 },
+  ];
+  assert.deepEqual(validateStage("stage-switch", { goal: 1200, scrollSpeed: 3, objects }), []);
+  const wrongDoor = [{ ...objects[0], targetDoorId: "unknown" }, objects[1]];
+  assert.ok(validateStage("stage-switch", { goal: 1200, scrollSpeed: 3, objects: wrongDoor })
+    .some((item) => item.path.endsWith("targetDoorId")));
+  const tooClose = [{ ...objects[0], position: 740 }, objects[1]];
+  assert.ok(validateStage("stage-switch", { goal: 1200, scrollSpeed: 3, objects: tooClose })
+    .some((item) => item.path.endsWith("position")));
+  const noId = [{ type: "switch", position: 280, targetDoorId: "gate" }, objects[1]];
+  assert.ok(validateStage("stage-switch", { goal: 1200, scrollSpeed: 3, objects: noId })
+    .some((item) => item.path.endsWith(".id")));
 });

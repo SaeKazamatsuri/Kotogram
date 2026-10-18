@@ -141,3 +141,37 @@ test("collect action does not consume one-shot execution until a coin is reachab
   assert.equal(result.cursor, 1);
   assert.equal(result.coins[0].collected, true);
 });
+
+test("linked switches open the intended doors and reset on replay", () => {
+  const stage = { goal: 1900, scrollSpeed: 3, objects: [
+    { type: "switch", id: "sw-a", position: 310, targetDoorId: "gate-a" },
+    { type: "door", id: "gate-a", position: 790 },
+    { type: "switch", id: "sw-b", position: 1030, targetDoorId: "gate-b" },
+    { type: "door", id: "gate-b", position: 1470 },
+  ] };
+  const rules = [{ cond: "switch", action: "press" }];
+  const first = runToCompletion(createGame(stage, rules));
+  assert.equal(first.status, "cleared");
+  assert.deepEqual(first.doors.map((item) => item.open), [true, true]);
+  assert.equal(first.fired[0].size, 2);
+  assert.deepEqual(createGame(stage).doors.map((item) => item.open), [false, false]);
+  const noPress = runToCompletion(createGame(stage));
+  assert.equal(noPress.status, "failed");
+  assert.equal(noPress.failureReason, "door");
+  assert.equal(runToCompletion(createGame(stage, rules)).elapsedTicks, first.elapsedTicks);
+});
+
+test("press command waits for a reachable switch and accepts it once", () => {
+  const stage = { goal: 900, scrollSpeed: 3, objects: [
+    { type: "switch", id: "button", position: 300, targetDoorId: "gate" },
+    { type: "door", id: "gate", position: 640 },
+  ] };
+  const game = createGame(stage, { watchers: [], steps: [{ op: "action", action: "press", count: 1 }] });
+  stepGame(game);
+  assert.equal(game.cursor, 0);
+  assert.equal(game.doors[0].open, false);
+  runToCompletion(game);
+  assert.equal(game.cursor, 1);
+  assert.equal(game.switches[0].activated, true);
+  assert.equal(game.status, "cleared");
+});

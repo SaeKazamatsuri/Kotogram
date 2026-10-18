@@ -111,3 +111,10 @@ test("source and repetition caps reject pathological input", () => {
   assert.equal(analyzeProgram("かべとぶ\n".repeat(120)).diagnostics[0].code, "limit");
   assert.equal(analyzeProgram("999999999999999999999かいとぶ").diagnostics[0].code, "count");
 });
+
+test("switch and press parse identically in concise and detailed forms", () => {
+  const short = valid("すいっちおす");
+  assert.deepEqual(short.rules[0], { action: "press", conds: ["switch"], maxFires: undefined });
+  assert.deepEqual(valid("すいっちならおす").rules, short.rules);
+  assert.equal(valid("すいっち2かいおす").rules[0].maxFires, 2);
+});
