@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   modules: ["@nuxt/eslint", "@nuxt/icon", "@nuxtjs/tailwindcss"],
   css: ["~/assets/css/tailwind.css"],
   tailwindcss: { cssPath: "~/assets/css/tailwind.css" },
-  icon: { serverBundle: { collections: ["lucide"] } },
+  icon: { mode: "svg", serverBundle: { collections: ["lucide"] } },
   runtimeConfig: {
     public: {
       rankingApiBase: process.env.NUXT_PUBLIC_RANKING_API_BASE ?? "",

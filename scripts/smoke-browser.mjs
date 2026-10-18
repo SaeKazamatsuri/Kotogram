@@ -53,6 +53,7 @@ async function assertReadableJapanese(page, scene) {
 }
 
 async function saveScene(page, name) {
+  await page.locator("svg").first().waitFor({ timeout: 10000 });
   await assertReadableJapanese(page, name);
   await mkdir("test-artifacts", { recursive: true });
   const bounds = await page.evaluate(() => ({
