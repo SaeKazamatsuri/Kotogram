@@ -2,13 +2,16 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { analyzeProgram, type Vocabulary } from "~/language/parser";
 import LineGutter from "./LineGutter.vue";
+import KanaKeyboard from "./KanaKeyboard.vue";
+import { editWithSoftKey, type SoftKey } from "~/editor/text-input";
 
 const props = defineProps<{ dictionary?: Vocabulary; lines?: string[] }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
 
 const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
-let composing = false;
+const composing = ref(false);
+const keyboardVisible = ref(false);
 
 function sanitize(input: string) {
   return (input.normalize("NFC").match(/[ぁ-ゟー0-9０-９ 　\r\n]/g) ?? []).join("");
@@ -27,10 +30,10 @@ function acceptInput(target: HTMLTextAreaElement) {
   updateMetrics();
 }
 function onInput(event: Event) {
-  if (!composing) acceptInput(event.target as HTMLTextAreaElement);
+  if (!composing.value) acceptInput(event.target as HTMLTextAreaElement);
 }
 function onCompositionEnd(event: CompositionEvent) {
-  composing = false;
+  composing.value = false;
   acceptInput(event.target as HTMLTextAreaElement);
 }
 
@@ -81,6 +84,27 @@ onMounted(() => {
 });
 onBeforeUnmount(() => observer?.disconnect());
 
+function onSoftKey(key: SoftKey) {
+  if (composing.value || !textarea.value) return;
+  const element = textarea.value;
+  const result = editWithSoftKey({
+    text: text.value,
+    start: element.selectionStart ?? text.value.length,
+    end: element.selectionEnd ?? text.value.length,
+  }, key);
+  const normalized = sanitize(result.text);
+  const cursor = sanitize(result.text.slice(0, result.start)).length;
+  text.value = normalized;
+  element.value = normalized;
+  nextTick(() => {
+    if (textarea.value === element) {
+      element.focus({ preventScroll: true });
+      element.setSelectionRange(cursor, cursor);
+      updateMetrics();
+    }
+  });
+}
+
 function run() {
   if (analysis.value.diagnostics.length === 0) emit("run");
 }
@@ -122,6 +146,13 @@ defineExpose({ getText });
         placeholder="れい） かべとあなとぶ"
       />
     </div>
+    <button
+      type="button"
+      class="self-start rounded-xl border border-sky-300 bg-white px-3 py-2 text-sm text-slate-700 hover:bg-sky-50"
+      :aria-expanded="keyboardVisible"
+      @click="keyboardVisible = !keyboardVisible"
+    >{{ keyboardVisible ? "キーボードを とじる" : "ひらがなキーボードを ひらく" }}</button>
+    <KanaKeyboard v-if="keyboardVisible" :disabled="composing" @press="onSoftKey" />
     <p v-if="firstError" class="text-sm text-rose-700" role="alert">
       {{ firstError.line }}ぎょうめ：{{ firstError.message }}
     </p>
