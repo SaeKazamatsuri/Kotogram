@@ -42,3 +42,11 @@ test("bounded explorer proposes a valid collection route for stage 6", () => {
   assert.ok(result.best.time?.elapsedTicks <= 512);
   assert.match(result.best.time?.source ?? "", /こいんとる/);
 });
+
+test("explorer finds a clearing stage 7 program that presses switches", () => {
+  const data = JSON.parse(readFileSync(new URL("../public/stages/stage-7.json", import.meta.url), "utf8"));
+  const report = exploreStage(data);
+  assert.ok(report.cleared > 0);
+  assert.match(report.best.time?.source ?? "", /すいっちおす/);
+  assert.ok(report.best.time?.elapsedTicks <= 679);
+});

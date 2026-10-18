@@ -18,7 +18,7 @@ jobs:
       - name: Validate stage snapshots
         run: npm run validate:stages
       - name: Explore bounded stage candidates
-        run: npm run explore:stages -- --max-candidates=32 --max-ms=5000
+        run: npm run explore:stages -- --max-candidates=128 --max-ms=5000
 
   build-app-and-api:
     runs-on: ubuntu-latest

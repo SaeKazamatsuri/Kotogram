@@ -1,0 +1,48 @@
+{
+  "id": "stage-7",
+  "goal": 2100,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "すいっちを おして とびらを あける",
+    "いくつもの すいっちに くりかえし はんのうする",
+    "とびらの あとに かべを とぶ"
+  ],
+  "objects": [
+    {
+      "type": "switch",
+      "id": "button-1",
+      "position": 310,
+      "targetDoorId": "door-1"
+    },
+    {
+      "type": "door",
+      "id": "door-1",
+      "position": 700
+    },
+    {
+      "type": "switch",
+      "id": "button-2",
+      "position": 1010,
+      "targetDoorId": "door-2"
+    },
+    {
+      "type": "door",
+      "id": "door-2",
+      "position": 1400
+    },
+    {
+      "type": "wall",
+      "id": "wall-last",
+      "position": 1740
+    }
+  ],
+  "meta": {
+    "title": "すいっちで とびらを あけよう",
+    "bg": "twilight",
+    "hint": "すいっちを みつけたら「すいっちおす」、かべは「かべとぶ」だよ",
+    "failHints": {
+      "door": "とびらの まえに すいっちが あるよ。「すいっちおす」を ためしてね",
+      "wall": "とびらを ひらいたら かべを とびこそう"
+    }
+  }
+}
