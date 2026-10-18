@@ -110,11 +110,12 @@ onMounted(async () => {
 });
 
 function onRun() {
-  try {
-    program.value = parseProgram(editorLines.value, dict.value ?? { conditions: {}, actions: {} });
-  } catch {
-    program.value = [];
+  const result = parseProgram(editorLines.value, dict.value ?? { conditions: {}, actions: {} });
+  if (result.diagnostics.length > 0) {
+    running.value = false;
+    return;
   }
+  program.value = result.rules;
   failed.value = false;
   failInfo.value = null;
   cleared.value = false;

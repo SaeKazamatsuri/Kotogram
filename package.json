@@ -9,7 +9,9 @@
     "generate": "nuxt generate",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
-    "test:core": "node --experimental-strip-types --test tests/game-core.test.mjs"
+    "test:core": "node --experimental-strip-types --test tests/game-core.test.mjs",
+    "test:language": "node --experimental-strip-types --test tests/language.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",

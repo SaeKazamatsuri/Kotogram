@@ -1,6 +1,6 @@
-export type GameCondition = "wall" | "enemy" | "hole" | "coin";
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead";
 export type GameAction = "jump" | "crouch" | "collect";
-export type GameRule = { cond?: GameCondition; action: GameAction };
+export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 export type GameStatus = "running" | "cleared" | "failed" | "timeout";
 export type GameFailReason = "hole" | "wall" | "enemy" | "void";
 
@@ -149,16 +149,24 @@ export function worldToScreenX(game: GameState, x: number): number {
   return x - (game.px - GAME.playerScreenX);
 }
 
-function nextTarget<T extends { id: string; x: number }>(objects: readonly T[], px: number): T | undefined {
+function nextTarget(objects: readonly { id: string; x: number }[], px: number): { id: string; x: number } | undefined {
   return objects.find((obj) => obj.x + GAME.pad >= px);
 }
 
-function nextSensed(game: GameState, condition: GameCondition): { id: string; x: number } | undefined {
-  if (condition === "coin") return undefined;
-  const targets: readonly { id: string; x: number }[] = condition === "wall" ? game.walls : condition === "enemy" ? game.ghosts : game.holes;
-  const next = nextTarget(targets, game.px);
+function sensedTargets(game: GameState, conditions: readonly GameCondition[]): { id: string; x: number }[] {
   const range = GAME.approachBase + game.vx * GAME.reactionFrames;
-  return next && next.x - game.px <= range ? next : undefined;
+  const found = new Map<string, { id: string; x: number }>();
+  for (const condition of conditions) {
+    if (condition === "coin") continue;
+    const groups = condition === "ahead" ? [game.walls, game.ghosts, game.holes]
+      : condition === "wall" ? [game.walls]
+      : condition === "enemy" ? [game.ghosts] : [game.holes];
+    for (const objects of groups) {
+      const target = nextTarget(objects, game.px);
+      if (target && target.x - game.px <= range) found.set(target.id, target);
+    }
+  }
+  return [...found.values()].sort((a, b) => a.x - b.x || a.id.localeCompare(b.id));
 }
 
 function issueCrouch(game: GameState) {
@@ -174,14 +182,18 @@ function issueJump(game: GameState): boolean {
 
 function applyProgram(game: GameState) {
   for (const [index, rule] of game.program.entries()) {
-    const target = rule.cond ? nextSensed(game, rule.cond) : undefined;
-    if (rule.cond && !target) continue;
-    const key = target?.id ?? "unconditional";
-    const alreadyFired = game.fired[index].has(key);
-    if (alreadyFired) {
-      if (rule.action === "crouch" && target) issueCrouch(game);
+    const history = game.fired[index];
+    if (rule.maxFires !== undefined && history.size >= rule.maxFires) continue;
+    const conditions = rule.conds?.length ? rule.conds : rule.cond ? [rule.cond] : [];
+    const sensed = conditions.length ? sensedTargets(game, conditions) : [];
+    if (conditions.length && !sensed.length) continue;
+    const target = conditions.length ? sensed.find((item) => !history.has(item.id)) : undefined;
+    if (conditions.length && !target) {
+      if (rule.action === "crouch") issueCrouch(game);
       continue;
     }
+    const key = target?.id ?? "unconditional";
+    if (history.has(key)) continue;
     let accepted = false;
     if (rule.action === "jump") accepted = issueJump(game);
     if (rule.action === "crouch") {
@@ -189,7 +201,7 @@ function applyProgram(game: GameState) {
       accepted = true;
     }
     if (rule.action === "collect") accepted = true;
-    if (accepted) game.fired[index].add(key);
+    if (accepted) history.add(key);
   }
 }
 
