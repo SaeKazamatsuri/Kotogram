@@ -47,3 +47,37 @@ jobs:
             cat /tmp/kotogram-worker.log
             exit 1
           fi
+
+  browser-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install app dependencies
+        run: npm ci
+      - name: Install pinned Chromium test runner
+        run: |
+          npm install --prefix .browser-tools --no-save --no-package-lock playwright@1.56.1
+          .browser-tools/node_modules/.bin/playwright install --with-deps chromium
+      - name: Test real browser, local Worker and SQLite Durable Objects
+        run: |
+          npx wrangler dev --config wrangler.api.jsonc --port 8787 --ip 127.0.0.1 > /tmp/kotogram-worker.log 2>&1 &
+          WORKER_PID=$!
+          NUXT_PUBLIC_RANKING_API_BASE=http://127.0.0.1:8787 npm run dev -- --host 127.0.0.1 --port 3000 > /tmp/kotogram-app.log 2>&1 &
+          APP_PID=$!
+          trap 'kill $APP_PID $WORKER_PID 2>/dev/null || true' EXIT
+          if ! npm run test:browser; then
+            cat /tmp/kotogram-app.log
+            cat /tmp/kotogram-worker.log
+            exit 1
+          fi
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-e2e-failure
+          path: test-artifacts
+          if-no-files-found: ignore

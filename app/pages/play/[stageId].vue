@@ -185,7 +185,8 @@ async function onRegister(nickname: string) {
     savedName.value = saved.nickname;
     window.localStorage.setItem("kotogram.nickname", saved.nickname);
     rankingRefresh.value++;
-  } catch {
+  } catch (error) {
+    if (import.meta.dev) console.error("Ranking registration failed:", error instanceof Error ? error.message : "unknown error");
     if (session === sessionGeneration) saveError.value = "きろくを おくれなかったよ。";
   } finally {
     if (session === sessionGeneration) saving.value = false;
