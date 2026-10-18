@@ -1,5 +1,5 @@
 import { ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID } from "../app/scoring/score.ts";
-import { scopeObjectId, validateRunPayload, validateScope } from "./validation.mjs";
+import { scopeObjectId, validateRunPayload, validateScope, verifyRunResult } from "./validation.mjs";
 
 const json = (value, status, cors) => new Response(JSON.stringify(value), {
   status,
@@ -40,6 +40,9 @@ export async function handleApi(request, env) {
         }
         return json({ ok: true, runId: input.runId, nickname: known.nickname, duplicate: true }, 200, cors);
       }
+
+      try { verifyRunResult(input); }
+      catch { return json({ error: "invalid_run" }, 400, cors); }
 
       const nickname = input.nickname || await stub.nameForPlayer(input.playerId) || (
         "ゲスト" + await env.COUNTER.get(env.COUNTER.idFromName(input.seasonId)).nextGuest()

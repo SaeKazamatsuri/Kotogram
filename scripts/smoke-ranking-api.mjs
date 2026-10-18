@@ -78,8 +78,8 @@ const conflict = await post({ ...aFirst, elapsedTicks: 711 });
 assert.equal(conflict.status, 409);
 
 const [second, third] = await Promise.all([
-  post(run(playerB, "かべとぶ", 710)),
-  post(run(playerC, "かべとぶ", 750)),
+  post(run(playerB, "かべとぶ", 712)),
+  post(run(playerC, "まえにかべがあったらじゃんぷ", 712)),
 ]);
 assert.equal(second.status, 201);
 assert.equal(third.status, 201);
@@ -87,10 +87,15 @@ assert.match(second.body.nickname, /^ゲスト\d+$/);
 assert.match(third.body.nickname, /^ゲスト\d+$/);
 assert.equal(new Set([first.body.nickname, second.body.nickname, third.body.nickname]).size, 3);
 
-const aFaster = run(playerA, "まえにかべがあったらじゃんぷ", 700);
+const aFaster = run(playerA, "はしる\nかべとぶ", 548);
 const faster = await post(aFaster);
 assert.equal(faster.status, 201);
 assert.equal(faster.body.nickname, first.body.nickname);
+
+const fakeTicks = await post(run(randomUUID(), "かべとぶ", 1));
+assert.equal(fakeTicks.status, 400);
+const cannotClear = await post(run(randomUUID(), "はしる", 548));
+assert.equal(cannotClear.status, 400);
 
 const time = await ranking("time");
 const chars = await ranking("chars");
