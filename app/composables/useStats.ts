@@ -5,7 +5,6 @@ import {
 
 export type Stat = { seconds: number; chars: number; elapsedTicks?: number };
 type AllStats = Record<string, Stat>;
-type StoredBests = Record<string, BestRuns<ScoredRun>>;
 
 const STATS_KEY = "kotogram.stats";
 const BESTS_KEY = "kotogram.bests";
@@ -108,7 +107,9 @@ export function useStats() {
     for (const key of [STATS_KEY, BESTS_KEY, "kotogram.player", "kotogram.nickname", "kotogram.editor", "kotogram.ui"]) {
       try {
         storage.removeItem(key);
-      } catch {}
+      } catch {
+        continue;
+      }
     }
     startMap.clear();
   }

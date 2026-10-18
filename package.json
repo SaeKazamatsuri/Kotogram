@@ -17,7 +17,9 @@
     "dev:api": "wrangler dev --config wrangler.api.jsonc",
     "deploy:api": "wrangler deploy --config wrangler.api.jsonc --env production",
     "deploy:api:dev": "wrangler deploy --config wrangler.api.jsonc",
-    "explore:stages": "node --experimental-strip-types scripts/explore-stages.mjs"
+    "explore:stages": "node --experimental-strip-types scripts/explore-stages.mjs",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit --strict --target ES2022 --module ESNext --moduleResolution Bundler --allowImportingTsExtensions app/game/core.ts app/game/visuals.ts app/language/parser.ts app/scoring/score.ts app/stage/validator.ts app/stage/progression.ts app/stage/explorer.ts app/editor/text-input.ts app/ranking/client.ts"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",

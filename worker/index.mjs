@@ -1,5 +1,4 @@
 import { DurableObject } from "cloudflare:workers";
-import { calculateScores, getScoreReference } from "../app/scoring/score.ts";
 import { sameRun } from "./validation.mjs";
 import { handleApi } from "./router.mjs";
 
