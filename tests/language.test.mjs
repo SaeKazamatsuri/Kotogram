@@ -73,17 +73,22 @@ test("invalid expressions produce diagnostics and never partial output", () => {
   }
 });
 
-test("unsupported procedural repetition is parsed but not silently executed", () => {
-  const action = analyzeProgram("3かいとぶ");
-  assert.equal(action.body[0].kind, "action");
-  assert.equal(action.body[0].repeat, 3);
-  assert.equal(action.diagnostics[0].code, "unsupported");
-  assert.deepEqual(action.rules, []);
+test("procedural repetition and multi-command loops compile into bytecode", () => {
+  const repeated = analyzeProgram("3かいとぶ");
+  assert.deepEqual(repeated.diagnostics, []);
+  assert.equal(repeated.body[0].kind, "action");
+  assert.deepEqual(repeated.program.steps, [
+    { op: "action", action: "jump", count: 3 }
+  ]);
+
   const multi = analyzeProgram("3かいくりかえす\nかべとぶ\nあなとぶ\nおわり");
+  assert.deepEqual(multi.diagnostics, []);
   assert.equal(multi.body[0].kind, "repeat");
-  assert.equal(multi.diagnostics[0].code, "unsupported");
-  assert.deepEqual(multi.rules, []);
+  assert.deepEqual(multi.program.steps.map((s) => s.op), [
+    "repeat-start", "wait", "wait", "repeat-end"
+  ]);
 });
+
 
 test("whitespace, tab and digits normalize without indentation semantics", () => {
   assert.equal(normalizeLine(" かべ\tとぶ　"), "かべとぶ");

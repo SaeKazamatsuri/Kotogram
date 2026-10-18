@@ -6,7 +6,8 @@ import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
 import StatsSummaryModal from "~/components/game/StatsSummaryModal.vue";
-import { useParser, type Rule } from "~/composables/useParser";
+import { useParser } from "~/composables/useParser";
+import type { GameProgram } from "~/game/core";
 import type { StageData } from "~/composables/useStageLoader";
 import {
   defaultFailHint,
@@ -33,7 +34,7 @@ const loading = ref(true);
 const loadError = ref<string | null>(null);
 const editorRef = ref<InstanceType<typeof CommandEditor> | null>(null);
 const editorLines = ref<string[]>([]);
-const program = ref<Rule[] | undefined>(undefined);
+const program = ref<GameProgram | undefined>(undefined);
 const running = ref(false);
 const cleared = ref(false);
 const failed = ref(false);
@@ -115,7 +116,7 @@ function onRun() {
     running.value = false;
     return;
   }
-  program.value = result.rules;
+  program.value = result.program;
   failed.value = false;
   failInfo.value = null;
   cleared.value = false;

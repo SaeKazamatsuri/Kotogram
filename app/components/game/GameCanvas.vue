@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { StageData } from "~/composables/useStageLoader";
-import type { Rule } from "~/composables/useParser";
+import type { GameProgram } from "~/game/core";
 import type { FailPayload } from "~/types/game";
 import { GAME, createGame, elapsedSeconds, isCrouching, stepGame, worldToScreenX, type GameState } from "~/game/core";
 
 const props = defineProps<{
   stage: StageData;
-  program?: Rule[];
+  program?: GameProgram;
   running?: boolean;
 }>();
 const emit = defineEmits<{

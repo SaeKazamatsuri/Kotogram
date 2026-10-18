@@ -1,3 +1,4 @@
+import type { GameInstruction, GameProgram } from "../game/core";
 export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin";
 export type Action = "jump" | "crouch" | "collect";
 export type Vocabulary = {
@@ -30,7 +31,7 @@ export type IfStatement = { kind: "if"; conditions: Condition[]; operator: "or";
 export type Statement = RuleStatement | ActionStatement | RepeatStatement | IfStatement;
 export type ParseResult = { body: Statement[]; diagnostics: Diagnostic[]; tokens: Token[][] };
 export type ExecutableRule = { cond?: Condition; conds?: Condition[]; action: Action; maxFires?: number };
-export type CompileResult = { rules: ExecutableRule[]; diagnostics: Diagnostic[] };
+export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; diagnostics: Diagnostic[] };
 
 const DEFAULT_CONDITIONS: Record<Condition, string[]> = {
   wall: ["かべ"], hole: ["あな"], enemy: ["おばけ", "てき"],
@@ -250,33 +251,95 @@ export function parseSource(source: string | string[], vocabulary: Vocabulary = 
   return { body: statements(0), diagnostics, tokens: tokenLines };
 }
 
+/**
+ * Compile a mixed program into two independent execution tracks:
+ * 1. All top-level conditionals are always-on watchers.
+ * 2. Unconditional actions and multi-command repeats form a bounded
+ *    procedural bytecode stream. Rules inside those repeats wait for the
+ *    next eligible obstacle, then advance to the next statement.
+ *
+ * A lone rule inside a top-level repeat remains an equivalent bounded
+ * watcher: 3かいくりかえす / かべとぶ / おわり === かべ3かいとぶ.
+ */
 export function compileProgram(parsed: ParseResult): CompileResult {
   const diagnostics = [...parsed.diagnostics];
+  const watchers: ExecutableRule[] = [];
+  const steps: GameInstruction[] = [];
+  // Backward-compatible output for simple programs; GameProgram is canonical.
   const rules: ExecutableRule[] = [];
-  const addRule = (node: RuleStatement, count?: number) => {
-    if (count !== undefined && node.maxFires !== null) {
-      diagnostics.push(error("unsupported", "かいすうは 1かしょだけに かいてね", node.span.start));
+
+  const watcher = (node: RuleStatement, limit?: number) => {
+    if (limit !== undefined && node.maxFires !== null) {
+      diagnostics.push(error("unsupported", "かいすうを 2かしょに かかないでね", node.span.start));
       return;
     }
-    rules.push({ action: node.action, conds: [...node.conditions], maxFires: count ?? node.maxFires ?? undefined });
+    const rule: ExecutableRule = {
+      action: node.action,
+      conds: [...node.conditions],
+      maxFires: limit ?? node.maxFires ?? undefined,
+    };
+    watchers.push(rule);
+    rules.push(rule);
   };
-  for (const node of parsed.body) {
-    if (node.kind === "rule") addRule(node);
+
+  const procedural = (node: Statement): void => {
     if (node.kind === "action") {
-      if (node.repeat !== 1) diagnostics.push(error("unsupported", "『なんかいも とぶ』は いま じゅんびちゅうだよ", node.span.start));
-      else rules.push({ action: node.action });
+      steps.push({ op: "action", action: node.action, count: node.repeat });
+    } else if (node.kind === "rule") {
+      steps.push({
+        op: "wait",
+        conds: [...node.conditions],
+        action: node.action,
+        count: node.maxFires ?? 1,
+      });
+    } else if (node.kind === "if") {
+      // In a procedure, "もし" waits for the next qualifying obstacle.
+      steps.push({ op: "wait", conds: [...node.conditions], count: 1 });
+      for (const child of node.body) procedural(child);
+    } else {
+      const begin = steps.length;
+      steps.push({ op: "repeat-start", count: node.repeat, end: -1 });
+      for (const child of node.body) procedural(child);
+      const end = steps.length;
+      steps.push({ op: "repeat-end", start: begin });
+      steps[begin] = { op: "repeat-start", count: node.repeat, end };
     }
-    if (node.kind === "repeat") {
-      if (node.body.length === 1 && node.body[0].kind === "rule") addRule(node.body[0], node.repeat);
-      else diagnostics.push(error("unsupported", "ふくすうの めいれいの くりかえしは じゅんびちゅうだよ", node.span.start));
-    }
-    if (node.kind === "if") {
+  };
+
+  for (const node of parsed.body) {
+    if (node.kind === "rule") {
+      watcher(node);
+    } else if (node.kind === "action") {
+      procedural(node);
+      if (node.repeat === 1) rules.push({ action: node.action });
+    } else if (node.kind === "if") {
+      // A top-level if is an always-on rule, matching its one-line shorthand.
       if (node.body.length === 1 && node.body[0].kind === "action" && node.body[0].repeat === 1) {
-        rules.push({ action: node.body[0].action, conds: [...node.conditions], maxFires: undefined });
-      } else diagnostics.push(error("unsupported", "もしの なかは うごきを 1つ かいてね", node.span.start));
+        watcher({
+          kind: "rule",
+          conditions: node.conditions,
+          operator: "or",
+          action: node.body[0].action,
+          maxFires: null,
+          span: node.span,
+        });
+      } else {
+        diagnostics.push(error("unsupported", "もしの なかは うごきを 1つ かいてね", node.span.start));
+      }
+    } else if (node.body.length === 1 && node.body[0].kind === "rule" && node.body[0].maxFires === null) {
+      watcher(node.body[0], node.repeat);
+    } else {
+      procedural(node);
     }
   }
-  return { rules: diagnostics.length ? [] : rules, diagnostics };
+
+  if (steps.length > 1024) {
+    diagnostics.push(error("limit", "めいれいの くみあわせが おおすぎるよ", { line: 1, column: 1 }));
+  }
+  const program: GameProgram = diagnostics.length
+    ? { watchers: [], steps: [] }
+    : { watchers, steps };
+  return { rules: diagnostics.length ? [] : rules, program, diagnostics };
 }
 
 export function analyzeProgram(source: string | string[], vocabulary: Vocabulary = {}) {
