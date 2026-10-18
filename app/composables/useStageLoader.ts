@@ -78,23 +78,11 @@ export function useStageLoader() {
   async function loadStage(id: string): Promise<StageData> {
     const manifest = await getManifest();
     const item = manifest.stages.find((stage) => stage.id === id);
-    const version = manifest.version;
-    if (item) {
-      try {
-        return await get<StageData>(item.file, { version });
-      } catch {
-        /* noop */
-      }
-    }
+    if (!item) throw new Error("ステージが みつからなかったよ");
     try {
-      return await get<StageData>(`/stages/${id}.json`, { version });
+      return await get<StageData>(item.file, { version: manifest.version });
     } catch {
-      return {
-        id,
-        goal: 800,
-        scrollSpeed: 2.5,
-        meta: { title: "ステージ（仮）" },
-      };
+      throw new Error("ステージを よみこめなかったよ。ホームから もういちど ためしてね");
     }
   }
 

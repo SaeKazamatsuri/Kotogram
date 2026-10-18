@@ -56,6 +56,7 @@ const saveError = ref("");
 const rankingRefresh = ref(0);
 let pendingRunId = "";
 let loadRequest = 0;
+let sessionGeneration = 0;
 
 function goNext() {
   const next = nextStageId(stageId.value, stageItems.value);
@@ -82,6 +83,7 @@ function closeFail() {
 
 async function loadCurrentStage() {
   const request = ++loadRequest;
+  sessionGeneration++;
   const id = stageId.value;
   loading.value = true;
   stage.value = null;
@@ -91,7 +93,9 @@ async function loadCurrentStage() {
   failed.value = false;
   failInfo.value = null;
   lastRun.value = null;
+  saving.value = false;
   scoreValues.value = null;
+  bests.value = {};
   program.value = undefined;
   editorLines.value = [];
   savedName.value = "";
@@ -131,6 +135,7 @@ function onRun() {
     running.value = false;
     return;
   }
+  sessionGeneration++;
   program.value = result.program;
   failed.value = false;
   failInfo.value = null;
@@ -162,6 +167,7 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
 
 async function onRegister(nickname: string) {
   if (saving.value || savedName.value || !lastRun.value || !rankingApiBase) return;
+  const session = sessionGeneration;
   saving.value = true;
   saveError.value = "";
   try {
@@ -175,13 +181,14 @@ async function onRegister(nickname: string) {
       nickname: nickname.trim(),
     };
     const saved = await new RankingClient(rankingApiBase).submit(input);
+    if (session !== sessionGeneration) return;
     savedName.value = saved.nickname;
     window.localStorage.setItem("kotogram.nickname", saved.nickname);
     rankingRefresh.value++;
   } catch {
-    saveError.value = "きろくを おくれなかったよ。";
+    if (session === sessionGeneration) saveError.value = "きろくを おくれなかったよ。";
   } finally {
-    saving.value = false;
+    if (session === sessionGeneration) saving.value = false;
   }
 }
 
@@ -214,6 +221,7 @@ watch(stageId, () => {
     <section v-else-if="stage" class="grid gap-4 md:grid-cols-2">
       <div class="rounded-2xl border border-sky-200 bg-sky-50 p-4">
         <CommandEditor
+          :key="stageId"
           ref="editorRef"
           v-model:lines="editorLines"
           :dictionary="dict || undefined"
@@ -223,6 +231,7 @@ watch(stageId, () => {
 
       <div class="rounded-2xl border border-lime-200 bg-lime-50 p-4">
         <GameCanvas
+          :key="stageId"
           :stage="stage"
           :program="program"
           :running="running"
