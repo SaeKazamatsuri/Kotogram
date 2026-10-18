@@ -3,9 +3,24 @@ import {
   countSourceCharacters, getScoreReference, rankingScopeKey,
 } from "../app/scoring/score.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
+import { createGame, runToCompletion } from "../app/game/core.ts";
+import stage1 from "../public/stages/stage-1.json" with { type: "json" };
+import stage2 from "../public/stages/stage-2.json" with { type: "json" };
+import stage3 from "../public/stages/stage-3.json" with { type: "json" };
+import stage4 from "../public/stages/stage-4.json" with { type: "json" };
+import stage5 from "../public/stages/stage-5.json" with { type: "json" };
 
 const identity = /^[a-f0-9]{8}-[a-f0-9-]{27,50}$/i;
 const safeName = /^[^\p{Cc}\p{Cf}<>]*$/u;
+const replayStages = new Map([
+  ["stage-1", stage1],
+  ["stage-2", stage2],
+  ["stage-3", stage3],
+  ["stage-4", stage4],
+  ["stage-5", stage5],
+]);
+export const replayStageIds = [...replayStages.keys()];
+const MAX_REPLAY_TICKS = 20000;
 
 function requiredString(value, key) {
   if (typeof value !== "string" || value.length === 0) throw new RangeError(key + " is required");
@@ -46,6 +61,18 @@ export function validateRunPayload(input) {
   if (!Number.isSafeInteger(input.charCount) || input.charCount < 1 || input.charCount > 2000) throw new RangeError("invalid charCount");
   if (countSourceCharacters(source) !== input.charCount) throw new RangeError("charCount does not match source");
   return { ...scope, runId, playerId, nickname, source, elapsedTicks: input.elapsedTicks, charCount: input.charCount };
+}
+
+export function verifyRunResult(input) {
+  const stage = replayStages.get(input.stageId);
+  if (!stage) throw new RangeError("unknown stage for replay");
+  const parsed = analyzeProgram(input.source);
+  if (parsed.diagnostics.length) throw new RangeError("invalid program");
+  const game = runToCompletion(createGame(stage, parsed.program), MAX_REPLAY_TICKS);
+  if (game.status !== "cleared" || game.elapsedTicks !== input.elapsedTicks) {
+    throw new RangeError("run does not match verified clear time");
+  }
+  return game.elapsedTicks;
 }
 
 export function sameRun(a, b) {
