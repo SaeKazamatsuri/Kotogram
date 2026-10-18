@@ -182,7 +182,7 @@ function draw() {
     ctx.fillRect(x - 11, GAME.groundY - 33, 22, 25);
     ctx.fillStyle = "#0f172a";
     ctx.font = "bold 12px sans-serif";
-    ctx.fillText(item.activated ? "ON" : "PUSH", x - 17, GAME.groundY - 42);
+    ctx.fillText(item.activated ? "○" : "おす", x - 17, GAME.groundY - 42);
   }
 
   for (const door of game.doors) {

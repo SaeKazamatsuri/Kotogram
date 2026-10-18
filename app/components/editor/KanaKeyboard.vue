@@ -12,13 +12,13 @@ const rows = [
   ["お", "こ", "そ", "と", "の", "ほ", "も", "よ", "ろ", "、"],
 ];
 const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
-const controls: { label: string; key: SoftKey }[] = [
+const controls: { label: string; icon?: string; key: SoftKey }[] = [
   { label: "゛", key: { kind: "dakuten" } },
   { label: "゜", key: { kind: "handakuten" } },
   { label: "小", key: { kind: "small" } },
-  { label: "←", key: { kind: "left" } },
-  { label: "→", key: { kind: "right" } },
-  { label: "けす", key: { kind: "backspace" } },
+  { label: "左", icon: "lucide:arrow-left", key: { kind: "left" } },
+  { label: "右", icon: "lucide:arrow-right", key: { kind: "right" } },
+  { label: "消す", icon: "lucide:delete", key: { kind: "backspace" } },
   { label: "空白", key: { kind: "insert", text: " " } },
   { label: "改行", key: { kind: "insert", text: "\n" } },
 ];
@@ -26,7 +26,6 @@ const controls: { label: string; key: SoftKey }[] = [
 
 <template>
   <section aria-label="ひらがなキーボード" class="rounded-2xl border-2 border-[#646b89] bg-[#25304d] p-3 text-[#fff7e8]">
-    <p class="mb-3 text-sm font-bold text-[#d5e8e1]">もじを おして かいてね</p>
     <div class="overflow-x-auto pb-1" @pointerdown.prevent>
       <div class="min-w-[430px]">
         <div class="grid grid-cols-10 gap-1">
@@ -65,7 +64,7 @@ const controls: { label: string; key: SoftKey }[] = [
         class="min-h-11 rounded-xl border-2 border-[#3b495d] bg-[#ffcd77] px-2 text-sm font-black text-[#273449] hover:bg-[#ffdf9e] focus-visible:outline-2 focus-visible:outline-[#fff7e8] disabled:opacity-40"
         @pointerdown.prevent
         @click="emit('press', control.key)"
-      >{{ control.label }}</button>
+      ><Icon v-if="control.icon" :name="control.icon" class="game-icon mr-1" aria-hidden="true"/>{{ control.label }}</button>
     </div>
   </section>
 </template>

@@ -61,13 +61,13 @@ try {
   const editor = page.locator("textarea");
   await editor.waitFor({ state: "visible" });
   await saveScene(page, "play-desktop");
-  await page.getByRole("button", { name: "ひらがなキーボードを ひらく" }).click();
+  await page.getByRole("button", { name: "かな入力" }).click();
   for (const [kana, mark] of [["か", false], ["へ", true], ["と", false], ["ふ", true]]) {
     await page.getByRole("button", { name: kana + " をにゅうりょく" }).click();
     if (mark) await page.getByRole("button", { name: "゛" }).click();
   }
   assert.equal(await editor.inputValue(), "かべとぶ");
-  await page.getByRole("button", { name: /はじめる/ }).click();
+  await page.getByRole("button", { name: "動かす" }).click();
   await page.getByText("ステージクリア！").waitFor({ timeout: 45000 });
   await saveScene(page, "clear-desktop");
   assert.equal(await page.getByText("このたんまつの じこベスト").count(), 1);
