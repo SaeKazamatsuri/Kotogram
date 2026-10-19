@@ -24,6 +24,15 @@ const payload = () => ({
 test("validates stage and version, source metric, bounds and nickname", () => {
   assert.equal(validateRunPayload(payload()).charCount, 4);
   assert.throws(() => validateRunPayload({ ...payload(), charCount: 3 }), /charCount/);
+  for (const malformed of [
+    "------------------------------------",
+    "00000000-0000-0000-8000-000000000001",
+    "00000000-0000-4000-7000-000000000001",
+    "00000000000040008000000000000001",
+  ]) {
+    assert.throws(() => validateRunPayload({ ...payload(), runId: malformed }), /runId/);
+    assert.throws(() => validateRunPayload({ ...payload(), playerId: malformed }), /playerId/);
+  }
   assert.throws(() => validateRunPayload({ ...payload(), stageVersion: "old" }), /scope/);
   assert.throws(() => validateRunPayload({ ...payload(), nickname: "a".repeat(17) }), /nickname/);
   assert.throws(() => validateRunPayload({ ...payload(), nickname: "<script>" }), /nickname/);
