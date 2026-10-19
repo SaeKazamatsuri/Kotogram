@@ -89,3 +89,49 @@ test("ゲーム中にコードを編集しても開始時のプログラムで�
   await expect(page.getByText(/で とうろくできたよ！/)).toBeVisible();
   expect(submittedSource).toBe("かべとぶ");
 });
+
+test("次の人へ初期化した後に前利用者の遅い送信結果が名前を復活させない", async ({ page }) => {
+  test.setTimeout(60000);
+  page.on("dialog", (dialog) => dialog.accept());
+  let releaseResponse;
+  let signalRequest;
+  const responseGate = new Promise((resolve) => { releaseResponse = resolve; });
+  const requestSeen = new Promise((resolve) => { signalRequest = resolve; });
+
+  await page.route("**/api/results", async (route) => {
+    const origin = route.request().headers().origin ?? "http://127.0.0.1:3000";
+    const headers = {
+      "Access-Control-Allow-Origin": origin,
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    };
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    signalRequest();
+    await responseGate;
+    await route.fulfill({
+      status: 201,
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ ok: true, nickname: "ゲスト999", runId: "test", duplicate: false }),
+    });
+  });
+
+  await page.goto("/play/stage-1");
+  await page.getByRole("textbox", { name: "コードを書く" }).fill("かべとぶ");
+  await page.getByRole("button", { name: "動かす" }).click();
+  await expect(page.getByRole("heading", { name: "ステージクリア！" })).toBeVisible({ timeout: 30000 });
+  await page.getByRole("button", { name: "きろくを 送る" }).click();
+  await requestSeen;
+  await page.getByRole("link", { name: "ステージへ" }).click();
+  await page.evaluate(() => localStorage.setItem("kotogram.nickname", "前の人"));
+  await page.getByRole("button", { name: /次の人へ/ }).click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("kotogram.nickname"))).toBeNull();
+
+  const received = page.waitForResponse((response) => response.url().endsWith("/api/results") && response.request().method() === "POST");
+  releaseResponse();
+  await received;
+  await page.waitForTimeout(250);
+  expect(await page.evaluate(() => localStorage.getItem("kotogram.nickname"))).toBeNull();
+});
