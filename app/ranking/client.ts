@@ -81,7 +81,7 @@ export class RankingClient {
   private async request<T>(path: string, init?: RequestInit): Promise<T> {
     const response = await this.requester(this.endpoint(path), {
       ...init,
-      headers: { "Content-Type": "application/json", ...init?.headers },
+      headers: init?.method === "POST" ? { "Content-Type": "application/json", ...init?.headers } : init?.headers,
       signal: AbortSignal.timeout(this.timeoutMs),
     });
     if (!response.ok) throw new Error(response.status === 409 ? "run_id_conflict" : "ranking_api_unavailable");
