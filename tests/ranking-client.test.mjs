@@ -113,10 +113,15 @@ test("network timeout ends the pending submission so it can be retried", async (
   };
   const client = new RankingClient("https://kotogram-api.sae-chan.net", mock, 25);
   const input = { ...createScope("stage-1", "2025-10-26"), runId: "test-run", playerId: "player", nickname: "", source: "かべとぶ", elapsedTicks: 712, charCount: 4 };
-  await assert.rejects(() => client.submit(input), (error) => error?.name === "TimeoutError");
-  const retried = await client.submit(input);
-  assert.equal(retried.duplicate, true);
-  assert.equal(attempts, 2);
+  const keepEventLoopAlive = setTimeout(() => {}, 250);
+  try {
+    await assert.rejects(() => client.submit(input), (error) => error?.name === "TimeoutError");
+    const retried = await client.submit(input);
+    assert.equal(retried.duplicate, true);
+    assert.equal(attempts, 2);
+  } finally {
+    clearTimeout(keepEventLoopAlive);
+  }
 });
 
 test("ranking request timeout must be positive, finite and bounded", () => {
