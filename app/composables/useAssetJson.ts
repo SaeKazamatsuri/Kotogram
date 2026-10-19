@@ -40,7 +40,7 @@ export function useAssetJson() {
       return data;
     } catch {
       const fallback = readCache();
-      if (fallback) return fallback.data;
+      if (fallback && (!version || fallback.version === version)) return fallback.data;
       throw new Error("Failed to load " + path);
     }
   }
