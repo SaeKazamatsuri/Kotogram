@@ -3,6 +3,7 @@ import {
   countSourceCharacters, getScoreReference, rankingScopeKey,
 } from "../app/scoring/score.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
+import { isValidId } from "../app/ranking/identity.ts";
 import { createGame, runToCompletion } from "../app/game/core.ts";
 import stage1 from "../public/stages/stage-1.json" with { type: "json" };
 import stage2 from "../public/stages/stage-2.json" with { type: "json" };
@@ -12,7 +13,6 @@ import stage5 from "../public/stages/stage-5.json" with { type: "json" };
 import stage6 from "../public/stages/stage-6.json" with { type: "json" };
 import stage7 from "../public/stages/stage-7.json" with { type: "json" };
 
-const identity = /^[a-f0-9]{8}-[a-f0-9-]{27,50}$/i;
 const safeName = /^[^\p{Cc}\p{Cf}<>]*$/u;
 const replayStages = new Map([
   ["stage-1", stage1],
@@ -55,7 +55,7 @@ export function validateRunPayload(input) {
   const scope = validateScope(input);
   const runId = requiredString(input.runId, "runId");
   const playerId = requiredString(input.playerId, "playerId");
-  if (!identity.test(runId) || !identity.test(playerId)) throw new RangeError("invalid runId or playerId");
+  if (!isValidId(runId) || !isValidId(playerId)) throw new RangeError("invalid runId or playerId");
   const nickname = typeof input.nickname === "string" ? input.nickname.trim() : "";
   if ([...nickname].length > 16 || !safeName.test(nickname)) throw new RangeError("invalid nickname");
   const source = requiredString(input.source, "source");
