@@ -196,7 +196,7 @@ async function onRegister(nickname: string) {
     try {
       window.localStorage.setItem("kotogram.nickname", saved.nickname);
     } catch {
-      saveError.value = "";
+      if (import.meta.dev) console.warn("Nickname could not be cached locally");
     }
     rankingRefresh.value++;
   } catch (error) {
