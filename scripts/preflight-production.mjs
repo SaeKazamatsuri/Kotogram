@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 export const PUBLIC_ORIGIN = "https://kotogram.sae-chan.net";
+export const API_DOMAIN = "kotogram-api.sae-chan.net";
 
 const bindings = new Map([["RANKING", "StageRanking"], ["COUNTER", "GuestCounter"]]);
 
@@ -24,6 +25,13 @@ export function validateProductionConfig(config) {
   }
   if (!production?.name || production.name === config.name) {
     problems.push("Production and development Workers need distinct names.");
+  }
+  const routes = production?.routes ?? [];
+  if (routes.length !== 1 || routes[0]?.pattern !== API_DOMAIN || routes[0]?.custom_domain !== true) {
+    problems.push("Production API must use custom domain: " + API_DOMAIN);
+  }
+  if (production?.workers_dev === false && !production?.routes?.length) {
+    problems.push("Do not disable workers.dev before the custom domain is configured.");
   }
   const actual = new Map((production?.durable_objects?.bindings ?? []).map((item) => [item.name, item.class_name]));
   for (const [binding, klass] of bindings) {
