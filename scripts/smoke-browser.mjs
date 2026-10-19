@@ -128,7 +128,7 @@ try {
   await page.getByRole("button", { name: "ランキングを 見る" }).click();
   await page.getByRole("heading", { name: "ランキング", exact: true }).waitFor();
   const tabs = page.getByRole("group", { name: "ランキングのしゅるい" });
-  for (const name of ["文字数", "合計", "タイム"]) {
+  for (const name of ["文字数", "総合", "タイム"]) {
     const tab = tabs.getByRole("button", { name });
     await tab.click();
     assert.equal(await tab.getAttribute("aria-pressed"), "true");
