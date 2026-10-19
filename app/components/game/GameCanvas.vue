@@ -3,6 +3,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { StageData } from "~/composables/useStageLoader";
 import type { FailPayload } from "~/types/game";
 import { GAME, createGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
+import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
 import { resolveScenePalette } from "~/game/scenery";
 import { renderGameFrame } from "~/game/renderer";
 
@@ -19,8 +20,7 @@ const emit = defineEmits<{
 const canvas = ref<HTMLCanvasElement | null>(null);
 let game: GameState = createGame(props.stage, props.program);
 let frame = 0;
-let previousTimestamp = 0;
-let accumulated = 0;
+let frameClock = createFrameClock();
 let idleFrame = 0;
 let lastIdleDraw = 0;
 const STEP_MS = 1000 / GAME.tickRate;
@@ -36,8 +36,7 @@ function stop() {
   idleFrame = 0;
   cancelAnimationFrame(frame);
   frame = 0;
-  previousTimestamp = 0;
-  accumulated = 0;
+  frameClock = createFrameClock();
 }
 
 function scheduleIdle() {
@@ -56,16 +55,11 @@ function idleLoop(timestamp: number) {
 
 function loop(timestamp: number) {
   if (!props.running || game.status !== "running") return;
-  accumulated += previousTimestamp ? Math.min(timestamp - previousTimestamp, 250) : STEP_MS;
-  previousTimestamp = timestamp;
-
-  let steps = 0;
-  while (accumulated >= STEP_MS && steps < 5 && game.status === "running") {
+  const advanced = advanceFrameClock(frameClock, timestamp, STEP_MS);
+  frameClock = advanced.clock;
+  for (let step = 0; step < advanced.steps && game.status === "running"; step++) {
     stepGame(game);
-    accumulated -= STEP_MS;
-    steps += 1;
   }
-  if (steps === 5) accumulated = Math.min(accumulated, STEP_MS);
   draw();
 
   if (game.status === "cleared") {
