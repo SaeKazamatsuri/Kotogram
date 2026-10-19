@@ -79,7 +79,7 @@ test("ゲーム中にコードを編集しても開始時のプログラムで�
   await page.getByRole("button", { name: "動かす" }).click();
   await editor.fill("はしる");
   await expect(page.getByRole("heading", { name: "ステージクリア！" })).toBeVisible({ timeout: 30000 });
-  await expect(page.getByText("4", { exact: true }).first()).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "ステージクリア" }).getByText(/4字/).first()).toBeVisible();
   let submittedSource = null;
   await page.route("**/api/results", async (route) => {
     submittedSource = JSON.parse(route.request().postData() ?? "{}").source;
