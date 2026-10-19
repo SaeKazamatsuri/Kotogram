@@ -28,3 +28,13 @@ test("preflight checks production isolation and SQLite DO bindings", () => {
   config.env.production.migrations = [];
   assert.ok(validateProductionConfig(config).problems.some((msg) => msg.includes("SQLite")));
 });
+
+test("production API domain must remain mapped to the existing ranking Worker", () => {
+  const copy = structuredClone(current);
+  assert.equal(copy.env.production.name, "kotogram-api");
+  assert.deepEqual(copy.env.production.routes, [{ pattern: "kotogram-api.sae-chan.net", custom_domain: true }]);
+  copy.env.production.routes = [];
+  assert.ok(validateProductionConfig(copy).problems.some((msg) => msg.includes("custom domain")));
+  copy.env.production.routes = [{ pattern: "kotogram.sae-chan.net", custom_domain: true }];
+  assert.equal(validateProductionConfig(copy).ok, false);
+});
