@@ -75,7 +75,8 @@ export function setAudioMuted(next: boolean): void {
   if (!onClient()) return;
   try {
     window.localStorage.setItem(STORAGE_KEY, String(next));
-  } catch {
+  } catch (error) {
+    if (import.meta.dev) console.warn("音声設定を保存できませんでした", error);
   }
   if (next) {
     music?.pause();

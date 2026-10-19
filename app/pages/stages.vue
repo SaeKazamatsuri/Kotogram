@@ -54,8 +54,8 @@ onMounted(() => {
         <NuxtLink
           v-if="stageUnlocked(stage.id)"
           :to="`/play/${stage.id}`"
-          @click="onChooseStage"
           class="flex min-h-[165px] flex-col justify-between rounded-[22px] border-[3px] border-[#6f87a0] bg-[#fffaf1] p-5 text-[#172439] shadow-[0_5px_0_#080e1e] transition-transform hover:-translate-y-1"
+          @click="onChooseStage"
         >
           <div class="flex items-center justify-between">
             <span class="text-base font-black text-[#405978]">ステージ {{ index + 1 }}</span>
