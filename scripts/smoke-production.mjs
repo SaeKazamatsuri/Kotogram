@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
-import { FRONTEND_ORIGIN, validateFrontendApiBase } from "./preflight-frontend.mjs";
+import { FRONTEND_ORIGIN, PRODUCTION_API_ORIGIN, validateFrontendApiBase } from "./preflight-frontend.mjs";
 
 export async function runProductionSmoke(apiBase, fetcher = fetch, publicOrigin = FRONTEND_ORIGIN) {
   const validated = validateFrontendApiBase(apiBase);
@@ -72,7 +72,7 @@ export async function runProductionSmoke(apiBase, fetcher = fetch, publicOrigin 
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const base = process.env.PRODUCTION_RANKING_API_BASE || process.env.NUXT_PUBLIC_RANKING_API_BASE;
+  const base = process.env.PRODUCTION_RANKING_API_BASE || process.env.NUXT_PUBLIC_RANKING_API_BASE || PRODUCTION_API_ORIGIN;
   if (!base) {
     console.error("本番ランキングAPIのURLをPRODUCTION_RANKING_API_BASEまたはNUXT_PUBLIC_RANKING_API_BASEに設定してください。");
     process.exitCode = 2;
