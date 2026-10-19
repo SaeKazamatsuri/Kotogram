@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CommandEditor from "~/components/editor/CommandEditor.vue";
 import GameCanvas from "~/components/game/GameCanvas.vue";
@@ -132,6 +132,10 @@ async function loadCurrentStage() {
 }
 
 onMounted(() => { void loadCurrentStage(); });
+onBeforeUnmount(() => {
+  sessionGeneration++;
+  loadRequest++;
+});
 
 
 function onRun() {
@@ -189,7 +193,11 @@ async function onRegister(nickname: string) {
     const saved = await new RankingClient(rankingApiBase).submit(input);
     if (session !== sessionGeneration) return;
     savedName.value = saved.nickname;
-    window.localStorage.setItem("kotogram.nickname", saved.nickname);
+    try {
+      window.localStorage.setItem("kotogram.nickname", saved.nickname);
+    } catch {
+      if (import.meta.dev) console.warn("Nickname could not be cached locally");
+    }
     rankingRefresh.value++;
   } catch (error) {
     if (import.meta.dev) console.error("Ranking registration failed:", error instanceof Error ? error.message : "unknown error");
