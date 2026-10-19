@@ -27,6 +27,20 @@ test("player ID stays stable across attempts and changes on reset", () => {
   assert.notEqual(getOrCreatePlayerId(storage, () => id(++calls)), a);
 });
 
+test("malformed persisted IDs are rotated and generated IDs must be UUIDv4", () => {
+  const items = new Map([["kotogram.player", "------------------------------------"]]);
+  const storage = {
+    getItem: (key) => items.get(key) ?? null,
+    setItem: (key, value) => items.set(key, value),
+  };
+  const valid = "11111111-2222-4333-8aaa-000000000001";
+  assert.equal(getOrCreatePlayerId(storage, () => valid), valid);
+  assert.equal(items.get("kotogram.player"), valid);
+  items.delete("kotogram.player");
+  assert.throws(() => getOrCreatePlayerId(storage, () => "11111111-2222-2333-8aaa-000000000001"), /invalid/);
+  assert.equal(items.get("kotogram.player"), undefined);
+});
+
 test("submit sends payload unchanged and includes content type", async () => {
   let captured;
   const mock = async (url, init) => {
