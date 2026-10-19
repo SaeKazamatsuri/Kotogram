@@ -48,30 +48,7 @@ export function useStageLoader() {
   const stageCacheTtlMs = 300000;
 
   async function getManifest(): Promise<StageManifest> {
-    try {
-      return await get<StageManifest>(manifestPath, { ttlMs: stageCacheTtlMs });
-    } catch {
-      return {
-        version: "fallback",
-        stages: [
-          {
-            id: "stage-1",
-            title: "かべをとびこえよう",
-            file: "/stages/stage-1.json",
-          },
-          {
-            id: "stage-2",
-            title: "かべとおばけをよけよう",
-            file: "/stages/stage-2.json",
-          },
-          {
-            id: "stage-3",
-            title: "くりかえしに挑戦",
-            file: "/stages/stage-3.json",
-          },
-        ],
-      };
-    }
+    return await get<StageManifest>(manifestPath, { ttlMs: stageCacheTtlMs });
   }
 
   async function listStages(): Promise<StageListItem[]> {
