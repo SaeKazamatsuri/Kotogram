@@ -2,6 +2,7 @@ import {
   ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
   type RankingScope,
 } from "../scoring/score.ts";
+import { isValidId } from "./identity.ts";
 
 export type RankingKind = "time" | "chars" | "overall";
 export type RankingRow = {
@@ -46,8 +47,9 @@ export function createScope(stageId: string, stageVersion: string): RankingScope
 
 export function getOrCreatePlayerId(storage: Pick<Storage, "getItem" | "setItem">, createId: () => string): string {
   const current = storage.getItem("kotogram.player");
-  if (current && /^[a-f0-9-]{36}$/i.test(current)) return current;
+  if (isValidId(current)) return current;
   const id = createId();
+  if (!isValidId(id)) throw new RangeError("generated player ID is invalid");
   storage.setItem("kotogram.player", id);
   return id;
 }
