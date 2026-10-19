@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { runProductionSmoke } from "../scripts/smoke-production.mjs";
 
-const apiBase = "https://api.sae-chan.net";
+const apiBase = "https://kotogram-api.sae-chan.net";
 const origin = "https://kotogram.sae-chan.net";
 
 function fixtureFetcher({ denyCors = false } = {}) {
