@@ -34,3 +34,13 @@ test("spaces and newline are inserted as characters, not command pieces", () => 
   const state = edit({ text: "かべとぶ", start: 4, end: 4 }, { kind: "insert", text: "\n" });
   assert.deepEqual(state, { text: "かべとぶ\n", start: 5, end: 5 });
 });
+
+test("複数文字の選択中は濁点・半濁点・小文字が範囲外の文字を書き換えない", () => {
+  const selected = { text: "かはつや", start: 1, end: 3 };
+  for (const kind of ["dakuten", "handakuten", "small"]) {
+    assert.deepEqual(edit(selected, { kind }), selected);
+  }
+  assert.deepEqual(edit({ text: "かはつや", start: 1, end: 2 }, { kind: "handakuten" }), {
+    text: "かぱつや", start: 2, end: 2,
+  });
+});
