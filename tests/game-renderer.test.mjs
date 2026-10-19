@@ -25,7 +25,7 @@ test("描画処理はGameStateを書き換えない", () => {
     },
     set(target, key, value) { target[key] = value; return true; },
   });
-  renderGameFrame(ctx, game, resolveScenePalette("sunset"), { player: null, wall: null, ghost: null, goal: null });
+  renderGameFrame(ctx, game, resolveScenePalette("sunset"), 120);
   assert.ok(calls.some(([method]) => method === "fillRect"));
   assert.ok(calls.some(([method]) => method === "fillText"));
   assert.equal(JSON.stringify(game, (_key, value) => value instanceof Set ? [...value] : value), before);

@@ -88,7 +88,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   }
 
   drawHoles(ctx, game);
-  drawWorldObjects(ctx, game);
+  drawWorldObjects(ctx, game, visualTick);
 
   for (const wall of game.walls) {
     if (!game.ghosts.some((ghost) => ghost.x === wall.x)) continue;
