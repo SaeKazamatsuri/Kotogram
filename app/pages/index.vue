@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { playSe, unlockAudio } from "~/game/audio";
+function onStart() {
+  unlockAudio();
+  playSe("confirm");
+}
 const completed = ref(0);
 onMounted(() => {
   completed.value = Object.keys(useStats().getAll()).length;
@@ -15,7 +20,7 @@ onMounted(() => {
           <span class="text-lg font-black">ことばで 遊ぶ</span>
         </div>
         <h1 class="game-heading mb-10 text-[clamp(3.5rem,9vw,7rem)] tracking-[-.05em] text-[#fffaf1]">こと<span class="text-[#aaf0d0]">グラム</span></h1>
-        <NuxtLink to="/stages" class="game-button game-button--mint min-w-[240px] text-xl" aria-label="遊ぶ">
+        <NuxtLink to="/stages" @click="onStart" class="game-button game-button--mint min-w-[240px] text-xl" aria-label="遊ぶ">
           <Icon name="lucide:play" class="game-icon" aria-hidden="true" /> 遊ぶ
         </NuxtLink>
         <p v-if="completed" class="mt-7 flex items-center gap-2 text-base font-bold text-[#e9f6ee]"><Icon name="lucide:star" class="game-icon text-[#ffdc90]" aria-hidden="true" /> {{ completed }} ステージ クリア</p>

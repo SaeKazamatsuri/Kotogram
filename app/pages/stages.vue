@@ -1,6 +1,11 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { canPlayStage } from "~/stage/progression";
+import { playSe, unlockAudio } from "~/game/audio";
+function onChooseStage() {
+  unlockAudio();
+  playSe("select");
+}
 const { getManifest } = useStageLoader();
 const { getAll, reset } = useStats();
 type Item = { id: string; title: string; file: string };
@@ -49,6 +54,7 @@ onMounted(() => {
         <NuxtLink
           v-if="stageUnlocked(stage.id)"
           :to="`/play/${stage.id}`"
+          @click="onChooseStage"
           class="flex min-h-[165px] flex-col justify-between rounded-[22px] border-[3px] border-[#6f87a0] bg-[#fffaf1] p-5 text-[#172439] shadow-[0_5px_0_#080e1e] transition-transform hover:-translate-y-1"
         >
           <div class="flex items-center justify-between">

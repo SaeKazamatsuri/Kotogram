@@ -6,6 +6,8 @@ import { GAME, createGame, elapsedSeconds, stepGame, type GameProgram, type Game
 import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
 import { resolveScenePalette } from "~/game/scenery";
 import { renderGameFrame } from "~/game/renderer";
+import { gameAudioEvents, snapshotGameAudio } from "~/game/audio-events";
+import { playSe } from "~/game/audio";
 
 const props = defineProps<{
   stage: StageData;
@@ -58,7 +60,9 @@ function loop(timestamp: number) {
   const advanced = advanceFrameClock(frameClock, timestamp, STEP_MS);
   frameClock = advanced.clock;
   for (let step = 0; step < advanced.steps && game.status === "running"; step++) {
+    const before = snapshotGameAudio(game);
     stepGame(game);
+    for (const name of gameAudioEvents(before, game)) playSe(name);
   }
   draw();
 
