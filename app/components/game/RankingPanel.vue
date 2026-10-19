@@ -55,7 +55,7 @@ watch([kind, () => props.refresh, () => props.stageId, () => props.stageVersion,
         v-for="tab in [
           { type: 'time', text: 'タイム' },
           { type: 'chars', text: '文字数' },
-          { type: 'overall', text: '合計' },
+          { type: 'overall', text: '総合' },
         ]"
         :key="tab.type"
         type="button"
