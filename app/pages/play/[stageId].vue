@@ -52,6 +52,7 @@ const bests = ref<BestRuns<ScoredRun>>({});
 const stageVersion = ref("2025-10-26");
 const unlocked = ref(true);
 const lastRun = ref<{ source: string; elapsedTicks: number; charCount: number } | null>(null);
+const runningSource = ref("");
 const saving = ref(false);
 const savedName = ref("");
 const saveError = ref("");
@@ -96,6 +97,7 @@ async function loadCurrentStage() {
   failed.value = false;
   failInfo.value = null;
   lastRun.value = null;
+  runningSource.value = "";
   saving.value = false;
   scoreValues.value = null;
   bests.value = {};
@@ -139,6 +141,7 @@ function onRun() {
     return;
   }
   sessionGeneration++;
+  runningSource.value = editorRef.value?.getText() ?? editorLines.value.join("\n");
   program.value = result.program;
   failed.value = false;
   failInfo.value = null;
@@ -156,7 +159,7 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   running.value = false;
   failed.value = false;
   failInfo.value = null;
-  const rawText = editorRef.value?.getText() ?? "";
+  const rawText = runningSource.value;
   const chars = countSourceCharacters(rawText);
   const reference = getScoreReference(stageId.value, stageVersion.value);
   const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks, rawText, stageVersion.value);
