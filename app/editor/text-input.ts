@@ -50,6 +50,7 @@ export function editWithSoftKey(state: TextSelection, key: SoftKey): TextSelecti
     const pos = start === end ? Math.min(text.length, end + 1) : end;
     return { text, start: pos, end: pos };
   }
+  if (start < end && end - start !== 1) return { text, start, end };
   const table = key.kind === "dakuten" ? voiced : key.kind === "handakuten" ? semiVoiced : small;
   const from = start < end && end - start === 1 ? start : start - 1;
   if (from < 0 || from >= text.length) return { text, start, end };
