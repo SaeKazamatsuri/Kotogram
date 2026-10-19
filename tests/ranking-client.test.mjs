@@ -58,14 +58,17 @@ test("submit sends payload unchanged and includes content type", async () => {
 
 test("leaderboard query sends a versioned scope and requested metric", async () => {
   let url;
-  const client = new RankingClient("http://localhost:8787", async (input) => {
+  let headers;
+  const client = new RankingClient("http://localhost:8787", async (input, init) => {
     url = new URL(input);
+    headers = init.headers;
     return { ok: true, json: async () => ({ ok: true, rows: [], type: "overall" }) };
   });
   await client.list(createScope("stage-2", "2025-10-26"), "overall");
   assert.equal(url.pathname, "/api/stages/stage-2/rankings");
   assert.equal(url.searchParams.get("type"), "overall");
   assert.equal(url.searchParams.get("engineVersion"), ENGINE_VERSION);
+  assert.equal(headers, undefined);
 });
 
 test("offline errors do not destroy client data or trigger automatic retries", async () => {
@@ -94,5 +97,38 @@ test("default browser fetch keeps its global receiver", async () => {
     assert.match(calls[0].input, /\/api\/results$/);
   } finally {
     globalThis.fetch = original;
+  }
+});
+
+test("network timeout ends the pending submission so it can be retried", async () => {
+  let attempts = 0;
+  const mock = (url, init) => {
+    attempts++;
+    if (attempts === 2) {
+      return Promise.resolve(new Response(JSON.stringify({
+        ok: true, nickname: "ゲスト1", runId: "test-run", duplicate: true,
+      }), { status: 200 }));
+    }
+    return new Promise((_resolve, reject) => {
+      assert.ok(init.signal instanceof AbortSignal);
+      init.signal.addEventListener("abort", () => reject(init.signal.reason), { once: true });
+    });
+  };
+  const client = new RankingClient("https://kotogram-api.sae-chan.net", mock, 25);
+  const input = { ...createScope("stage-1", "2025-10-26"), runId: "test-run", playerId: "player", nickname: "", source: "かべとぶ", elapsedTicks: 712, charCount: 4 };
+  const keepEventLoopAlive = setTimeout(() => {}, 250);
+  try {
+    await assert.rejects(() => client.submit(input), (error) => error?.name === "TimeoutError");
+    const retried = await client.submit(input);
+    assert.equal(retried.duplicate, true);
+    assert.equal(attempts, 2);
+  } finally {
+    clearTimeout(keepEventLoopAlive);
+  }
+});
+
+test("ranking request timeout must be positive, finite and bounded", () => {
+  for (const duration of [0, -1, 1.5, Infinity, NaN, 60001]) {
+    assert.throws(() => new RankingClient("https://kotogram-api.sae-chan.net", async () => ({}), duration), /invalid ranking API timeout/);
   }
 });
