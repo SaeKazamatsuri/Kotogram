@@ -69,3 +69,23 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
   await expect(page.getByRole("listitem")).toHaveCount(7);
   expect(failedOnce).toBe(true);
 });
+
+test("ゲーム中にコードを編集しても開始時のプログラムで採点・登録する", async ({ page }) => {
+  test.setTimeout(60000);
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await expect(editor).toBeVisible();
+  await editor.fill("かべとぶ");
+  await page.getByRole("button", { name: "動かす" }).click();
+  await editor.fill("はしる");
+  await expect(page.getByRole("heading", { name: "ステージクリア！" })).toBeVisible({ timeout: 30000 });
+  await expect(page.getByText("4", { exact: true }).first()).toBeVisible();
+  let submittedSource = null;
+  await page.route("**/api/results", async (route) => {
+    submittedSource = JSON.parse(route.request().postData() ?? "{}").source;
+    await route.continue();
+  });
+  await page.getByRole("button", { name: "きろくを 送る" }).click();
+  await expect(page.getByText(/で とうろくできたよ！/)).toBeVisible();
+  expect(submittedSource).toBe("かべとぶ");
+});
