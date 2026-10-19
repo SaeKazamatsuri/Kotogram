@@ -38,3 +38,15 @@ test("production API domain must remain mapped to the existing ranking Worker", 
   copy.env.production.routes = [{ pattern: "kotogram.sae-chan.net", custom_domain: true }];
   assert.equal(validateProductionConfig(copy).ok, false);
 });
+
+test("production API never re-enables workers.dev or preview URLs", () => {
+  assert.equal(current.env.production.workers_dev, false);
+  assert.equal(current.env.production.preview_urls, false);
+  for (const field of ["workers_dev", "preview_urls"]) {
+    for (const unsafe of [true, undefined]) {
+      const changed = structuredClone(current);
+      changed.env.production[field] = unsafe;
+      assert.equal(validateProductionConfig(changed).ok, false, field + ": " + unsafe);
+    }
+  }
+});
