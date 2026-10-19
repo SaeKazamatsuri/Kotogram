@@ -42,7 +42,10 @@ function fileUrl(folder: "bgm" | "se", name: string): string {
 
 function syncMusic(): void {
   if (!onClient() || !unlocked || getAudioMuted()) return;
-  if (music && currentTrack === track) return;
+  if (music && currentTrack === track) {
+    if (music.paused) void music.play().catch(() => {});
+    return;
+  }
   music?.pause();
   const next = new Audio(fileUrl("bgm", track));
   next.preload = "auto";
@@ -73,7 +76,6 @@ export function setAudioMuted(next: boolean): void {
   try {
     window.localStorage.setItem(STORAGE_KEY, String(next));
   } catch {
-    // Local storage is optional.
   }
   if (next) {
     music?.pause();

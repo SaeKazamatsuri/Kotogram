@@ -1,4 +1,4 @@
-import { isCrouching, type GameState } from "./core";
+import { isCrouching, type GameState } from "./core.ts";
 import type { SoundName } from "./audio";
 
 export type GameAudioSnapshot = {
