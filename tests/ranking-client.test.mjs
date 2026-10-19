@@ -58,14 +58,17 @@ test("submit sends payload unchanged and includes content type", async () => {
 
 test("leaderboard query sends a versioned scope and requested metric", async () => {
   let url;
-  const client = new RankingClient("http://localhost:8787", async (input) => {
+  let headers;
+  const client = new RankingClient("http://localhost:8787", async (input, init) => {
     url = new URL(input);
+    headers = init.headers;
     return { ok: true, json: async () => ({ ok: true, rows: [], type: "overall" }) };
   });
   await client.list(createScope("stage-2", "2025-10-26"), "overall");
   assert.equal(url.pathname, "/api/stages/stage-2/rankings");
   assert.equal(url.searchParams.get("type"), "overall");
   assert.equal(url.searchParams.get("engineVersion"), ENGINE_VERSION);
+  assert.equal(headers, undefined);
 });
 
 test("offline errors do not destroy client data or trigger automatic retries", async () => {
