@@ -8,6 +8,7 @@ import StageFailModal from "~/components/game/StageFailModal.vue";
 import { calculateScores, countSourceCharacters, getScoreReference, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
+import { playSe, setBgm, unlockAudio } from "~/game/audio";
 import type { GameProgram } from "~/game/core";
 import type { StageData, StageListItem } from "~/composables/useStageLoader";
 import { canPlayStage, nextStageId } from "~/stage/progression";
@@ -82,6 +83,12 @@ function resolveHint(reason: FailReason): string {
 function closeFail() {
   failed.value = false;
   failInfo.value = null;
+  setBgm("title_loop");
+}
+
+function closeClear() {
+  cleared.value = false;
+  setBgm("title_loop");
 }
 
 async function loadCurrentStage() {
@@ -106,6 +113,7 @@ async function loadCurrentStage() {
   savedName.value = "";
   saveError.value = "";
   pendingRunId = "";
+  setBgm("title_loop");
   try {
     const manifest = await getManifest();
     if (request !== loadRequest) return;
@@ -142,8 +150,13 @@ function onRun() {
   const result = parseProgram(editorLines.value, dict.value ?? { conditions: {}, actions: {} });
   if (result.diagnostics.length > 0) {
     running.value = false;
+    unlockAudio();
+    playSe("warning");
     return;
   }
+  unlockAudio();
+  setBgm("game_loop");
+  playSe("start");
   sessionGeneration++;
   runningSource.value = editorRef.value?.getText() ?? editorLines.value.join("\n");
   program.value = result.program;
@@ -172,6 +185,8 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   lastRun.value = { source: rawText, elapsedTicks: timing.elapsedTicks, charCount: chars };
   scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars }) : null;
   bests.value = getBestRecords(stageId.value, stageVersion.value);
+  setBgm("result_loop");
+  playSe(scoreValues.value && scoreValues.value.overall > 1000 ? "score_bonus" : "high_score");
   cleared.value = true;
 }
 
@@ -212,6 +227,8 @@ function onFail(payload: FailPayload) {
   const hint = resolveHint(payload.reason);
   failInfo.value = { reason: payload.reason, hint };
   failed.value = true;
+  setBgm("result_loop");
+  playSe("gameover");
 }
 
 watch(stageId, () => {
@@ -285,7 +302,7 @@ watch(stageId, () => {
       :chars="lastChars"
       :scores="scoreValues"
       :bests="bests"
-      @close="cleared = false"
+      @close="closeClear"
       @next="goNext"
       @register="onRegister"
     />

@@ -1,0 +1,61 @@
+name: Generate and commit game audio
+
+on:
+  push:
+    paths:
+      - .github/workflows/build-audio.yml
+      - scripts/audio-source.py.gz.b64
+      - scripts/generate_audio.py
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-audio:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install audio tooling
+        run: |
+          python -m pip install numpy==2.3.5 scipy==1.17.0 soundfile==0.13.1
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+          ffmpeg -version
+      - name: Restore original source for initial generation
+        run: |
+          python - <<'PY'
+          import base64
+          import gzip
+          from pathlib import Path
+
+          target = Path("scripts/generate_audio.py")
+          if not target.exists():
+              raw = gzip.decompress(base64.b64decode(Path("scripts/audio-source.py.gz.b64").read_text()))
+              source = raw.decode("utf-8")
+              marker = "ROOT = Path(__file__).resolve().parent"
+              assert source.count(marker) == 1
+              target.write_text(source.replace(marker, "ROOT = Path(__file__).resolve().parent.parent"), encoding="utf-8")
+          PY
+      - name: Render all original BGM and effects
+        run: python scripts/generate_audio.py
+      - name: Verify each exported file
+        run: |
+          test "$(find public/audio/bgm -name '*.ogg' | wc -l)" -eq 3
+          test "$(find public/audio/bgm -name '*.mp3' | wc -l)" -eq 3
+          test "$(find public/audio/se -name '*.ogg' | wc -l)" -eq 13
+          test "$(find public/audio/se -name '*.mp3' | wc -l)" -eq 13
+          for file in public/audio/{bgm,se}/*; do ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$file" >/dev/null; done
+      - name: Commit playable assets to this branch
+        run: |
+          git add scripts/generate_audio.py public/audio
+          if ! git diff --cached --quiet; then
+            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "assets(audio): render original music and sound effects"
+            git push
+          fi

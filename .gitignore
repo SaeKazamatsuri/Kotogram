@@ -26,3 +26,4 @@ logs
 wrangler.toml
 .browser-tools/
 test-artifacts/
+source/wav/
