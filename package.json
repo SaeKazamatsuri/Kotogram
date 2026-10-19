@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "nuxt build",
-    "deploy": "npm run generate && wrangler deploy",
+    "deploy": "npm run preflight:frontend && npm run generate && wrangler deploy",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
@@ -23,6 +23,7 @@
     "test:browser": "node scripts/smoke-browser.mjs",
     "test:visual": "node .browser-tools/node_modules/@playwright/test/cli.js test --config playwright.config.mjs",
     "preflight:production": "node scripts/preflight-production.mjs",
+    "preflight:frontend": "node scripts/preflight-frontend.mjs",
     "smoke:production": "node scripts/smoke-production.mjs"
   },
   "dependencies": {

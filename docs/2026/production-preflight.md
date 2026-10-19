@@ -34,3 +34,17 @@
 ## 警告の調査
 
 `workers_dev` と `preview_urls` の未指定警告は明示設定で対処する。ブラウザ互換データの更新はローカルで `npx update-browserslist-db@latest`、`npm install -D baseline-browser-mapping@latest` を実行し差分とビルドを検証してから別PRにする。静的SPAの構成は警告抑制のためだけにSSRへ変更しない。
+
+## フロントエンド配備時に必須のAPI接続先
+
+`npm run deploy` は `npm run preflight:frontend` を最初に実行する。ここで `NUXT_PUBLIC_RANKING_API_BASE` が未設定・HTTP・開発用ホスト・パス付き・Webサイト本体のoriginと同じ場合は配備を止める。
+
+PowerShellからデプロイする場合は、API Workerの実際の本番HTTPS originを確認し、次の形式で実行する。
+
+```powershell
+$env:NUXT_PUBLIC_RANKING_API_BASE="https://実際のランキングAPIドメイン"; npm run deploy
+```
+
+上記は形式例であり、そのままの仮ドメインでは公開できない。APIは独立したWorkerのため、フロントとAPIを同一URLとして設定しない。Custom Domainへの切り替えが完了するまで、接続済みの現行API公開URLを不用意に止めない。
+
+`npm run generate` や `npm run dev` ではデプロイ用プリフライトを強制しないため、UIだけの開発・CIはAPI URL未設定でも実行できる。
