@@ -57,10 +57,19 @@ export function getOrCreatePlayerId(storage: Pick<Storage, "getItem" | "setItem"
 export class RankingClient {
   private readonly apiBase: string;
   private readonly requester: typeof fetch;
+  private readonly timeoutMs: number;
 
-  constructor(apiBase: string, requester: typeof fetch = (input, init) => globalThis.fetch(input, init)) {
+  constructor(
+    apiBase: string,
+    requester: typeof fetch = (input, init) => globalThis.fetch(input, init),
+    timeoutMs = 12000,
+  ) {
+    if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000) {
+      throw new RangeError("invalid ranking API timeout");
+    }
     this.apiBase = apiBase;
     this.requester = requester;
+    this.timeoutMs = timeoutMs;
   }
 
   private endpoint(path: string): string {
@@ -73,6 +82,7 @@ export class RankingClient {
     const response = await this.requester(this.endpoint(path), {
       ...init,
       headers: { "Content-Type": "application/json", ...init?.headers },
+      signal: AbortSignal.timeout(this.timeoutMs),
     });
     if (!response.ok) throw new Error(response.status === 409 ? "run_id_conflict" : "ranking_api_unavailable");
     return await response.json() as T;
