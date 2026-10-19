@@ -14,6 +14,8 @@ test("公開サイトのWorker名とSPAルーティングが固定されてい�
   assert.equal(api.env.production.vars.ALLOWED_ORIGIN, "https://kotogram.sae-chan.net");
   assert.deepEqual(api.env.production.routes, [{ pattern: "kotogram-api.sae-chan.net", custom_domain: true }]);
   assert.equal(api.env.production.name, "kotogram-api");
+  assert.equal(api.env.production.workers_dev, false);
+  assert.equal(api.env.production.preview_urls, false);
   const nuxt = readFileSync(new URL("../nuxt.config.ts", import.meta.url), "utf8");
   assert.match(nuxt, /https:\/\/kotogram-api\.sae-chan\.net/);
 });

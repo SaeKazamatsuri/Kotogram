@@ -5,7 +5,7 @@
 - 正式なフロントエンド: `https://kotogram.sae-chan.net`。Cloudflare Custom Domain は Worker `kotogram` に接続済み。
 - `wrangler.jsonc` は `workers_dev: false` と `preview_urls: false` を明示し、次回デプロイで `workers.dev` とプレビューURLを閉じる。
 - 2026-10-19 のCloudflare確認時点ではフロントエンドWorkerの両URLはまだ有効。APIによる直接変更は権限エラーで失敗した。コードの変更だけで本番のURLは無効化されない。
-- API Worker `kotogram-api` の正式なCustom Domainは `https://kotogram-api.sae-chan.net`。`wrangler.api.jsonc` の `env.production.routes` に宣言する。現時点ではCloudflare側の書き込みが認証エラーのため、DNS/証明書・実稼働が成功したとは判断しない。
+- API Worker `kotogram-api` の正式なCustom Domainは `https://kotogram-api.sae-chan.net`。Cloudflareから独自ドメインの接続設定が確認できており、`wrangler.api.jsonc` の `env.production.routes` にも宣言済み。
 - `npm run deploy:api` で既存の `kotogram-api` Workerに独自ドメインを割り当てる。ランキングDB/DOの移行タグを変更しない。APIの `/api/health`、CORS、3種類のランキングを検証し、フロントエンドが新ドメインを使うことを確認した後にAPIの `workers.dev` を無効化する。
 
 ## デプロイ前
@@ -66,4 +66,5 @@ APIがまだ別のバージョンの場合はランキングのGETで失敗す�
 - 正式なAPI URL: `https://kotogram-api.sae-chan.net`
 - Cloudflare Custom Domain APIの登録は認証エラー `10000` のため、このセッションから直接完了できていない。`npm run deploy:api` をCloudflare権限のある端末で実行する。
 - 新しいWorkerを作り直さず、従来の `kotogram-api` を更新する。`StageRanking` / `GuestCounter` のDurable Objectsを保持する。
-- `workers.dev` の停止は、APIの独自ドメイン接続・フロント接続・ランキングの動作検証後に別途行う。
+- 2026-10-19 のCloudflare設定読み取りで `kotogram-api.sae-chan.net` が本番Worker `kotogram-api` に接続済み、APIの `workers.dev` とPreview URLsが無効であることを確認。GitHubの `wrangler.api.jsonc` 側も `workers_dev: false` / `preview_urls: false` に更新し、次回のデプロイで再有効化されないようにした。
+- HTTP `/api/health` とランキング/CORSの独立した外部通信検証は、本セッションのネットワークの名前解決制限により確認できていない。`npm run smoke:production` で運用環境から確認する。
