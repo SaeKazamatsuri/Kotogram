@@ -48,3 +48,15 @@ $env:NUXT_PUBLIC_RANKING_API_BASE="https://実際のランキングAPIドメイ�
 上記は形式例であり、そのままの仮ドメインでは公開できない。APIは独立したWorkerのため、フロントとAPIを同一URLとして設定しない。Custom Domainへの切り替えが完了するまで、接続済みの現行API公開URLを不用意に止めない。
 
 `npm run generate` や `npm run dev` ではデプロイ用プリフライトを強制しないため、UIだけの開発・CIはAPI URL未設定でも実行できる。
+
+## デプロイ後の読み取り専用検査
+
+本番に配備したら、ローカルPowerShellで実際の本番APIのoriginを指定して確認する。
+
+```powershell
+$env:PRODUCTION_RANKING_API_BASE="https://実際のランキングAPIドメイン"; npm run smoke:production
+```
+
+このコマンドは正式ドメインのタイトル画面・ステージ一覧・ステージ直接アクセス、公開ステージJSON、API health、CORSのOPTIONS、ステージ1のランキング3種類のGETを確認する。ランキングの書き込みやゲスト番号の発行は一切行わない。
+
+APIがまだ別のバージョンの場合はランキングのGETで失敗する。このとき本番データを初期化せず、フロントとAPIのルールバージョンが一致しているかを確認する。テスト送信や同時登録は、事前に分離した検証環境で実施する。
