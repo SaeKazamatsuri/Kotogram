@@ -5,15 +5,15 @@
 - 正式なフロントエンド: `https://kotogram.sae-chan.net`。Cloudflare Custom Domain は Worker `kotogram` に接続済み。
 - `wrangler.jsonc` は `workers_dev: false` と `preview_urls: false` を明示し、次回デプロイで `workers.dev` とプレビューURLを閉じる。
 - 2026-10-19 のCloudflare確認時点ではフロントエンドWorkerの両URLはまだ有効。APIによる直接変更は権限エラーで失敗した。コードの変更だけで本番のURLは無効化されない。
-- API Worker `kotogram-api` はCloudflareに存在し、`workers.dev` とプレビューURLが有効だが、Custom Domain/Worker Route は未確認。ランキング停止を防ぐためAPIの公開URLはこのPRでは変更しない。
-- API用に独自ドメインを登録し、`NUXT_PUBLIC_RANKING_API_BASE` のビルド設定を更新し、`/api/health`・CORS・ランキングの動作を検証した後でAPIの `workers.dev` を無効化する。
+- API Worker `kotogram-api` の正式なCustom Domainは `https://kotogram-api.sae-chan.net`。`wrangler.api.jsonc` の `env.production.routes` に宣言する。現時点ではCloudflare側の書き込みが認証エラーのため、DNS/証明書・実稼働が成功したとは判断しない。
+- `npm run deploy:api` で既存の `kotogram-api` Workerに独自ドメインを割り当てる。ランキングDB/DOの移行タグを変更しない。APIの `/api/health`、CORS、3種類のランキングを検証し、フロントエンドが新ドメインを使うことを確認した後にAPIの `workers.dev` を無効化する。
 
 ## デプロイ前
 
 1. `npm ci`、`npm test`、`npm run lint`、`npm run typecheck`、`npm run validate:stages`、`npm run generate` を実行する。
 2. `npm run preflight:production` でAPIのorigin、Durable Objects、開発/本番Workerの分離を確認する。
 3. フロントエンドのデプロイ先は既存Worker `kotogram`、APIのデプロイ先は `kotogram-api`。同じWorkerに上書きしない。
-4. Cloudflareアカウント・Custom Domain・ランキングAPIのURLを確認してから、`npm run deploy` を実行する。
+4. 最初に `npm run deploy:api` で本番API Workerと新しいCustom Domainを公開し、`https://kotogram-api.sae-chan.net/api/health` が応答することを確かめる。その後 `npm run deploy` でフロントエンドを配備する。
 5. デプロイ後、正式ドメインのステージ直アクセスとゲーム起動を確認し、フロントエンドWorkerの `workers.dev`・Preview URLs が無効であることをCloudflare APIまたはDashboardで確かめる。
 6. API側の変更は独自ドメインとフロントエンドの接続確認後に別途実施する。
 
@@ -37,15 +37,15 @@
 
 ## フロントエンド配備時に必須のAPI接続先
 
-`npm run deploy` は `npm run preflight:frontend` を最初に実行する。ここで `NUXT_PUBLIC_RANKING_API_BASE` が未設定・HTTP・開発用ホスト・パス付き・Webサイト本体のoriginと同じ場合は配備を止める。
+`npm run deploy` は `npm run preflight:frontend` を最初に実行する。ここで `NUXT_PUBLIC_RANKING_API_BASE` が指定されている場合は `https://kotogram-api.sae-chan.net` と完全に一致するか検査する。未指定の場合も正式APIを既定値として使用する。
 
 PowerShellからデプロイする場合は、API Workerの実際の本番HTTPS originを確認し、次の形式で実行する。
 
 ```powershell
-$env:NUXT_PUBLIC_RANKING_API_BASE="https://実際のランキングAPIドメイン"; npm run deploy
+npm run deploy:api; npm run deploy
 ```
 
-上記は形式例であり、そのままの仮ドメインでは公開できない。APIは独立したWorkerのため、フロントとAPIを同一URLとして設定しない。Custom Domainへの切り替えが完了するまで、接続済みの現行API公開URLを不用意に止めない。
+APIは `kotogram-api.sae-chan.net` の別Workerとして配備する。以前のターミナルに `NUXT_PUBLIC_RANKING_API_BASE` が残っている場合は新しいURLに更新するか、`Remove-Item Env:NUXT_PUBLIC_RANKING_API_BASE` で解除する。新ドメインのヘルスチェックとCORS検証が終わるまで、現行の `workers.dev` は止めない。
 
 `npm run generate` や `npm run dev` ではデプロイ用プリフライトを強制しないため、UIだけの開発・CIはAPI URL未設定でも実行できる。
 
@@ -54,9 +54,16 @@ $env:NUXT_PUBLIC_RANKING_API_BASE="https://実際のランキングAPIドメイ�
 本番に配備したら、ローカルPowerShellで実際の本番APIのoriginを指定して確認する。
 
 ```powershell
-$env:PRODUCTION_RANKING_API_BASE="https://実際のランキングAPIドメイン"; npm run smoke:production
+npm run smoke:production
 ```
 
 このコマンドは正式ドメインのタイトル画面・ステージ一覧・ステージ直接アクセス、公開ステージJSON、API health、CORSのOPTIONS、ステージ1のランキング3種類のGETを確認する。ランキングの書き込みやゲスト番号の発行は一切行わない。
 
 APIがまだ別のバージョンの場合はランキングのGETで失敗する。このとき本番データを初期化せず、フロントとAPIのルールバージョンが一致しているかを確認する。テスト送信や同時登録は、事前に分離した検証環境で実施する。
+
+## 2026-10-19 API独自ドメイン変更
+
+- 正式なAPI URL: `https://kotogram-api.sae-chan.net`
+- Cloudflare Custom Domain APIの登録は認証エラー `10000` のため、このセッションから直接完了できていない。`npm run deploy:api` をCloudflare権限のある端末で実行する。
+- 新しいWorkerを作り直さず、従来の `kotogram-api` を更新する。`StageRanking` / `GuestCounter` のDurable Objectsを保持する。
+- `workers.dev` の停止は、APIの独自ドメイン接続・フロント接続・ランキングの動作検証後に別途行う。
