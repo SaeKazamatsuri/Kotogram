@@ -28,14 +28,14 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
   }
 }
 
-export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState): void {
+export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks): void {
   for (const [index, coin] of game.coins.entries()) {
     if (coin.collected) continue;
     const x = worldToScreenX(game, coin.x);
     if (x < -32 || x > GAME.width + 32) continue;
-    const bob = Math.sin(obstaclePhase(game.elapsedTicks, index, 0.1)) * 3;
+    const bob = Math.sin(obstaclePhase(visualTick, index, 0.1)) * 3;
     const y = GAME.groundY - 35 + bob;
-    const width = Math.max(3, GAME.coinRadius * Math.abs(Math.cos(obstaclePhase(game.elapsedTicks, index, 0.08))));
+    const width = Math.max(3, GAME.coinRadius * Math.abs(Math.cos(obstaclePhase(visualTick, index, 0.08))));
     ctx.save();
     ctx.shadowColor = "#ffdf76";
     ctx.shadowBlur = 13;
@@ -134,7 +134,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState)
   for (const [index, ghost] of game.ghosts.entries()) {
     const x = worldToScreenX(game, ghost.x);
     if (x < -GAME.ghostWidth || x > GAME.width + GAME.ghostWidth) continue;
-    const y = GAME.groundY - GAME.ghostHeight - GAME.ghostClearance + Math.sin(obstaclePhase(game.elapsedTicks, index, 0.07)) * 2;
+    const y = GAME.groundY - GAME.ghostHeight - GAME.ghostClearance + Math.sin(obstaclePhase(visualTick, index, 0.07)) * 2;
     ctx.save();
     ctx.shadowColor = "#d8ecfc";
     ctx.shadowBlur = 12;
@@ -149,7 +149,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState)
     ctx.lineTo(x + 39, y + 55);
     for (let j = 0; j < 4; j++) {
       const xx = x + 39 - (j + 1) * 8.5;
-      ctx.quadraticCurveTo(xx + 4, y + 72 + Math.sin(obstaclePhase(game.elapsedTicks, index + j, 0.1)) * 3, xx, y + 57);
+      ctx.quadraticCurveTo(xx + 4, y + 72 + Math.sin(obstaclePhase(visualTick, index + j, 0.1)) * 3, xx, y + 57);
     }
     ctx.closePath();
     ctx.fill();
