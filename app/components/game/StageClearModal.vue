@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
+import { formatBestScore } from "~/scoring/display";
 import type { BestRuns, ScoredRun } from "~/scoring/score";
 import RankingPanel from "./RankingPanel.vue";
 
-defineProps<{
+const props = defineProps<{
   seconds: number;
   stageId: string;
   stageVersion: string;
@@ -23,6 +24,9 @@ const emit = defineEmits<{
 }>();
 const nickname = ref("");
 const showRanking = ref(false);
+function bestScore(kind: "time" | "chars" | "overall") {
+  return formatBestScore(props.stageId, props.stageVersion, props.bests, kind);
+}
 </script>
 
 <template>
@@ -38,7 +42,7 @@ const showRanking = ref(false);
       </div>
       <div v-if="scores" class="mb-4 rounded-2xl bg-[#fff0c6] p-3">
         <div class="grid grid-cols-3 gap-2" aria-label="3つの点数">
-          <div v-for="item in [{ label: 'タイム', value: scores.time }, { label: '文字数', value: scores.chars }, { label: '合計', value: scores.overall }]" :key="item.label" class="rounded-xl bg-white p-2 text-center sm:p-3">
+          <div v-for="item in [{ label: 'タイム', value: scores.time }, { label: '文字数', value: scores.chars }, { label: '総合', value: scores.overall }]" :key="item.label" class="rounded-xl bg-white p-2 text-center sm:p-3">
             <p class="text-xs font-black text-[#5c5470]">{{ item.label }}</p>
             <p class="break-all text-lg font-black text-[#172439] sm:text-2xl">{{ Math.round(item.value).toLocaleString('ja-JP') }}<span class="text-xs">点</span></p>
             <p v-if="item.value > 1000" class="text-xs font-black text-[#14684e]">1000点こえ！</p>
@@ -48,9 +52,9 @@ const showRanking = ref(false);
       <div v-if="bests?.time || bests?.chars || bests?.overall" class="mb-4 rounded-xl border border-[#bccbd9] bg-[#f0f5f8] p-3 text-sm text-[#172439]">
         <h3 class="mb-2 flex items-center gap-2 font-black"><Icon name="lucide:medal" class="game-icon text-[#14684e]" aria-hidden="true"/> 自分の ベスト</h3>
         <div class="grid gap-2 sm:grid-cols-3">
-          <p>タイム {{ bests.time ? (bests.time.elapsedTicks / 60).toFixed(2) + '秒' : '－' }}</p>
-          <p>文字数 {{ bests.chars?.charCount ?? '－' }}字</p>
-          <p>合計 {{ bests.overall ? bests.overall.elapsedTicks * bests.overall.charCount : '－' }}</p>
+          <p>タイム {{ bestScore('time') }}</p>
+          <p>文字数 {{ bestScore('chars') }}</p>
+          <p>総合 {{ bestScore('overall') }}</p>
         </div>
       </div>
       <section v-if="apiBase" class="rounded-2xl border border-[#94b9ae] bg-[#e9f5ee] p-4">
