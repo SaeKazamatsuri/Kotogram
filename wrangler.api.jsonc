@@ -8,12 +8,24 @@
   },
   "durable_objects": {
     "bindings": [
-      { "name": "RANKING", "class_name": "StageRanking" },
-      { "name": "COUNTER", "class_name": "GuestCounter" }
+      {
+        "name": "RANKING",
+        "class_name": "StageRanking"
+      },
+      {
+        "name": "COUNTER",
+        "class_name": "GuestCounter"
+      }
     ]
   },
   "migrations": [
-    { "tag": "v1", "new_sqlite_classes": ["StageRanking", "GuestCounter"] }
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "StageRanking",
+        "GuestCounter"
+      ]
+    }
   ],
   "env": {
     "production": {
@@ -23,13 +35,33 @@
       },
       "durable_objects": {
         "bindings": [
-          { "name": "RANKING", "class_name": "StageRanking" },
-          { "name": "COUNTER", "class_name": "GuestCounter" }
+          {
+            "name": "RANKING",
+            "class_name": "StageRanking"
+          },
+          {
+            "name": "COUNTER",
+            "class_name": "GuestCounter"
+          }
         ]
       },
       "migrations": [
-        { "tag": "v1", "new_sqlite_classes": ["StageRanking", "GuestCounter"] }
-      ]
+        {
+          "tag": "v1",
+          "new_sqlite_classes": [
+            "StageRanking",
+            "GuestCounter"
+          ]
+        }
+      ],
+      "routes": [
+        {
+          "pattern": "kotogram-api.sae-chan.net",
+          "custom_domain": true
+        }
+      ],
+      "workers_dev": true,
+      "preview_urls": false
     }
   }
 }

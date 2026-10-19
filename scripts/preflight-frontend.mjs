@@ -1,6 +1,7 @@
 import { fileURLToPath } from "node:url";
 
 export const FRONTEND_ORIGIN = "https://kotogram.sae-chan.net";
+export const PRODUCTION_API_ORIGIN = "https://kotogram-api.sae-chan.net";
 
 export function validateFrontendApiBase(input) {
   const errors = [];
@@ -25,11 +26,12 @@ export function validateFrontendApiBase(input) {
     errors.push("ランキングAPIにはパスや認証情報を含まないoriginを指定してください。");
   }
   if (value.replace(/\/+$/, "") !== url.origin) errors.push("ランキングAPIにはHTTPS originだけを指定してください。");
+  if (url.origin !== PRODUCTION_API_ORIGIN) errors.push("本番APIは " + PRODUCTION_API_ORIGIN + " を指定してください。");
   return { ok: errors.length === 0, errors, origin: errors.length ? null : url.origin };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const report = validateFrontendApiBase(process.env.NUXT_PUBLIC_RANKING_API_BASE);
+  const report = validateFrontendApiBase(process.env.NUXT_PUBLIC_RANKING_API_BASE ?? PRODUCTION_API_ORIGIN);
   if (!report.ok) {
     for (const error of report.errors) console.error("公開前チェック: " + error);
     process.exitCode = 1;

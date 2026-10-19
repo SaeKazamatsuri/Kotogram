@@ -9,7 +9,7 @@ export default defineNuxtConfig({
   icon: { mode: "svg", serverBundle: { collections: ["lucide"] } },
   runtimeConfig: {
     public: {
-      rankingApiBase: process.env.NUXT_PUBLIC_RANKING_API_BASE ?? "",
+      rankingApiBase: process.env.NUXT_PUBLIC_RANKING_API_BASE ?? "https://kotogram-api.sae-chan.net",
     },
   },
 });

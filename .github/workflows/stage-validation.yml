@@ -40,8 +40,12 @@ jobs:
         run: npm run generate
       - name: Verify frontend Worker bundle without deploying
         run: npx wrangler deploy --config wrangler.jsonc --dry-run
+      - name: Verify production API domain and frontend origin
+        run: npm run preflight:production && npm run preflight:frontend
       - name: Verify Worker bundle without deploying
         run: npx wrangler deploy --config wrangler.api.jsonc --dry-run
+      - name: Verify production Worker and custom domain configuration without deploying
+        run: npx wrangler deploy --config wrangler.api.jsonc --env production --dry-run
       - name: Test real local SQLite Durable Objects
         run: |
           npx wrangler dev --config wrangler.api.jsonc --port 8787 --ip 127.0.0.1 > /tmp/kotogram-worker.log 2>&1 &
