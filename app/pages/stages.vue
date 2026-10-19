@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
 import { canPlayStage } from "~/stage/progression";
-const { listStages, getManifest } = useStageLoader();
+const { getManifest } = useStageLoader();
 const { getAll, reset } = useStats();
 type Item = { id: string; title: string; file: string };
 const loading = ref(true);
@@ -16,16 +16,22 @@ function onReset() {
   reset();
   stats.value = {};
 }
-onMounted(async () => {
+async function loadStages() {
+  loading.value = true;
+  error.value = null;
   try {
-    await getManifest();
-    stages.value = await listStages();
+    const manifest = await getManifest();
+    stages.value = manifest.stages;
   } catch {
-    error.value = "ステージを よみこめなかったよ。もういちど ためしてね。";
+    stages.value = [];
+    error.value = "ステージを 読みこめませんでした";
   } finally {
     loading.value = false;
   }
+}
+onMounted(() => {
   stats.value = getAll();
+  void loadStages();
 });
 </script>
 
@@ -37,7 +43,7 @@ onMounted(async () => {
     </div>
     <h1 class="game-screen-title mb-6">ステージを えらぶ</h1>
     <p v-if="loading" role="status">読みこみ中…</p>
-    <p v-else-if="error" role="alert" class="game-panel p-5 text-[#a53148]">{{ error }}</p>
+    <div v-else-if="error" role="alert" class="game-panel flex flex-wrap items-center justify-between gap-4 p-5 text-[#a53148]"><p class="font-bold">{{ error }}</p><button type="button" class="game-button game-button--night" @click="loadStages">もう一度 読みこむ</button></div>
     <ol v-else class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <li v-for="(stage, index) in stages" :key="stage.id">
         <NuxtLink

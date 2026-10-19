@@ -50,3 +50,22 @@ test("ステージの通信失敗後に画面から再読みこみできる", as
   await expect(page.locator("canvas")).toBeVisible();
   expect(failedOnce).toBe(true);
 });
+
+test("ステージ一覧の初回通信失敗で偽のステージを出さず再試行できる", async ({ page }) => {
+  let failedOnce = false;
+  await page.route("**/stages/manifest.json", async (route) => {
+    if (!failedOnce) {
+      failedOnce = true;
+      await route.abort("failed");
+      return;
+    }
+    await route.continue();
+  });
+  await page.goto("/stages");
+  await expect(page.getByRole("alert")).toContainText("ステージを 読みこめませんでした");
+  await expect(page.getByRole("link", { name: /ステージ 1/ })).toHaveCount(0);
+  await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
+  await expect(page.getByRole("link", { name: /ジャンプで かべを こえる/ })).toBeVisible();
+  await expect(page.getByRole("listitem")).toHaveCount(7);
+  expect(failedOnce).toBe(true);
+});
