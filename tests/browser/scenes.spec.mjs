@@ -360,7 +360,7 @@ test("マップをドラッグで横と縦に動かし、ステージの誤選�
     el.scrollLeft = isMobile ? 0 : 200;
     el.scrollTop = isMobile ? 150 : 0;
   }, mobile);
-  const before = await map.evaluate((el) => mobile ? el.scrollTop : el.scrollLeft);
+  const before = await map.evaluate((el, isMobile) => isMobile ? el.scrollTop : el.scrollLeft, mobile);
   const bounds = await map.boundingBox();
   const x = bounds.x + bounds.width * 0.5;
   const y = bounds.y + bounds.height * 0.5;
@@ -368,7 +368,7 @@ test("マップをドラッグで横と縦に動かし、ステージの誤選�
   await page.mouse.down();
   await page.mouse.move(mobile ? x : x - 110, mobile ? y - 100 : y, { steps: 8 });
   await page.mouse.up();
-  const after = await map.evaluate((el) => mobile ? el.scrollTop : el.scrollLeft);
+  const after = await map.evaluate((el, isMobile) => isMobile ? el.scrollTop : el.scrollLeft, mobile);
   expect(after).toBeGreaterThan(before + 25);
   await expect(page).toHaveURL(/\/stages$/);
   await expect(map).not.toHaveClass(/is-dragging/);
