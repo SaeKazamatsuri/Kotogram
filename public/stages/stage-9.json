@@ -1,0 +1,44 @@
+{
+  "id": "stage-9",
+  "goal": 1260,
+  "scrollSpeed": 3,
+  "requiredSkips": 1,
+  "learningObjectives": [
+    "スイッチを とばすか とびこすか 考えよう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "trap-1",
+      "type": "switch",
+      "position": 340,
+      "targetDoorId": "door-4",
+      "trap": true
+    },
+    {
+      "id": "safe-2",
+      "type": "switch",
+      "position": 570,
+      "targetDoorId": "door-4"
+    },
+    {
+      "id": "door-4",
+      "type": "door",
+      "position": 780
+    }
+  ],
+  "meta": {
+    "title": "あかいスイッチの道",
+    "bg": "day",
+    "hint": "スイッチを とばすか とびこすか 考えよう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

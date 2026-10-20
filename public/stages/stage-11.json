@@ -1,0 +1,47 @@
+{
+  "id": "stage-11",
+  "goal": 2620,
+  "scrollSpeed": 3,
+  "requiredCoins": 1,
+  "learningObjectives": [
+    "かべ あな おばけ コインに ちがう動きを",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "wall-1",
+      "type": "wall",
+      "position": 340
+    },
+    {
+      "id": "hole-2",
+      "type": "hole",
+      "position": 940,
+      "width": 80
+    },
+    {
+      "id": "ghost-3",
+      "type": "ghost",
+      "position": 1540
+    },
+    {
+      "id": "coin-4",
+      "type": "coin",
+      "position": 2140
+    }
+  ],
+  "meta": {
+    "title": "4つのじゅんび",
+    "bg": "day",
+    "hint": "かべ あな おばけ コインに ちがう動きを",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

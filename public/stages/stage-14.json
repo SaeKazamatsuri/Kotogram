@@ -1,0 +1,62 @@
+{
+  "id": "stage-14",
+  "goal": 2020,
+  "scrollSpeed": 3,
+  "requiredSkips": 2,
+  "learningObjectives": [
+    "同じスイッチにも 2つの答え",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "trap-1",
+      "type": "switch",
+      "position": 340,
+      "targetDoorId": "door-4",
+      "trap": true
+    },
+    {
+      "id": "safe-2",
+      "type": "switch",
+      "position": 570,
+      "targetDoorId": "door-4"
+    },
+    {
+      "id": "door-4",
+      "type": "door",
+      "position": 780
+    },
+    {
+      "id": "trap-4",
+      "type": "switch",
+      "position": 1100,
+      "targetDoorId": "door-7",
+      "trap": true
+    },
+    {
+      "id": "safe-5",
+      "type": "switch",
+      "position": 1330,
+      "targetDoorId": "door-7"
+    },
+    {
+      "id": "door-7",
+      "type": "door",
+      "position": 1540
+    }
+  ],
+  "meta": {
+    "title": "みおくるか とぶか",
+    "bg": "day",
+    "hint": "同じスイッチにも 2つの答え",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}
