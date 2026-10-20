@@ -54,7 +54,7 @@ test("ループを使わない解法と1回ずつの列挙では繰り返し表�
 });
 
 test("表示用の繰り返し状態取得はGameStateに影響しない", () => {
-  const program = analyzeProgram("3かいくりかえす\nこいんとる\nおわり").program;
+  const program = analyzeProgram("3かいくりかえす\nこいんとる\nすいっちおす\nおわり").program;
   const game = createGame({ goal: 900 }, program);
   const before = JSON.stringify(game, (_key, value) => value instanceof Set ? [...value] : value);
   assert.deepEqual(getRepeatProgress(game), { current: 0, total: 3 });
