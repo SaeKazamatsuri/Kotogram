@@ -58,3 +58,13 @@ test("bounded explorer discovers stage 8's ordered loop rather than watcher-only
   assert.match(result.best.chars?.source ?? "", /くりかえす/);
   assert.ok(result.best.time?.elapsedTicks <= 846);
 });
+
+test("verified stage solutions seed the bounded search for complex stages", () => {
+  const stage9 = JSON.parse(readFileSync(new URL("../public/stages/stage-9.json", import.meta.url), "utf8"));
+  const checks = JSON.parse(readFileSync(new URL("../stage-checks/stage-9.json", import.meta.url), "utf8"));
+  const source = checks.cases.find((item) => item.role === "beginner").source;
+  const result = exploreStage(stage9, { maxCandidates: 1 }, [source]);
+  assert.equal(result.checked, 1);
+  assert.equal(result.cleared, 1);
+  assert.equal(result.best.time?.source, source);
+});

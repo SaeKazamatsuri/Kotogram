@@ -1,0 +1,36 @@
+{
+  "stageId": "stage-17",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner",
+      "role": "beginner",
+      "source": "かべとぶ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "short-variant",
+      "role": "short",
+      "source": "かべとぶ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "sprint-variant",
+      "role": "fast",
+      "source": "めっちゃはしる\nかべとぶ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "missing-actions",
+      "role": "negative",
+      "source": "あるく",
+      "expect": "failed"
+    },
+    {
+      "name": "sequential-repeat",
+      "role": "regression",
+      "source": "3かいくりかえす\nかべとぶ\nおばけしゃがむ\nおわり",
+      "expect": "cleared"
+    }
+  ]
+}

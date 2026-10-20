@@ -56,14 +56,14 @@ export function candidatePrograms(): string[] {
   return programs;
 }
 
-export function exploreStage(stage: GameStage, options: ExplorationLimits = {}): ExplorationReport {
+export function exploreStage(stage: GameStage, options: ExplorationLimits = {}, knownSources: readonly string[] = []): ExplorationReport {
   const limits: Required<ExplorationLimits> = {
     maxCandidates: limit(options.maxCandidates, 128, 1000, "maxCandidates"),
     maxTicks: limit(options.maxTicks, 20000, 100000, "maxTicks"),
     maxCharacters: limit(options.maxCharacters, 100, 2000, "maxCharacters"),
     maxMs: limit(options.maxMs, 3000, 60000, "maxMs"),
   };
-  const sources = candidatePrograms();
+  const sources = [...new Set([...knownSources, ...candidatePrograms()])];
   const started = Date.now();
   const cleared: { runId: string; source: string; elapsedTicks: number; charCount: number }[] = [];
   let checked = 0;

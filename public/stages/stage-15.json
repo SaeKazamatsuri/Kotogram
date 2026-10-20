@@ -1,0 +1,47 @@
+{
+  "id": "stage-15",
+  "goal": 2620,
+  "scrollSpeed": 3,
+  "requiredCoins": 2,
+  "learningObjectives": [
+    "あなを とびこえながら コインを とろう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "coin-1",
+      "type": "coin",
+      "position": 340
+    },
+    {
+      "id": "hole-2",
+      "type": "hole",
+      "position": 940,
+      "width": 80
+    },
+    {
+      "id": "coin-3",
+      "type": "coin",
+      "position": 1540
+    },
+    {
+      "id": "wall-4",
+      "type": "wall",
+      "position": 2140
+    }
+  ],
+  "meta": {
+    "title": "コインと あな",
+    "bg": "sunset",
+    "hint": "あなを とびこえながら コインを とろう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

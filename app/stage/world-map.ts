@@ -7,25 +7,14 @@ export type WorldMapPosition = {
   mobileY: number;
 };
 
-const stops: readonly WorldMapPosition[] = [
-  { x: 8, y: 68, mobileX: 27, mobileY: 9 },
-  { x: 22, y: 32, mobileX: 72, mobileY: 22 },
-  { x: 36, y: 62, mobileX: 29, mobileY: 35 },
-  { x: 50, y: 24, mobileX: 71, mobileY: 48 },
-  { x: 65, y: 65, mobileX: 28, mobileY: 61 },
-  { x: 79, y: 35, mobileX: 71, mobileY: 70 },
-  { x: 94, y: 48, mobileX: 50, mobileY: 80 },
-  { x: 90, y: 82, mobileX: 71, mobileY: 91 },
-];
-
-export function worldMapPosition(index: number): WorldMapPosition {
-  if (index < stops.length) return stops[Math.max(0, index)]!;
-  const extra = index - stops.length;
+export function worldMapPosition(index: number, total = 30): WorldMapPosition {
+  const count = Math.max(1, total);
+  const position = Math.max(0, index);
   return {
-    x: 94,
-    y: 48,
-    mobileX: extra % 2 === 0 ? 28 : 71,
-    mobileY: 87 + (extra + 1) * 13,
+    x: 3 + (position / Math.max(1, count - 1)) * 94,
+    y: [62, 34, 66, 36, 61, 32, 64, 41][position % 8]!,
+    mobileX: position % 2 === 0 ? 30 : 70,
+    mobileY: 6 + (position / Math.max(1, count - 1)) * 86,
   };
 }
 

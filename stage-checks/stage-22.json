@@ -1,0 +1,36 @@
+{
+  "stageId": "stage-22",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner",
+      "role": "beginner",
+      "source": "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "short-variant",
+      "role": "short",
+      "source": "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "sprint-variant",
+      "role": "fast",
+      "source": "めっちゃはしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "missing-actions",
+      "role": "negative",
+      "source": "あるく",
+      "expect": "failed"
+    },
+    {
+      "name": "jump-over-trap",
+      "role": "regression",
+      "source": "3かいくりかえす\nすいっちじゃんぷ\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    }
+  ]
+}

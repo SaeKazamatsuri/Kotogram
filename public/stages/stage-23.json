@@ -1,0 +1,63 @@
+{
+  "id": "stage-23",
+  "goal": 4420,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "いろいろな動きを 正しく",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "hole-1",
+      "type": "hole",
+      "position": 340,
+      "width": 80
+    },
+    {
+      "id": "ghost-2",
+      "type": "ghost",
+      "position": 940
+    },
+    {
+      "id": "wall-3",
+      "type": "wall",
+      "position": 1540
+    },
+    {
+      "id": "hole-4",
+      "type": "hole",
+      "position": 2140,
+      "width": 80
+    },
+    {
+      "id": "wall-5",
+      "type": "wall",
+      "position": 2740
+    },
+    {
+      "id": "ghost-6",
+      "type": "ghost",
+      "position": 3340
+    },
+    {
+      "id": "hole-7",
+      "type": "hole",
+      "position": 3940,
+      "width": 80
+    }
+  ],
+  "meta": {
+    "title": "7つの しれん",
+    "bg": "twilight",
+    "hint": "いろいろな動きを 正しく",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

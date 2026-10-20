@@ -1,0 +1,54 @@
+{
+  "id": "stage-20",
+  "goal": 2180,
+  "scrollSpeed": 3,
+  "requiredSkips": 1,
+  "learningObjectives": [
+    "ちがう ギミックを 見て動こう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "wall-1",
+      "type": "wall",
+      "position": 340
+    },
+    {
+      "id": "trap-2",
+      "type": "switch",
+      "position": 940,
+      "targetDoorId": "door-5",
+      "trap": true
+    },
+    {
+      "id": "safe-3",
+      "type": "switch",
+      "position": 1170,
+      "targetDoorId": "door-5"
+    },
+    {
+      "id": "door-5",
+      "type": "door",
+      "position": 1380
+    },
+    {
+      "id": "ghost-5",
+      "type": "ghost",
+      "position": 1700
+    }
+  ],
+  "meta": {
+    "title": "かべの先の スイッチ",
+    "bg": "sunset",
+    "hint": "ちがう ギミックを 見て動こう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

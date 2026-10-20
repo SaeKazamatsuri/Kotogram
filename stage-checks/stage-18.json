@@ -1,0 +1,36 @@
+{
+  "stageId": "stage-18",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner",
+      "role": "beginner",
+      "source": "あなすごいじゃんぷ",
+      "expect": "cleared"
+    },
+    {
+      "name": "short-variant",
+      "role": "short",
+      "source": "あなすごいじゃんぷ",
+      "expect": "cleared"
+    },
+    {
+      "name": "sprint-variant",
+      "role": "fast",
+      "source": "めっちゃはしる\nあなすごいじゃんぷ",
+      "expect": "cleared"
+    },
+    {
+      "name": "missing-actions",
+      "role": "negative",
+      "source": "あるく",
+      "expect": "failed"
+    },
+    {
+      "name": "ordinary-actions-without-secret-command",
+      "role": "regression",
+      "source": "はしる\nあなとぶ",
+      "expect": "cleared"
+    }
+  ]
+}

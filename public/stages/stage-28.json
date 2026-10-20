@@ -1,0 +1,119 @@
+{
+  "id": "stage-28",
+  "goal": 3540,
+  "scrollSpeed": 3,
+  "requiredCoins": 4,
+  "requiredSkips": 4,
+  "learningObjectives": [
+    "4回の 手順を まとめよう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "trap-1",
+      "type": "switch",
+      "position": 340,
+      "targetDoorId": "door-4",
+      "trap": true
+    },
+    {
+      "id": "coin-2",
+      "type": "coin",
+      "position": 460
+    },
+    {
+      "id": "safe-3",
+      "type": "switch",
+      "position": 570,
+      "targetDoorId": "door-4"
+    },
+    {
+      "id": "door-4",
+      "type": "door",
+      "position": 780
+    },
+    {
+      "id": "trap-5",
+      "type": "switch",
+      "position": 1100,
+      "targetDoorId": "door-8",
+      "trap": true
+    },
+    {
+      "id": "coin-6",
+      "type": "coin",
+      "position": 1220
+    },
+    {
+      "id": "safe-7",
+      "type": "switch",
+      "position": 1330,
+      "targetDoorId": "door-8"
+    },
+    {
+      "id": "door-8",
+      "type": "door",
+      "position": 1540
+    },
+    {
+      "id": "trap-9",
+      "type": "switch",
+      "position": 1860,
+      "targetDoorId": "door-12",
+      "trap": true
+    },
+    {
+      "id": "coin-10",
+      "type": "coin",
+      "position": 1980
+    },
+    {
+      "id": "safe-11",
+      "type": "switch",
+      "position": 2090,
+      "targetDoorId": "door-12"
+    },
+    {
+      "id": "door-12",
+      "type": "door",
+      "position": 2300
+    },
+    {
+      "id": "trap-13",
+      "type": "switch",
+      "position": 2620,
+      "targetDoorId": "door-16",
+      "trap": true
+    },
+    {
+      "id": "coin-14",
+      "type": "coin",
+      "position": 2740
+    },
+    {
+      "id": "safe-15",
+      "type": "switch",
+      "position": 2850,
+      "targetDoorId": "door-16"
+    },
+    {
+      "id": "door-16",
+      "type": "door",
+      "position": 3060
+    }
+  ],
+  "meta": {
+    "title": "4回の おつかい",
+    "bg": "twilight",
+    "hint": "4回の 手順を まとめよう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

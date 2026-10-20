@@ -2,7 +2,7 @@ import type { GameInstruction, GameProgram } from "../game/core";
 import conditionsDictionary from "../../public/dictionary/conditions.json" with { type: "json" };
 import actionsDictionary from "../../public/dictionary/actions.json" with { type: "json" };
 export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin" | "switch";
-export type Action = "jump" | "crouch" | "collect" | "run" | "walk" | "press" | "skip";
+export type Action = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip";
 export type Vocabulary = {
   conditions?: Record<string, string[]>;
   actions?: Record<string, string[]>;
