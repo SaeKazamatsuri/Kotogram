@@ -13,6 +13,7 @@ export type CharacterMotion = {
   offsetY: number;
   fade: number;
   stunned: boolean;
+  shadowScale: number;
 };
 
 export function failureAnimationDuration(reason: GameFailReason | undefined): number {
@@ -67,6 +68,7 @@ export function resolveCharacterMotion(game: GameState, visualTick = game.elapse
     offsetY,
     fade: Math.max(0, fade),
     stunned: failed,
+    shadowScale: Math.max(0.5, 1 - Math.max(0, GAME.groundY - GAME.epsilon - game.py) / 250),
   };
 }
 
@@ -74,12 +76,13 @@ export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameS
   const motion = resolveCharacterMotion(game, visualTick, idle, failureProgress);
   const x = GAME.playerScreenX + GAME.playerWidth / 2;
   const airborne = motion.pose === "jumping" || motion.pose === "crouch-jumping";
+  const tucked = motion.pose === "crouch-jumping";
   ctx.save();
   ctx.globalAlpha = motion.fade;
   if (game.failureReason !== "hole" || game.status !== "failed") {
     ctx.fillStyle = "rgba(43, 41, 64, 0.21)";
     ctx.beginPath();
-    ctx.ellipse(x, GAME.groundY + 2, airborne ? 14 : 19, 4, 0, 0, Math.PI * 2);
+    ctx.ellipse(x, GAME.groundY + 2, (airborne ? 14 : 19) * motion.shadowScale, 4 * motion.shadowScale, 0, 0, Math.PI * 2);
     ctx.fill();
   }
   ctx.translate(x + motion.offsetX, game.py + GAME.epsilon + motion.offsetY - motion.bounce * 0.2 - motion.breathe * 0.5);
@@ -92,8 +95,8 @@ export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameS
   for (const side of [-1, 1]) {
     ctx.beginPath();
     ctx.moveTo(side * 8, -14);
-    const footX = airborne ? side * 13 : side * 8 + motion.stride * side;
-    const footY = airborne ? -6 : -2 + Math.max(0, -motion.stride * side) * 0.3;
+    const footX = tucked ? side * 4 : airborne ? side * 13 : side * 8 + motion.stride * side;
+    const footY = tucked ? -19 : airborne ? -6 : -2 + Math.max(0, -motion.stride * side) * 0.3;
     ctx.lineTo(footX, footY);
     ctx.stroke();
     ctx.fillStyle = "#3b3f57";
@@ -112,8 +115,15 @@ export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameS
   for (const side of [-1, 1]) {
     ctx.beginPath();
     ctx.moveTo(side * 14, -37);
-    ctx.lineTo(side * (18 + Math.abs(motion.stride) * 0.2), -22 + (side * motion.stride) * 0.38);
+    ctx.lineTo(tucked ? side * 8 : side * (18 + Math.abs(motion.stride) * 0.2), tucked ? -48 : airborne ? -49 : -22 + (side * motion.stride) * 0.38);
     ctx.stroke();
+  }
+
+  if (tucked) {
+    ctx.fillStyle = "#ffe8ab";
+    ctx.beginPath();
+    ctx.ellipse(0, -24, 11, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   ctx.fillStyle = "#f0b351";
