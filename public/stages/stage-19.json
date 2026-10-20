@@ -1,0 +1,73 @@
+{
+  "id": "stage-19",
+  "goal": 2020,
+  "scrollSpeed": 3,
+  "requiredCoins": 2,
+  "requiredSkips": 2,
+  "learningObjectives": [
+    "コインと とびらの じゅんばんを 守ろう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "trap-1",
+      "type": "switch",
+      "position": 340,
+      "targetDoorId": "door-4",
+      "trap": true
+    },
+    {
+      "id": "coin-2",
+      "type": "coin",
+      "position": 460
+    },
+    {
+      "id": "safe-3",
+      "type": "switch",
+      "position": 570,
+      "targetDoorId": "door-4"
+    },
+    {
+      "id": "door-4",
+      "type": "door",
+      "position": 780
+    },
+    {
+      "id": "trap-5",
+      "type": "switch",
+      "position": 1100,
+      "targetDoorId": "door-8",
+      "trap": true
+    },
+    {
+      "id": "coin-6",
+      "type": "coin",
+      "position": 1220
+    },
+    {
+      "id": "safe-7",
+      "type": "switch",
+      "position": 1330,
+      "targetDoorId": "door-8"
+    },
+    {
+      "id": "door-8",
+      "type": "door",
+      "position": 1540
+    }
+  ],
+  "meta": {
+    "title": "2つの たからと とびら",
+    "bg": "sunset",
+    "hint": "コインと とびらの じゅんばんを 守ろう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

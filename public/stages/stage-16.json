@@ -1,0 +1,51 @@
+{
+  "id": "stage-16",
+  "goal": 2020,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "ジャンプと しゃがむを 組み合わせよう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "wall-1",
+      "type": "wall",
+      "position": 340
+    },
+    {
+      "id": "ghost-2",
+      "type": "ghost",
+      "position": 340
+    },
+    {
+      "id": "hole-3",
+      "type": "hole",
+      "position": 940,
+      "width": 80
+    },
+    {
+      "id": "wall-4",
+      "type": "wall",
+      "position": 1540
+    },
+    {
+      "id": "ghost-5",
+      "type": "ghost",
+      "position": 1540
+    }
+  ],
+  "meta": {
+    "title": "上下を 見わけよう",
+    "bg": "sunset",
+    "hint": "ジャンプと しゃがむを 組み合わせよう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}
