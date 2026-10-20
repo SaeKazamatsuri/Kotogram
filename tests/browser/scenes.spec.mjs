@@ -213,7 +213,15 @@ test("プレイ画面はページ全体をスクロールせずに操作でき�
   }));
   expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport + 2);
   expect(dimensions.layout).toBeLessThanOrEqual(dimensions.viewport);
-  await expect(page.getByRole("button", { name: "動かす" })).toBeVisible();
+  const runButton = page.getByRole("button", { name: "動かす" });
+  await expect(runButton).toBeVisible();
+  const buttonBounds = await runButton.boundingBox();
+  const editorBounds = await page.locator(".play-screen__editor").boundingBox();
+  expect(buttonBounds).not.toBeNull();
+  expect(editorBounds).not.toBeNull();
+  expect(buttonBounds.y).toBeGreaterThanOrEqual(editorBounds.y);
+  expect(buttonBounds.y + buttonBounds.height).toBeLessThanOrEqual(editorBounds.y + editorBounds.height);
+  expect(buttonBounds.y + buttonBounds.height).toBeLessThanOrEqual(page.viewportSize().height);
 });
 
 test("リザルト画面で次へ・マップへ・コードを直すが常に見える", async ({ page }) => {
