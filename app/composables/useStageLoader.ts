@@ -34,6 +34,7 @@ export type StageData = {
   goal?: number;
   scrollSpeed?: number;
   requiredCoins?: number;
+  requiredSkips?: number;
   learningObjectives?: string[];
   objects?: StageObject[];
   meta?: StageMeta;
