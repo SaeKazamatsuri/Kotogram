@@ -1,5 +1,5 @@
 {
-  "goal": 5800,
+  "goal": 3400,
   "scrollSpeed": 4,
   "objects": [
     {
@@ -29,51 +29,20 @@
       "position": 2200
     },
     {
-      "id": "wall:2",
-      "type": "wall",
-      "position": 2600
-    },
-    {
       "id": "hole:1",
       "type": "hole",
-      "position": 3000,
+      "position": 2600,
       "width": 120
     },
     {
-      "id": "ghost:2",
-      "type": "ghost",
-      "position": 3400
-    },
-    {
-      "id": "wall:3",
+      "id": "wall:2",
       "type": "wall",
-      "position": 3800
-    },
-    {
-      "id": "ghost:3",
-      "type": "ghost",
-      "position": 4200
-    },
-    {
-      "id": "hole:2",
-      "type": "hole",
-      "position": 4600,
-      "width": 100
-    },
-    {
-      "id": "wall:4",
-      "type": "wall",
-      "position": 5000
-    },
-    {
-      "id": "wall:5",
-      "type": "wall",
-      "position": 5400
+      "position": 3000
     }
   ],
   "meta": {
     "title": "おばけには しゃがむ",
-    "hint": "「おばけ しゃがむ」と「かべ じゃんぷ」を じゅんばんに ならべてみよう",
+    "hint": "かべと あなは ジャンプ。おばけには しゃがむ めいれいを かいてみよう",
     "failHints": {
       "enemy": "おばけが きたら しゃがむ めいれいを いれてみよう",
       "wall": "かべの てまえで じゃんぷする めいれいを いれてみよう",
@@ -84,5 +53,6 @@
   "learningObjectives": [
     "おばけを しゃがんで よける",
     "かべと あなを ジャンプで よける"
-  ]
+  ],
+  "jumpSensorProfile": "centered-holes"
 }

@@ -47,5 +47,6 @@
   "learningObjectives": [
     "かべと あなを 見分ける",
     "2つの 条件で ジャンプする"
-  ]
+  ],
+  "jumpSensorProfile": "centered-holes"
 }
