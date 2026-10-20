@@ -25,14 +25,9 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
     ctx.moveTo(Math.max(left, right - 12), GAME.groundY);
     ctx.lineTo(right, GAME.groundY);
     ctx.stroke();
-    ctx.strokeStyle = "#e3ecdd";
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(left, GAME.groundY + 2);
-    ctx.lineTo(left, GAME.groundY + 18);
-    ctx.moveTo(right, GAME.groundY + 2);
-    ctx.lineTo(right, GAME.groundY + 18);
-    ctx.stroke();
+    ctx.fillStyle = "#e3ecdd";
+    ctx.fillRect(left, GAME.groundY + 2, 2, 16);
+    ctx.fillRect(Math.max(left, right - 2), GAME.groundY + 2, 2, 16);
   }
 }
 
