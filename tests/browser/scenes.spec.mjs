@@ -62,7 +62,7 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
     await route.continue();
   });
   await page.goto("/stages");
-  await expect(page.getByRole("alert")).toContainText("ステージを 読みこめませんでした");
+  await expect(page.getByRole("alert")).toContainText("ステージを読みこめませんでした");
   await expect(page.getByRole("link", { name: /ステージ 1/ })).toHaveCount(0);
   await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
   await expect(page.getByRole("link", { name: /かべで ジャンプ/ })).toBeVisible();
@@ -138,7 +138,7 @@ test("次の人へ初期化した後に前利用者の遅い送信結果が名�
   await expect(page.getByRole("heading", { name: "ステージクリア！" })).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "きろくを 送る" }).click();
   await requestSeen;
-  await page.getByRole("link", { name: "ステージへ" }).click();
+  await page.getByRole("dialog", { name: "ステージクリア" }).getByRole("button", { name: "マップへ" }).click();
   await page.evaluate(() => localStorage.setItem("kotogram.nickname", "前の人"));
   await page.getByRole("button", { name: /次の人へ/ }).click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("kotogram.nickname"))).toBeNull();
@@ -157,7 +157,7 @@ test("ぼうけんマップに進行状態と7つのステージが表示され�
   await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(7);
   await expect(page.locator(".map-stop.is-current")).toHaveCount(1);
   await expect(page.locator(".map-stop.is-locked")).toHaveCount(6);
-  await expect(page.getByRole("link", { name: /ステージ 1 ジャンプで かべを こえる/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /ステージ 2/ })).toHaveCount(0);
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(pageWidth).toBeLessThanOrEqual(testInfo.project.use.viewport.width + 3);
@@ -167,7 +167,7 @@ test("ぼうけんマップに進行状態と7つのステージが表示され�
 
 test("マップの入口からプレイ画面に進める", async ({ page }) => {
   await page.goto("/stages");
-  await page.getByRole("link", { name: /ステージ 1 ジャンプで かべを こえる/ }).click();
+  await page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ }).click();
   await expect(page).toHaveURL(new RegExp("/play/stage-1$"));
   await expect(page.locator("canvas")).toBeVisible();
 });
