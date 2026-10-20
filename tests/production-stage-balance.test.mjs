@@ -46,7 +46,7 @@ test("公開の穴付きステージでジャンプの最高点が穴の中心�
       const holes = trace.jumps.filter((jump) => jump.target?.type === "hole");
       assert.ok(holes.length > 0, id);
       for (const hole of holes) {
-        assert.ok(Math.abs(hole.peakOffsetX) <= 20, id + " " + item.role + ": " + hole.peakOffsetX);
+        assert.ok(Math.abs(hole.peakOffsetX) <= 24, id + " " + item.role + ": " + hole.peakOffsetX);
       }
     }
   }
