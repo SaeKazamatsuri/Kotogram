@@ -32,7 +32,8 @@ const STEP_MS = 1000 / GAME.tickRate;
 function draw(visualTick = game.elapsedTicks, failureProgress = 1) {
   const ctx = canvas.value?.getContext("2d");
   if (!ctx) return;
-  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg), visualTick, !props.running, failureProgress);
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg), visualTick, !props.running, failureProgress, reducedMotion);
 }
 
 function stop() {
