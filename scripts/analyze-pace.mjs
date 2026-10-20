@@ -61,10 +61,25 @@ const paceRoute = {
   entries: Object.entries(sources).map(([name, source]) => evaluate(experiment, source, name)),
 };
 
+const stage5 = load("experiments/stages/stage-5-pace-candidate.json");
+const stage5Sources = {
+  beginner: "かべならじゃんぷ\nあなならじゃんぷ\nおばけならしゃがむ",
+  fast: "はしる\nかべとあなとぶ\nおばけしゃがむ",
+  genericWalk: "まえとぶ\nおばけしゃがむ",
+  unsafeGenericRun: "はしる\nまえとぶ\nおばけしゃがむ",
+  slowedGenericRun: "はしる\nあなあるく\nまえとぶ\nおばけしゃがむ",
+};
+const stage5Candidate = {
+  stageId: stage5.id,
+  published: false,
+  entries: Object.entries(stage5Sources).map(([name, source]) => evaluate(stage5, source, name)),
+};
+
 console.log(JSON.stringify({
   baseline: "2026-10-20",
   scope: "published stages 1-7 only; stage 8 deliberately excluded",
   note: "bestKnown values are measured examples, not mathematically proven optima",
   stages,
   paceRoute,
+  stage5Candidate,
 }, null, 2));
