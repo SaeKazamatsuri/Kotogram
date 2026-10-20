@@ -2,7 +2,7 @@ import type { GameInstruction, GameProgram } from "../game/core";
 import conditionsDictionary from "../../public/dictionary/conditions.json" with { type: "json" };
 import actionsDictionary from "../../public/dictionary/actions.json" with { type: "json" };
 export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin" | "switch";
-export type Action = "jump" | "crouch" | "collect" | "run" | "walk" | "press";
+export type Action = "jump" | "crouch" | "collect" | "run" | "walk" | "press" | "skip";
 export type Vocabulary = {
   conditions?: Record<string, string[]>;
   actions?: Record<string, string[]>;
@@ -216,10 +216,18 @@ function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement 
     return null;
   }
   if (prefix.length === 0 || prefix.every((token) => token.kind === "particle")) {
+    if (actionToken.value === "skip") {
+      diagnostics.push(error("unsupported", "みおくる ときは『すいっち』を かいてね", actionToken));
+      return null;
+    }
     return { kind: "action", action: actionToken.value as Action, repeat, span: spanOf(tokens) };
   }
   const conditions = parseConditions(prefix, diagnostics);
   if (!conditions) return null;
+  if (actionToken.value === "skip" && (conditions.length !== 1 || conditions[0] !== "switch")) {
+    diagnostics.push(error("unsupported", "みおくる のは『すいっち』だけだよ", actionToken));
+    return null;
+  }
   return { kind: "rule", conditions, operator: "or", action: actionToken.value as Action, maxFires: specified ? repeat : null, span: spanOf(tokens) };
 }
 
