@@ -1,0 +1,58 @@
+{
+  "id": "stage-25",
+  "goal": 3820,
+  "scrollSpeed": 3,
+  "requiredCoins": 2,
+  "learningObjectives": [
+    "速く進むときも ていねいに",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "hole-1",
+      "type": "hole",
+      "position": 340,
+      "width": 80
+    },
+    {
+      "id": "coin-2",
+      "type": "coin",
+      "position": 940
+    },
+    {
+      "id": "hole-3",
+      "type": "hole",
+      "position": 1540,
+      "width": 80
+    },
+    {
+      "id": "wall-4",
+      "type": "wall",
+      "position": 2140
+    },
+    {
+      "id": "coin-5",
+      "type": "coin",
+      "position": 2740
+    },
+    {
+      "id": "ghost-6",
+      "type": "ghost",
+      "position": 3340
+    }
+  ],
+  "meta": {
+    "title": "速さと コイン",
+    "bg": "twilight",
+    "hint": "速く進むときも ていねいに",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

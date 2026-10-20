@@ -1,0 +1,46 @@
+{
+  "id": "stage-24",
+  "goal": 2020,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "1回の すごいジャンプを 使ってみよう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "wall-1",
+      "type": "wall",
+      "position": 340
+    },
+    {
+      "id": "wall-2",
+      "type": "wall",
+      "position": 460
+    },
+    {
+      "id": "hole-3",
+      "type": "hole",
+      "position": 940,
+      "width": 80
+    },
+    {
+      "id": "ghost-4",
+      "type": "ghost",
+      "position": 1540
+    }
+  ],
+  "meta": {
+    "title": "とぶ道と しゃがむ道",
+    "bg": "twilight",
+    "hint": "1回の すごいジャンプを 使ってみよう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

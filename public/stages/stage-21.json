@@ -1,0 +1,46 @@
+{
+  "id": "stage-21",
+  "goal": 2020,
+  "scrollSpeed": 3,
+  "requiredCoins": 1,
+  "learningObjectives": [
+    "長いジャンプの あとに コインを とろう",
+    "いつもの動きと ちがう方法を ためしてみよう"
+  ],
+  "objects": [
+    {
+      "id": "wall-1",
+      "type": "wall",
+      "position": 340
+    },
+    {
+      "id": "wall-2",
+      "type": "wall",
+      "position": 460
+    },
+    {
+      "id": "coin-3",
+      "type": "coin",
+      "position": 940
+    },
+    {
+      "id": "ghost-4",
+      "type": "ghost",
+      "position": 1540
+    }
+  ],
+  "meta": {
+    "title": "ひととびで コインまで",
+    "bg": "sunset",
+    "hint": "長いジャンプの あとに コインを とろう",
+    "failHints": {
+      "wall": "かべの 手前で とんでみよう",
+      "hole": "あなを こえるために ジャンプしよう",
+      "enemy": "おばけの 下を くぐってみよう",
+      "coin": "コインを ぜんぶ とろう",
+      "door": "とびらの 前に スイッチが あるよ",
+      "trap": "あかいスイッチは おさないでね",
+      "skip": "あかいスイッチを どうやって こえたかな"
+    }
+  }
+}

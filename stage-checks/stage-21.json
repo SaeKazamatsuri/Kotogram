@@ -1,0 +1,36 @@
+{
+  "stageId": "stage-21",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner",
+      "role": "beginner",
+      "source": "かべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる",
+      "expect": "cleared"
+    },
+    {
+      "name": "short-variant",
+      "role": "short",
+      "source": "かべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる",
+      "expect": "cleared"
+    },
+    {
+      "name": "sprint-variant",
+      "role": "fast",
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる",
+      "expect": "cleared"
+    },
+    {
+      "name": "missing-actions",
+      "role": "negative",
+      "source": "あるく",
+      "expect": "failed"
+    },
+    {
+      "name": "ordinary-single-jump-fails",
+      "role": "negative",
+      "source": "かべ1かいじゃんぷ\nおばけしゃがむ\nこいんとる",
+      "expect": "failed"
+    }
+  ]
+}
