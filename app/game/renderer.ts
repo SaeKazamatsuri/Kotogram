@@ -5,7 +5,7 @@ import { drawAnimatedCharacter } from "./character.ts";
 import { getPlayerPose, type PlayerPose } from "./visuals.ts";
 import { layerX, type ScenePalette } from "./scenery.ts";
 
-export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false): void {
+export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false, failureProgress = 1): void {
   ctx.clearRect(0, 0, GAME.width, GAME.height);
 
   const background = ctx.createLinearGradient(0, 0, 0, GAME.height);
@@ -106,7 +106,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
 
   drawSpeedTrail(ctx, game, visualTick, idle);
   const pose: PlayerPose = getPlayerPose(game);
-  drawAnimatedCharacter(ctx, game, visualTick, idle);
+  drawAnimatedCharacter(ctx, game, visualTick, idle, failureProgress);
 
   const actionLabels: Record<PlayerPose, string> = {
     walking: "あるく",
@@ -119,7 +119,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   ctx.fillRect(12, 12, 180, 32);
   ctx.fillStyle = "#0f172a";
   ctx.font = "bold 15px sans-serif";
-  ctx.fillText(actionLabels[pose], 22, 34);
+  ctx.fillText(game.status === "failed" ? "あっ！" : actionLabels[pose], 22, 34);
 
   if (game.requiredCoins > 0) {
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
@@ -131,6 +131,6 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   }
 
   drawFinish(ctx, game);
-  drawResultEffects(ctx, game);
+  drawResultEffects(ctx, game, failureProgress);
 }
 
