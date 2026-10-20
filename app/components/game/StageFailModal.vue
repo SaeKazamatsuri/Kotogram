@@ -21,8 +21,8 @@ const hintText = computed(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 grid place-items-center bg-[#090e1d]/90 p-4 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ステージしっぱい" @click.self="emit('close')">
-    <div class="game-panel w-[min(500px,96vw)] p-6 sm:p-8">
+  <div class="fixed inset-0 z-[80] grid place-items-center overflow-hidden bg-[#090e1d]/90 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ステージしっぱい" @click.self="emit('close')">
+    <div class="game-panel max-h-[calc(100dvh-24px)] w-[min(500px,96vw)] overflow-y-auto p-5 sm:p-8">
       <div class="mb-5 flex items-center gap-4">
         <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#ffb59f] text-[#842b40]"><Icon name="lucide:rotate-ccw" class="text-4xl" aria-hidden="true"/></div>
         <h2 class="game-heading text-3xl text-[#962d47]">もう一度！</h2>
