@@ -40,6 +40,8 @@ const dict = ref<Dictionary | null>(null);
 const loading = ref(true);
 const loadError = ref<string | null>(null);
 const editorRef = ref<InstanceType<typeof CommandEditor> | null>(null);
+const editorPanel = ref<HTMLElement | null>(null);
+const gamePanel = ref<HTMLElement | null>(null);
 const editorLines = ref<string[]>([]);
 const program = ref<GameProgram | undefined>(undefined);
 const running = ref(false);
@@ -71,6 +73,12 @@ function goMap() {
   router.push("/stages");
 }
 
+function focusSmallScreenPanel(target: HTMLElement | null) {
+  if (!import.meta.client || !target || !window.matchMedia("(max-width: 960px)").matches) return;
+  const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  requestAnimationFrame(() => target.scrollIntoView({ behavior, block: "start" }));
+}
+
 function resolveHint(reason: FailReason): string {
   const meta = stage.value?.meta;
   const byReason = meta?.failHints?.[reason];
@@ -88,11 +96,13 @@ function closeFail() {
   failed.value = false;
   failInfo.value = null;
   setBgm("title_loop");
+  focusSmallScreenPanel(editorPanel.value);
 }
 
 function closeClear() {
   cleared.value = false;
   setBgm("title_loop");
+  focusSmallScreenPanel(editorPanel.value);
 }
 
 async function loadCurrentStage() {
@@ -174,6 +184,7 @@ function onRun() {
   pendingRunId = "";
   stageStart(stageId.value);
   running.value = true;
+  focusSmallScreenPanel(gamePanel.value);
 }
 
 function onClear(timing: { elapsedTicks: number; seconds: number }) {
@@ -260,8 +271,8 @@ watch(stageId, () => {
     </div>
 
     <div v-else-if="stage" class="game-surface overflow-hidden">
-      <div class="game-workspace gap-0">
-        <section class="min-w-0 border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
+      <div class="game-workspace game-workspace--stage gap-0">
+        <section ref="editorPanel" class="min-w-0 border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
           <CommandEditor
             :key="stageId"
             ref="editorRef"
@@ -270,12 +281,9 @@ watch(stageId, () => {
             @run="onRun"
           />
         </section>
-        <section class="flex min-w-0 flex-col bg-[#243551]" aria-label="ゲーム画面">
-          <div class="flex min-h-14 items-center justify-between gap-3 border-b border-[#647b9b] px-5 py-3">
-            <span class="flex items-center gap-2 text-base font-black"><Icon name="lucide:monitor-play" class="game-icon text-[#aaf0d0]" aria-hidden="true"/> ゲーム画面</span>
-            <span v-if="running" role="status" class="text-sm font-black text-[#aaf0d0]">動いているよ</span>
-          </div>
-          <div class="flex-1 p-3">
+        <section ref="gamePanel" class="game-playview relative flex min-w-0 flex-col" aria-label="ゲーム画面">
+          <span v-if="running" role="status" class="absolute right-5 top-5 z-10 rounded-full border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]">動いているよ</span>
+          <div class="flex-1 p-3 sm:p-5">
             <GameCanvas
               :key="stageId"
               :stage="stage"
@@ -318,3 +326,17 @@ watch(stageId, () => {
     />
   </div>
 </template>
+
+<style scoped>
+.game-workspace--stage {
+  grid-template-columns: minmax(370px, .8fr) minmax(0, 1.2fr);
+}
+.game-playview {
+  background: radial-gradient(ellipse at 50% -10%, #41677a 0%, #263d58 52%, #1d2f4d 100%);
+}
+@media (max-width: 960px) {
+  .game-workspace--stage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+</style>
