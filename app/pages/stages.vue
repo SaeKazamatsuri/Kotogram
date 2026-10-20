@@ -213,7 +213,7 @@ onMounted(() => {
         </div>
       </div>
     </template>
-    <div class="mt-5 flex justify-end">
+    <div class="mt-5 flex justify-start">
       <button type="button" class="game-button game-button--night text-sm" @click="onReset">
         <Icon name="lucide:refresh-cw" class="game-icon" aria-hidden="true" /> 次の人へ
       </button>
@@ -395,8 +395,8 @@ onMounted(() => {
   color: #1d3045;
   box-shadow: 0 5px 0 #2b4c4e8c;
 }
-.map-stop__stage { color: #48647a; font-size: 12px; font-weight: 900; line-height: 1.3; }
-.map-stop__title { font-size: 13px; font-weight: 900; line-height: 1.35; overflow-wrap: anywhere; }
+.map-stop__stage { color: #48647a; font-size: 13px; font-weight: 900; line-height: 1.3; }
+.map-stop__title { font-size: 15px; font-weight: 900; line-height: 1.35; overflow-wrap: anywhere; }
 .map-stop.is-current { z-index: 5; }
 .map-stop.is-current .map-stop__circle {
   background: #93f1c7;
@@ -490,7 +490,7 @@ onMounted(() => {
   .map-stop__number { font-size: 26px; }
   .map-stop__sign { width: 133px; min-height: 56px; margin-top: 8px; padding: 5px; border-width: 2px; }
   .map-stop__stage { font-size: 11px; }
-  .map-stop__title { font-size: 12px; }
+  .map-stop__title { font-size: 13px; }
   .map-hero { left: -5px; top: -44px; transform: scale(.8); }
   .map-arrows { display: none; }
   .map-legend { justify-content: center; width: 100%; font-size: 12px; }

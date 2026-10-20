@@ -123,6 +123,6 @@ onBeforeUnmount(stop);
 
 <template>
   <div class="flex flex-col gap-3">
-    <canvas ref="canvas" class="w-full rounded-2xl border border-gray-200 bg-white" />
+    <canvas ref="canvas" class="w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" />
   </div>
 </template>
