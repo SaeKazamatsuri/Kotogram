@@ -295,7 +295,9 @@ export function parseSource(source: string | string[], vocabulary: Vocabulary = 
         diagnostics.push(error("syntax", "くりかえす かきかたを かくにんしてね", first));
         continue;
       }
-      const parsed = parseSimple(tokens, diagnostics);
+      const parsed = opener?.kind === "if" && tokens.length === 1 && first.kind === "action" && first.value === "skip"
+        ? { kind: "action" as const, action: "skip" as const, repeat: 1, span: spanOf(tokens) }
+        : parseSimple(tokens, diagnostics);
       if (parsed) body.push(parsed);
     }
     if (opener) diagnostics.push(error("end", "さいごに『おわり』を かいてね", opener));
