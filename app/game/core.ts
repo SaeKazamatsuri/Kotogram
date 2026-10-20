@@ -257,7 +257,7 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     for (const objects of groups) {
       const target = nextTarget(objects, game.px);
       const triggerRange = game.jumpSensorProfile === "centered-holes" && objects === game.holes
-        ? Math.max(0, range - Math.max(0, ((target && "w" in target ? target.w : GAME.defaultHoleWidth) - GAME.wallWidth) / 2))
+        ? Math.max(0, range - Math.max(0, ((game.holes.find((hole) => hole.id === target?.id)?.w ?? GAME.defaultHoleWidth) - GAME.wallWidth) / 2))
         : range;
       if (target && target.x - game.px <= triggerRange) found.set(target.id, target);
     }
