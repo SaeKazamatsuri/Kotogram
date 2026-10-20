@@ -19,7 +19,7 @@ const props = defineProps<{
   rankingRefresh?: number;
 }>();
 const emit = defineEmits<{
-  (e: "close" | "next"): void;
+  (e: "close" | "next" | "map"): void;
   (e: "register", name: string): void;
 }>();
 const nickname = ref("");
@@ -71,8 +71,9 @@ function bestScore(kind: "time" | "chars" | "overall") {
       <RankingPanel v-if="showRanking && apiBase" :stage-id="stageId" :stage-version="stageVersion" :api-base="apiBase" :refresh="rankingRefresh ?? 0" />
       <div class="mt-5 flex flex-wrap gap-3">
         <button type="button" class="game-button game-button--mint flex-1 text-base" @click="emit('next')"><Icon name="lucide:arrow-right" class="game-icon" aria-hidden="true"/>{{ hasNext ? '次へ' : 'ステージへ' }}</button>
-        <button type="button" class="game-button game-button--ghost flex-1 text-base" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
+        <button type="button" class="game-button game-button--ghost flex-1 text-base" @click="emit('map')"><Icon name="lucide:map" class="game-icon" aria-hidden="true"/> マップへ</button>
       </div>
+      <button type="button" class="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-black text-[#405978] hover:bg-[#e8f0f5]" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
     </div>
   </div>
 </template>
