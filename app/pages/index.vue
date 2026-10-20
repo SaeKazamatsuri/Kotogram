@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { playSe, unlockAudio } from "~/game/audio";
+import GameCharacterSprite from "~/components/game/CharacterSprite.vue";
 
 const completed = ref(0);
 
@@ -30,11 +31,7 @@ onMounted(() => {
       <div class="title-world__path" />
       <div class="title-world__portal"><Icon name="lucide:flag-triangle-right" /></div>
       <div class="title-world__avatar">
-        <span class="title-world__avatar-body">
-          <span class="title-world__avatar-eye title-world__avatar-eye--left" />
-          <span class="title-world__avatar-eye title-world__avatar-eye--right" />
-        </span>
-        <span class="title-world__avatar-feet" />
+        <GameCharacterSprite />
       </div>
       <div class="title-world__spark title-world__spark--first" />
       <div class="title-world__spark title-world__spark--second" />
@@ -170,33 +167,6 @@ onMounted(() => {
   height: 177px;
   filter: drop-shadow(12px 13px 0 #213e4d68);
   animation: title-hero-float 3s ease-in-out infinite;
-}
-.title-world__avatar-body {
-  position: absolute;
-  inset: 0 0 20px;
-  border: 8px solid #273750;
-  border-radius: 48px 48px 20px 20px;
-  background: linear-gradient(125deg, #ffe8a6 0%, #ffd17d 100%);
-}
-.title-world__avatar-eye {
-  position: absolute;
-  top: 72px;
-  width: 13px;
-  height: 18px;
-  border-radius: 50%;
-  background: #24334a;
-}
-.title-world__avatar-eye--left { left: 27px; }
-.title-world__avatar-eye--right { right: 27px; }
-.title-world__avatar-feet {
-  position: absolute;
-  left: 19px;
-  bottom: 0;
-  width: 43px;
-  height: 21px;
-  border-radius: 12px;
-  background: #24334a;
-  box-shadow: 61px 0 0 #24334a;
 }
 .title-world__spark {
   position: absolute;
