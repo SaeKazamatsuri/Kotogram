@@ -207,11 +207,11 @@ onMounted(() => {
           <div class="map-castle" aria-hidden="true"><Icon name="lucide:castle" /></div>
 
           <svg class="map-trail map-trail--wide" viewBox="0 0 1000 520" preserveAspectRatio="none" aria-hidden="true">
-            <path class="map-trail__edge" d="M 80 354 C 145 354 150 166 220 166 S 303 322 360 322 S 447 125 500 125 S 592 338 650 338 S 727 182 790 182 S 895 250 940 250" />
+            <path class="map-trail__edge" d="M 80 354 C 145 354 150 166 220 166 S 303 322 360 322 S 447 125 500 125 S 592 338 650 338 S 727 182 790 182 S 895 250 940 250 C 960 320 945 410 900 426" />
             <path class="map-trail__road" d="M 80 354 C 145 354 150 166 220 166 S 303 322 360 322 S 447 125 500 125 S 592 338 650 338 S 727 182 790 182 S 895 250 940 250" />
           </svg>
           <svg class="map-trail map-trail--tall" viewBox="0 0 380 1100" preserveAspectRatio="none" aria-hidden="true">
-            <path class="map-trail__edge" d="M 103 99 C 185 99 190 242 274 242 S 190 385 110 385 S 185 528 270 528 S 185 671 106 671 S 187 814 270 814 S 265 957 190 957" />
+            <path class="map-trail__edge" d="M 103 99 C 185 99 190 242 274 242 S 190 385 110 385 S 185 528 270 528 S 185 671 106 671 S 187 770 270 770 S 265 880 190 880 S 190 1001 270 1001" />
             <path class="map-trail__road" d="M 103 99 C 185 99 190 242 274 242 S 190 385 110 385 S 185 528 270 528 S 185 671 106 671 S 187 814 270 814 S 265 957 190 957" />
           </svg>
 
@@ -320,6 +320,7 @@ onMounted(() => {
     radial-gradient(ellipse at 11% 17%, #fff6d0 0 3%, transparent 18%),
     linear-gradient(110deg, #b6e9d9 0%, #b5e6d3 25%, #88c7b3 50%, #8abec6 75%, #7facc4 100%);
 }
+.map-land--expanded { height: 760px; }
 .map-land::before {
   position: absolute;
   z-index: 0;
@@ -516,6 +517,7 @@ onMounted(() => {
 @media (max-width: 639px) {
   .map-viewport { overflow: hidden auto; max-height: min(69vh, 700px); border-radius: 22px; }
   .map-land { width: 100%; min-width: 300px; height: 1100px; background: linear-gradient(180deg, #b6e9d9 0%, #9ccfba 37%, #8ac1b1 60%, #81aebe 100%); }
+  .map-land--expanded { height: 1400px; }
   .map-land::before { background: radial-gradient(ellipse at 35% 18%, #83c39b 0 13%, transparent 14%), radial-gradient(ellipse at 70% 53%, #57a48f 0 20%, transparent 21%), radial-gradient(ellipse at 30% 86%, #528f99 0 18%, transparent 19%); }
   .map-sun { left: 8%; top: 2%; width: 52px; }
   .map-cloud--one { left: 18%; top: 31%; transform: scale(.55); }

@@ -18,7 +18,7 @@ export type HoleStageObject = {
 };
 export type GoalStageObject = { type: "goal"; position: number };
 export type CoinStageObject = { type: "coin"; position: number; id?: string };
-export type SwitchStageObject = { type: "switch"; position: number; id: string; targetDoorId: string };
+export type SwitchStageObject = { type: "switch"; position: number; id: string; targetDoorId: string; trap?: boolean };
 export type DoorStageObject = { type: "door"; position: number; id: string };
 export type StageObject =
   | WallStageObject

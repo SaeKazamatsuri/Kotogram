@@ -23,3 +23,11 @@ test("map stops have distinct desktop and mobile coordinates", () => {
   assert.equal(new Set(stops.map((stop) => stop.mobileY)).size, 7);
   assert.ok(stops.every((stop, index) => index === 0 || stop.mobileY > stops[index - 1].mobileY));
 });
+
+test("eighth world-map stop stays inside the extended map", () => {
+  const eighth = worldMapPosition(7);
+  assert.ok(eighth.x > 0 && eighth.x < 100);
+  assert.ok(eighth.y > 0 && eighth.y < 100);
+  assert.ok(eighth.mobileY > worldMapPosition(6).mobileY && eighth.mobileY < 100);
+  assert.notDeepEqual(eighth, worldMapPosition(6));
+});
