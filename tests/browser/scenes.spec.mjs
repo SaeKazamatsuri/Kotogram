@@ -190,7 +190,7 @@ test("プレイ画面はゲームを大きく表示し、狭い画面では一�
   const workspace = page.locator(".game-workspace--stage");
   await expect(workspace).toBeVisible();
   const columns = await workspace.evaluate((element) =>
-    getComputedStyle(element).gridTemplateColumns.split(/\\s+/).map((value) => Number.parseFloat(value)),
+    getComputedStyle(element).gridTemplateColumns.split(" ").map((value) => Number.parseFloat(value)),
   );
   if (testInfo.project.use.viewport.width > 960) {
     expect(columns).toHaveLength(2);
