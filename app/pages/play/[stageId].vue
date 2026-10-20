@@ -204,8 +204,9 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   lastRun.value = { source: rawText, elapsedTicks: timing.elapsedTicks, charCount: chars };
   scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars }) : null;
   bests.value = getBestRecords(stageId.value, stageVersion.value);
-  setBgm("result_loop");
-  playSe(scoreValues.value && scoreValues.value.overall > 1000 ? "score_bonus" : "high_score");
+  setBgm("clear_loop");
+  playSe("clear_fanfare");
+  if (scoreValues.value && scoreValues.value.overall > 1000) playSe("score_bonus");
   cleared.value = true;
 }
 
