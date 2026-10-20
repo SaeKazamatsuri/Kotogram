@@ -1,0 +1,24 @@
+{
+  "id": "stage-speed-lab",
+  "goal": 1300,
+  "scrollSpeed": 3,
+  "objects": [
+    {
+      "id": "ghost-1",
+      "type": "ghost",
+      "position": 600
+    },
+    {
+      "id": "hole-1",
+      "type": "hole",
+      "position": 700,
+      "width": 80
+    }
+  ],
+  "learningObjectives": [
+    "どんな あぶないものにも とぶのは よいか ためす"
+  ],
+  "meta": {
+    "title": "はしると あるく"
+  }
+}

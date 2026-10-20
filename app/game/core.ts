@@ -16,6 +16,7 @@ export type GameStage = {
   goal?: number;
   scrollSpeed?: number;
   requiredCoins?: number;
+  jumpSensorProfile?: "centered-holes";
   objects?: unknown;
   walls?: unknown;
   ghosts?: unknown;
@@ -36,6 +37,7 @@ export type GameState = {
   vy: number;
   vx: number;
   baseSpeed: number;
+  jumpSensorProfile: "legacy" | "centered-holes";
   crouchUntilTick: number;
   jumpReadyTick: number;
   walls: Barrier[];
@@ -191,6 +193,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     vy: 0,
     vx: isFiniteNumber(stage.scrollSpeed) && stage.scrollSpeed > 0 ? stage.scrollSpeed : 3,
     baseSpeed: isFiniteNumber(stage.scrollSpeed) && stage.scrollSpeed > 0 ? stage.scrollSpeed : 3,
+    jumpSensorProfile: stage.jumpSensorProfile === "centered-holes" ? "centered-holes" : "legacy",
     crouchUntilTick: -1,
     jumpReadyTick: 0,
     walls,
@@ -253,7 +256,10 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       : condition === "enemy" ? [game.ghosts] : [game.holes];
     for (const objects of groups) {
       const target = nextTarget(objects, game.px);
-      if (target && target.x - game.px <= range) found.set(target.id, target);
+      const triggerRange = game.jumpSensorProfile === "centered-holes" && objects === game.holes
+        ? Math.max(0, range - Math.max(0, ((target && "w" in target ? target.w : GAME.defaultHoleWidth) - GAME.wallWidth) / 2))
+        : range;
+      if (target && target.x - game.px <= triggerRange) found.set(target.id, target);
     }
   }
   return [...found.values()].sort((a, b) => a.x - b.x || a.id.localeCompare(b.id));
