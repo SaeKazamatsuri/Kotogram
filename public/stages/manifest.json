@@ -44,6 +44,138 @@
       "title": "3回のおつかい",
       "file": "/stages/stage-8.json",
       "version": "2026-10-20-r2"
+    },
+    {
+      "id": "stage-9",
+      "title": "あかいスイッチの道",
+      "file": "/stages/stage-9.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-10",
+      "title": "2回のおつかい",
+      "file": "/stages/stage-10.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-11",
+      "title": "4つのじゅんび",
+      "file": "/stages/stage-11.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-12",
+      "title": "2つのかべを ひととび",
+      "file": "/stages/stage-12.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-13",
+      "title": "はやく はしりぬけ",
+      "file": "/stages/stage-13.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-14",
+      "title": "みおくるか とぶか",
+      "file": "/stages/stage-14.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-15",
+      "title": "コインと あな",
+      "file": "/stages/stage-15.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-16",
+      "title": "上下を 見わけよう",
+      "file": "/stages/stage-16.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-17",
+      "title": "3回の じゅんばん",
+      "file": "/stages/stage-17.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-18",
+      "title": "大きな あな",
+      "file": "/stages/stage-18.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-19",
+      "title": "2つの たからと とびら",
+      "file": "/stages/stage-19.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-20",
+      "title": "かべの先の スイッチ",
+      "file": "/stages/stage-20.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-21",
+      "title": "ひととびで コインまで",
+      "file": "/stages/stage-21.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-22",
+      "title": "3つの たから",
+      "file": "/stages/stage-22.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-23",
+      "title": "7つの しれん",
+      "file": "/stages/stage-23.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-24",
+      "title": "とぶ道と しゃがむ道",
+      "file": "/stages/stage-24.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-25",
+      "title": "速さと コイン",
+      "file": "/stages/stage-25.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-26",
+      "title": "上下の かけひき",
+      "file": "/stages/stage-26.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-27",
+      "title": "スイッチの えらび方",
+      "file": "/stages/stage-27.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-28",
+      "title": "4回の おつかい",
+      "file": "/stages/stage-28.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-29",
+      "title": "最後の じゅんび",
+      "file": "/stages/stage-29.json",
+      "version": "2026-10-20-r1"
+    },
+    {
+      "id": "stage-30",
+      "title": "ことばの 大ぼうけん",
+      "file": "/stages/stage-30.json",
+      "version": "2026-10-20-r1"
     }
   ]
 }

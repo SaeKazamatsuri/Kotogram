@@ -13,6 +13,28 @@ import stage5 from "../public/stages/stage-5.json" with { type: "json" };
 import stage6 from "../public/stages/stage-6.json" with { type: "json" };
 import stage7 from "../public/stages/stage-7.json" with { type: "json" };
 import stage8 from "../public/stages/stage-8.json" with { type: "json" };
+import stage9 from "../public/stages/stage-9.json" with { type: "json" };
+import stage10 from "../public/stages/stage-10.json" with { type: "json" };
+import stage11 from "../public/stages/stage-11.json" with { type: "json" };
+import stage12 from "../public/stages/stage-12.json" with { type: "json" };
+import stage13 from "../public/stages/stage-13.json" with { type: "json" };
+import stage14 from "../public/stages/stage-14.json" with { type: "json" };
+import stage15 from "../public/stages/stage-15.json" with { type: "json" };
+import stage16 from "../public/stages/stage-16.json" with { type: "json" };
+import stage17 from "../public/stages/stage-17.json" with { type: "json" };
+import stage18 from "../public/stages/stage-18.json" with { type: "json" };
+import stage19 from "../public/stages/stage-19.json" with { type: "json" };
+import stage20 from "../public/stages/stage-20.json" with { type: "json" };
+import stage21 from "../public/stages/stage-21.json" with { type: "json" };
+import stage22 from "../public/stages/stage-22.json" with { type: "json" };
+import stage23 from "../public/stages/stage-23.json" with { type: "json" };
+import stage24 from "../public/stages/stage-24.json" with { type: "json" };
+import stage25 from "../public/stages/stage-25.json" with { type: "json" };
+import stage26 from "../public/stages/stage-26.json" with { type: "json" };
+import stage27 from "../public/stages/stage-27.json" with { type: "json" };
+import stage28 from "../public/stages/stage-28.json" with { type: "json" };
+import stage29 from "../public/stages/stage-29.json" with { type: "json" };
+import stage30 from "../public/stages/stage-30.json" with { type: "json" };
 import manifest from "../public/stages/manifest.json" with { type: "json" };
 
 const safeName = /^[^\p{Cc}\p{Cf}<>]*$/u;
@@ -25,6 +47,28 @@ const replayStages = new Map([
   ["stage-6", stage6],
   ["stage-7", stage7],
   ["stage-8", stage8],
+  ["stage-9", stage9],
+  ["stage-10", stage10],
+  ["stage-11", stage11],
+  ["stage-12", stage12],
+  ["stage-13", stage13],
+  ["stage-14", stage14],
+  ["stage-15", stage15],
+  ["stage-16", stage16],
+  ["stage-17", stage17],
+  ["stage-18", stage18],
+  ["stage-19", stage19],
+  ["stage-20", stage20],
+  ["stage-21", stage21],
+  ["stage-22", stage22],
+  ["stage-23", stage23],
+  ["stage-24", stage24],
+  ["stage-25", stage25],
+  ["stage-26", stage26],
+  ["stage-27", stage27],
+  ["stage-28", stage28],
+  ["stage-29", stage29],
+  ["stage-30", stage30],
 ]);
 export const replayStageIds = [...replayStages.keys()];
 const currentStageVersions = new Map(manifest.stages.map((entry) => [entry.id, entry.version ?? manifest.version]));
