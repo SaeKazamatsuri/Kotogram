@@ -138,6 +138,15 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.fillText("くりかえし " + repeat.current + " / " + repeat.total, GAME.width / 2 - 87, 34);
   }
 
+  if (game.requiredSkips > 0) {
+    const skipped = game.switches.filter((item) => item.skipped && item.trap).length;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fillRect(GAME.width - 184, 48, 170, 32);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText("みおくり " + skipped + " / " + game.requiredSkips, GAME.width - 175, 70);
+  }
+
   if (game.requiredCoins > 0) {
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.fillRect(GAME.width - 184, 12, 170, 32);

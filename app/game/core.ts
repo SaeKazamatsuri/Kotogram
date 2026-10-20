@@ -1,5 +1,5 @@
 export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch";
-export type GameAction = "jump" | "crouch" | "collect" | "run" | "walk" | "press";
+export type GameAction = "jump" | "crouch" | "collect" | "run" | "walk" | "press" | "skip";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
 export type GameInstruction =
@@ -10,12 +10,13 @@ export type GameInstruction =
 export type GameProgram = { watchers: GameRule[]; steps: GameInstruction[] };
 export type LoopFrame = { start: number; remaining: number };
 export type GameStatus = "ready" | "running" | "cleared" | "failed" | "timeout";
-export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "void";
+export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "skip" | "void";
 
 export type GameStage = {
   goal?: number;
   scrollSpeed?: number;
   requiredCoins?: number;
+  requiredSkips?: number;
   jumpSensorProfile?: "centered-holes";
   objects?: unknown;
   walls?: unknown;
@@ -27,7 +28,7 @@ export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
 export type Door = { id: string; x: number; open: boolean };
-export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; trap: boolean };
+export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean };
 export type GameState = {
   status: GameStatus;
   failureReason?: GameFailReason;
@@ -47,6 +48,7 @@ export type GameState = {
   doors: Door[];
   switches: Switch[];
   requiredCoins: number;
+  requiredSkips: number;
   goalX: number;
   program: GameRule[];
   fired: Set<string>[];
@@ -166,6 +168,7 @@ function makeSwitches(stage: GameStage): Switch[] {
       x: object.position as number,
       targetDoorId: object.targetDoorId as string,
       activated: false,
+      skipped: false,
       trap: object.trap === true,
     }))
     .sort((a, b) => a.x - b.x);
@@ -204,6 +207,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     doors,
     switches,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
+    requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
     goalX,
     program: watchers.map((rule) => ({ ...rule, conds: rule.conds ? [...rule.conds] : undefined })),
     fired: watchers.map(() => new Set<string>()),
@@ -243,7 +247,7 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
   const found = new Map<string, { id: string; x: number }>();
   for (const condition of conditions) {
     if (condition === "switch") {
-      const target = nextTarget(game.switches.filter((item) => !item.activated), game.px);
+      const target = nextTarget(game.switches.filter((item) => !item.activated && !item.skipped), game.px);
       if (target && target.x - game.px <= GAME.switchPressRange) found.set(target.id, target);
       continue;
     }
@@ -277,7 +281,7 @@ function issueJump(game: GameState): boolean {
   return true;
 }
 
-function acceptAction(game: GameState, action: GameAction): boolean {
+function acceptAction(game: GameState, action: GameAction, sensedTargetId?: string): boolean {
   if (action === "run") {
     game.vx = game.baseSpeed * GAME.runMultiplier;
     return true;
@@ -291,12 +295,18 @@ function acceptAction(game: GameState, action: GameAction): boolean {
     issueCrouch(game);
     return true;
   }
-  if (action === "press") {
+  if (action === "press" || action === "skip") {
     const target = game.switches.find((item) =>
-      !item.activated && item.x + GAME.pad >= game.px &&
+      !item.activated && !item.skipped &&
+      (sensedTargetId === undefined || item.id === sensedTargetId) &&
+      item.x + GAME.pad >= game.px &&
       item.x - game.px <= GAME.switchPressRange
     );
     if (!target) return false;
+    if (action === "skip") {
+      target.skipped = true;
+      return true;
+    }
     const door = game.doors.find((item) => item.id === target.targetDoorId);
     if (!door) return false;
     if (target.trap) {
@@ -333,7 +343,7 @@ function applyProgram(game: GameState) {
     }
     const key = target?.id ?? "unconditional";
     if (history.has(key)) continue;
-    if (acceptAction(game, rule.action)) history.add(key);
+    if (acceptAction(game, rule.action, target?.id)) history.add(key);
   }
 }
 
@@ -372,7 +382,7 @@ function applySequence(game: GameState): void {
     }
     const target = sensedTargets(game, op.conds).find((item) => !game.sequenceConsumed.has(item.id));
     if (!target) return;
-    if (op.action && !acceptAction(game, op.action)) return;
+    if (op.action && !acceptAction(game, op.action, target.id)) return;
     game.sequenceConsumed.add(target.id);
     if (++game.sequenceProgress >= op.count) {
       game.sequenceProgress = 0;
@@ -435,6 +445,7 @@ export function stepGame(game: GameState): GameStatus {
   }
   if (game.px >= game.goalX) {
     if (game.coins.filter((coin) => coin.collected).length < game.requiredCoins) fail(game, "coin");
+    else if (game.switches.filter((item) => item.skipped && item.trap).length < game.requiredSkips) fail(game, "skip");
     else game.status = "cleared";
   }
   return game.status;

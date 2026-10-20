@@ -160,3 +160,25 @@ test("browser dictionary and bundled parser vocabulary stay consistent", () => {
     assert.deepEqual(base.program, withDictionary.program);
   }
 });
+
+test("switch skip language binds to switches and rejects other objects", () => {
+  const canonical = valid("すいっちみおくる");
+  for (const phrase of ["すいっちをみおくる", "ぼたんをおさない", "すいっちをみすごす", "すいっちをむしする"]) {
+    assert.deepEqual(valid(phrase).program, canonical.program, phrase);
+  }
+  const loop = valid("3かいくりかえす\nすいっちをみおくる\nこいんをとる\nすいっちをおす\nおわり");
+  assert.deepEqual(loop.program.steps.map(step => step.op), ["repeat-start", "wait", "wait", "wait", "repeat-end"]);
+  assert.equal(loop.program.steps[1].action, "skip");
+  for (const invalid of ["みおくる", "かべみおくる", "こいんをおさない"]) {
+    assert.ok(analyzeProgram(invalid).diagnostics.length, invalid);
+  }
+});
+
+test("if blocks only allow skip on switches", () => {
+  const accepted = valid("もしすいっちがあったら\nみおくる\nおわり");
+  assert.deepEqual(accepted.program.watchers[0]?.conds, ["switch"]);
+  assert.equal(accepted.program.watchers[0]?.action, "skip");
+  const invalid = analyzeProgram("もしかべがあったら\nみおくる\nおわり");
+  assert.ok(invalid.diagnostics.some(item => item.code === "unsupported"));
+  assert.deepEqual(invalid.program, { watchers: [], steps: [] });
+});

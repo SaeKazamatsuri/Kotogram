@@ -68,7 +68,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.beginPath();
     ctx.roundRect(x - 12, y + 3, 24, 23, 4);
     ctx.fill();
-    ctx.fillStyle = item.trap ? "#b83250" : item.activated ? "#4eaf8c" : "#278a74";
+    ctx.fillStyle = item.skipped ? "#64748b" : item.trap ? "#b83250" : item.activated ? "#4eaf8c" : "#278a74";
     ctx.beginPath();
     ctx.roundRect(x - 9, y + (item.activated ? 11 : 6), 18, item.activated ? 9 : 13, 4);
     ctx.fill();
@@ -77,7 +77,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.stroke();
     ctx.fillStyle = "#f9fcf3";
     ctx.font = "bold 12px sans-serif";
-    ctx.fillText(item.trap ? "×" : item.activated ? "○" : "おす", x - (item.trap || item.activated ? 6 : 12), y - 7);
+    ctx.fillText(item.skipped ? "→" : item.trap ? "×" : item.activated ? "○" : "おす", x - (item.trap || item.activated || item.skipped ? 6 : 12), y - 7);
   }
 
   for (const door of game.doors) {

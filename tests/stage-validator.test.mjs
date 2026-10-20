@@ -195,3 +195,10 @@ test("stage learning objectives must be meaningful and bounded", () => {
   assert.ok(validateStage("stage-learning", { ...source, learningObjectives: Array(6).fill("とぶ") })
     .some((issue) => issue.path === "learningObjectives"));
 });
+
+test("required skips must be possible and nonnegative", () => {
+  const stage = read("public/stages/stage-8.json");
+  assert.deepEqual(validateStage("stage-8", stage, true), []);
+  assert.ok(validateStage("stage-8", { ...stage, requiredSkips: 4 }, true).some(issue => issue.path === "requiredSkips"));
+  assert.ok(validateStage("stage-8", { ...stage, requiredSkips: -1 }, true).some(issue => issue.path === "requiredSkips"));
+});

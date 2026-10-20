@@ -112,7 +112,7 @@ test("every publicly listed stage has a matching replay configuration", () => {
     ["stage-5", stage5, "かべとあなとぶ\nおばけしゃがむ"],
     ["stage-6", stage6, "こいんとる\nかべとぶ"],
     ["stage-7", stage7, "すいっちおす\nかべとぶ"],
-    ["stage-8", stage8, "3かいくりかえす\nこいんとる\nすいっちおす\nおわり"],
+    ["stage-8", stage8, "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり"],
   ]) {
     const run = runToCompletion(createGame(stage, analyzeProgram(source).program));
     assert.equal(run.status, "cleared");
@@ -136,4 +136,18 @@ test("archived language rankings stay readable, not writable, and new phrases re
   const source = "かべをみつけたらじゃんぷする";
   assert.equal(verifyRunResult({ ...payload(), source }), 712);
   assert.notEqual(scopeObjectId(previous), scopeObjectId(scope));
+});
+
+test("redesigned eighth stage rejects implicit avoidance and preserves old ranking scopes", () => {
+  const oldScope = { ...scope, stageId: "stage-8", stageVersion: "2026-10-20-r1", languageVersion: "2026-language-v2" };
+  assert.equal(validateScope(oldScope).stageVersion, "2026-10-20-r1");
+  assert.throws(() => validateRunPayload({ ...payload(), ...oldScope }), /read-only/);
+  const previousLanguage = { ...scope, languageVersion: "2026-language-v2" };
+  assert.equal(validateScope(previousLanguage).languageVersion, "2026-language-v2");
+  assert.throws(() => validateRunPayload({ ...payload(), ...previousLanguage }), /read-only/);
+  const implicit = "3かいくりかえす\nこいんとる\nすいっちおす\nおわり";
+  const oldGame = runToCompletion(createGame(stage8, analyzeProgram(implicit).program));
+  assert.equal(oldGame.status, "failed");
+  assert.equal(oldGame.failureReason, "skip");
+  assert.throws(() => verifyRunResult({ stageId: "stage-8", source: implicit, elapsedTicks: oldGame.elapsedTicks }), /verified clear time/);
 });

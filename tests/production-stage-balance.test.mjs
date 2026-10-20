@@ -13,7 +13,7 @@ test("ステージ2/3/5の更新版と新ステージ8を分離し、他のラ�
   assert.deepEqual(validateManifest(manifest), []);
   assert.equal(manifest.version, "2025-10-26");
   for (const entry of manifest.stages) {
-    assert.equal(entry.version, ["stage-2", "stage-3", "stage-5", "stage-8"].includes(entry.id) ? "2026-10-20-r1" : undefined);
+    assert.equal(entry.version, entry.id === "stage-8" ? "2026-10-20-r2" : ["stage-2", "stage-3", "stage-5"].includes(entry.id) ? "2026-10-20-r1" : undefined);
     assert.ok(getScoreReference(entry.id, entry.version ?? manifest.version));
   }
   assert.ok(validateManifest({ ...manifest, stages: [{ ...manifest.stages[0], version: " " }, ...manifest.stages.slice(1)] }).length > 0);
@@ -26,6 +26,8 @@ test("変更前後の採点基準を異なる版で保持する", () => {
   assert.equal(getScoreReference("stage-1", "2026-10-20-r1"), null);
   assert.equal(getScoreReference("stage-8", "2026-10-20-r1")?.timeTicks, 846);
   assert.equal(getScoreReference("stage-8", "2026-10-20-r1")?.product, 18612);
+  assert.equal(getScoreReference("stage-8", "2026-10-20-r2")?.characters, 30);
+  assert.equal(getScoreReference("stage-8", "2026-10-20-r2")?.product, 25380);
 });
 
 test("公開ステージ3の短縮版は通常と高速でクリアする", () => {

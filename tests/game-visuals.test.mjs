@@ -25,7 +25,7 @@ test("visual poses reflect physics but never mutate the simulation", () => {
 
 test("ステージ8の3回ループは待機・実行中・完了の回数を表示できる", () => {
   const stage = JSON.parse(readFileSync(new URL("../public/stages/stage-8.json", import.meta.url), "utf8"));
-  const parsed = analyzeProgram("3かいくりかえす\nこいんとる\nすいっちおす\nおわり");
+  const parsed = analyzeProgram("3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり");
   assert.deepEqual(parsed.diagnostics, []);
   const game = createGame(stage, parsed.program);
   assert.deepEqual(getRepeatProgress(game), { current: 0, total: 3 });
@@ -47,14 +47,14 @@ test("ループを使わない解法と1回ずつの列挙では繰り返し表�
   const stage = JSON.parse(readFileSync(new URL("../public/stages/stage-8.json", import.meta.url), "utf8"));
   const watchers = createGame(stage, analyzeProgram("こいんとる\nすいっちおす").program);
   assert.equal(getRepeatProgress(watchers), null);
-  const expanded = Array(3).fill("1かいくりかえす\nこいんとる\nすいっちおす\nおわり").join("\n");
+  const expanded = Array(3).fill("1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり").join("\n");
   const program = analyzeProgram(expanded);
   assert.deepEqual(program.diagnostics, []);
   assert.equal(getRepeatProgress(createGame(stage, program.program)), null);
 });
 
 test("表示用の繰り返し状態取得はGameStateに影響しない", () => {
-  const program = analyzeProgram("3かいくりかえす\nこいんとる\nすいっちおす\nおわり").program;
+  const program = analyzeProgram("3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり").program;
   const game = createGame({ goal: 900 }, program);
   const before = JSON.stringify(game, (_key, value) => value instanceof Set ? [...value] : value);
   assert.deepEqual(getRepeatProgress(game), { current: 0, total: 3 });

@@ -93,6 +93,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     value.learningObjectives.some((item: unknown) => typeof item !== "string" || !item.trim() || item.length > 100)
   )) issues.push({ path: "learningObjectives", message: "provide up to five short learning objectives" });
   if (value.requiredCoins !== undefined && (!Number.isSafeInteger(value.requiredCoins) || (value.requiredCoins as number) < 0)) issues.push({ path: "requiredCoins", message: "requiredCoins must be a nonnegative integer" });
+  if (value.requiredSkips !== undefined && (!Number.isSafeInteger(value.requiredSkips) || (value.requiredSkips as number) < 0)) issues.push({ path: "requiredSkips", message: "requiredSkips must be a nonnegative integer" });
   if (value.objects !== undefined && !Array.isArray(value.objects)) issues.push({ path: "objects", message: "objects must be an array" });
   if (Array.isArray(value.objects)) {
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
@@ -102,6 +103,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string }[] = [];
     let coinCount = 0;
+    let trapSwitchCount = 0;
     let explicitGoalCount = 0;
     let furthestObstacle = 0;
     for (const [i, obj] of value.objects.entries()) {
@@ -118,6 +120,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         doors.set(obj.id, obj.position);
       }
       if (obj.type === "switch") {
+        if (obj.trap === true) trapSwitchCount++;
         if (obj.trap !== undefined && typeof obj.trap !== "boolean") issues.push({ path: path + ".trap", message: "trap must be boolean" });
         if (typeof obj.id !== "string" || !obj.id.trim()) issues.push({ path: path + ".id", message: "switch ID required" });
         if (typeof obj.targetDoorId !== "string" || !obj.targetDoorId.trim()) issues.push({ path: path + ".targetDoorId", message: "target door required" });
@@ -149,6 +152,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       }
     }
     if (Number.isSafeInteger(value.requiredCoins) && (value.requiredCoins as number) > coinCount) issues.push({ path: "requiredCoins", message: "requiredCoins exceeds available coins" });
+    if (Number.isSafeInteger(value.requiredSkips) && (value.requiredSkips as number) > trapSwitchCount) issues.push({ path: "requiredSkips", message: "requiredSkips exceeds available trap switches" });
     if (explicitGoalCount > 1) issues.push({ path: "objects", message: "multiple goals" });
     if (isPositiveFinite(value.goal) && value.goal < furthestObstacle + GAME.approachBase + 160) {
       issues.push({ path: "goal", message: "goal is too close to final obstacle; engine would silently move it" });

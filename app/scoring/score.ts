@@ -2,7 +2,8 @@ import { normalizeLine } from "../language/parser.ts";
 
 export const SCORING_VERSION = "2026-v1";
 export const ENGINE_VERSION = "2026-core-v2";
-export const LANGUAGE_VERSION = "2026-language-v2";
+export const LANGUAGE_VERSION = "2026-language-v3";
+export const PREVIOUS_LANGUAGE_VERSION = "2026-language-v2";
 export const LEGACY_LANGUAGE_VERSION = "2026-language-v1";
 export const SEASON_ID = "2026-festival";
 
@@ -44,6 +45,7 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-2": { ...knownReferences["stage-2"]!, stageVersion: "2026-10-20-r1" },
   "stage-3": { stageVersion: "2026-10-20-r1", scoringVersion: SCORING_VERSION, timeTicks: 834, characters: 14, product: 11676 },
   "stage-5": { ...knownReferences["stage-5"]!, stageVersion: "2026-10-20-r1" },
+  "stage-8": { stageVersion: "2026-10-20-r2", scoringVersion: SCORING_VERSION, timeTicks: 846, characters: 30, product: 25380 },
 };
 
 export function getScoreReference(stageId: string, stageVersion: string): ScoreReference | null {

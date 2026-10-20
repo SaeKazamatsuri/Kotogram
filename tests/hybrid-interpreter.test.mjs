@@ -126,3 +126,45 @@ test("repeating crouch does not consume all iterations in one tick", () => {
   assert.equal(state.cursor, 3);
   assert.equal(state.loops.length, 0);
 });
+
+test("deliberate skip records the chosen switch before pressing the next switch", () => {
+  const stage = {
+    goal: 1100, scrollSpeed: 3, requiredSkips: 1,
+    objects: [
+      { id: "red", type: "switch", position: 350, targetDoorId: "gate", trap: true },
+      { id: "green", type: "switch", position: 380, targetDoorId: "gate" },
+      { id: "gate", type: "door", position: 700 },
+    ],
+  };
+  const source = "1かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり";
+  const game = runToCompletion(createGame(stage, compile(source)));
+  assert.equal(game.status, "cleared");
+  assert.equal(game.switches.find(item => item.id === "red").skipped, true);
+  assert.equal(game.switches.find(item => item.id === "red").activated, false);
+  assert.equal(game.switches.find(item => item.id === "green").skipped, false);
+  assert.equal(game.switches.find(item => item.id === "green").activated, true);
+  assert.equal(game.sequenceConsumed.size, 2);
+  assert.equal(game.doors[0].open, true);
+});
+
+test("reaching the finish without deliberately skipping a trap fails the stage objective", () => {
+  const stage = {
+    goal: 950, scrollSpeed: 3, requiredSkips: 1,
+    objects: [
+      { id: "red", type: "switch", position: 350, targetDoorId: "gate", trap: true },
+      { id: "green", type: "switch", position: 600, targetDoorId: "gate" },
+      { id: "gate", type: "door", position: 750 },
+    ],
+  };
+  const program = compile("すいっちをおす");
+  const trapped = runToCompletion(createGame(stage, program));
+  assert.equal(trapped.failureReason, "trap");
+  const oldStyle = compile("1かいくりかえす\nこいんとる\nすいっちおす\nおわり");
+  const game = runToCompletion(createGame({ ...stage, requiredCoins: 1, objects: [
+    stage.objects[0],
+    { id: "coin", type: "coin", position: 450 },
+    ...stage.objects.slice(1),
+  ] }, oldStyle));
+  assert.equal(game.status, "failed");
+  assert.equal(game.failureReason, "skip");
+});

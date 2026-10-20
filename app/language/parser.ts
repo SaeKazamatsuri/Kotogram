@@ -2,7 +2,7 @@ import type { GameInstruction, GameProgram } from "../game/core";
 import conditionsDictionary from "../../public/dictionary/conditions.json" with { type: "json" };
 import actionsDictionary from "../../public/dictionary/actions.json" with { type: "json" };
 export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin" | "switch";
-export type Action = "jump" | "crouch" | "collect" | "run" | "walk" | "press";
+export type Action = "jump" | "crouch" | "collect" | "run" | "walk" | "press" | "skip";
 export type Vocabulary = {
   conditions?: Record<string, string[]>;
   actions?: Record<string, string[]>;
@@ -216,10 +216,18 @@ function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement 
     return null;
   }
   if (prefix.length === 0 || prefix.every((token) => token.kind === "particle")) {
+    if (actionToken.value === "skip") {
+      diagnostics.push(error("unsupported", "みおくる ときは『すいっち』を かいてね", actionToken));
+      return null;
+    }
     return { kind: "action", action: actionToken.value as Action, repeat, span: spanOf(tokens) };
   }
   const conditions = parseConditions(prefix, diagnostics);
   if (!conditions) return null;
+  if (actionToken.value === "skip" && (conditions.length !== 1 || conditions[0] !== "switch")) {
+    diagnostics.push(error("unsupported", "みおくる のは『すいっち』だけだよ", actionToken));
+    return null;
+  }
   return { kind: "rule", conditions, operator: "or", action: actionToken.value as Action, maxFires: specified ? repeat : null, span: spanOf(tokens) };
 }
 
@@ -287,7 +295,9 @@ export function parseSource(source: string | string[], vocabulary: Vocabulary = 
         diagnostics.push(error("syntax", "くりかえす かきかたを かくにんしてね", first));
         continue;
       }
-      const parsed = parseSimple(tokens, diagnostics);
+      const parsed = opener?.kind === "if" && tokens.length === 1 && first.kind === "action" && first.value === "skip"
+        ? { kind: "action" as const, action: "skip" as const, repeat: 1, span: spanOf(tokens) }
+        : parseSimple(tokens, diagnostics);
       if (parsed) body.push(parsed);
     }
     if (opener) diagnostics.push(error("end", "さいごに『おわり』を かいてね", opener));
@@ -347,6 +357,10 @@ export function compileProgram(parsed: ParseResult): CompileResult {
       if (node.repeat === 1) rules.push({ action: node.action });
     } else if (node.kind === "if") {
       if (node.body.length === 1 && node.body[0].kind === "action" && node.body[0].repeat === 1) {
+        if (node.body[0].action === "skip" && (node.conditions.length !== 1 || node.conditions[0] !== "switch")) {
+          diagnostics.push(error("unsupported", "みおくる のは『すいっち』だけだよ", node.span.start));
+          continue;
+        }
         watcher({
           kind: "rule",
           conditions: node.conditions,
