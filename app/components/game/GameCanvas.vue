@@ -6,6 +6,7 @@ import { GAME, createReadyGame, startGame, elapsedSeconds, stepGame, type GamePr
 import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
 import { resolveScenePalette } from "~/game/scenery";
 import { renderGameFrame } from "~/game/renderer";
+import { failureAnimationDuration } from "~/game/character";
 import { gameAudioEvents, snapshotGameAudio } from "~/game/audio-events";
 import { playSe } from "~/game/audio";
 
@@ -25,12 +26,13 @@ let frame = 0;
 let frameClock = createFrameClock();
 let idleFrame = 0;
 let lastIdleDraw = 0;
+let failureStartedAt: number | null = null;
 const STEP_MS = 1000 / GAME.tickRate;
 
-function draw(visualTick = game.elapsedTicks) {
+function draw(visualTick = game.elapsedTicks, failureProgress = 1) {
   const ctx = canvas.value?.getContext("2d");
   if (!ctx) return;
-  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg), visualTick, !props.running);
+  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg), visualTick, !props.running, failureProgress);
 }
 
 function stop() {
@@ -39,6 +41,7 @@ function stop() {
   cancelAnimationFrame(frame);
   frame = 0;
   frameClock = createFrameClock();
+  failureStartedAt = null;
 }
 
 function scheduleIdle() {
@@ -55,6 +58,23 @@ function idleLoop(timestamp: number) {
   scheduleIdle();
 }
 
+function animateFailure(timestamp: number) {
+  if (!props.running || game.status !== "failed") return;
+  if (failureStartedAt === null) failureStartedAt = timestamp;
+  const duration = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : failureAnimationDuration(game.failureReason);
+  const elapsed = Math.max(0, timestamp - failureStartedAt);
+  const progress = duration === 0 ? 1 : Math.min(1, elapsed / duration);
+  draw(game.elapsedTicks + elapsed / STEP_MS, progress);
+
+  if (progress >= 1) {
+    const reason = game.failureReason ?? "void";
+    stop();
+    emit("fail", { reason });
+  } else {
+    frame = requestAnimationFrame(animateFailure);
+  }
+}
+
 function loop(timestamp: number) {
   if (!props.running || game.status !== "running") return;
   const advanced = advanceFrameClock(frameClock, timestamp, STEP_MS);
@@ -64,14 +84,13 @@ function loop(timestamp: number) {
     stepGame(game);
     for (const name of gameAudioEvents(before, game)) playSe(name);
   }
-  draw();
+  draw(game.elapsedTicks, game.status === "failed" ? 0 : 1);
 
   if (game.status === "cleared") {
     stop();
     emit("clear", { elapsedTicks: game.elapsedTicks, seconds: elapsedSeconds(game) });
   } else if (game.status === "failed") {
-    stop();
-    emit("fail", { reason: game.failureReason ?? "void" });
+    frame = requestAnimationFrame(animateFailure);
   } else {
     frame = requestAnimationFrame(loop);
   }

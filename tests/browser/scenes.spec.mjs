@@ -270,7 +270,24 @@ test("リザルト画面で次へ・マップへ・コードを直すが常に�
     expect(bounds.y).toBeGreaterThanOrEqual(0);
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(page.viewportSize().height);
   }
-  await dialog.getByRole("button", { name: "ランキングを 見る" }).click();
+  const rankingButton = dialog.getByRole("button", { name: "ランキングを 見る" });
+  const sendButton = dialog.getByRole("button", { name: "きろくを 送る" });
+  await expect(rankingButton).toBeVisible();
+  await expect(sendButton).toBeVisible();
+  const rankingBounds = await rankingButton.boundingBox();
+  const sendBounds = await sendButton.boundingBox();
+  expect(rankingBounds.x).toBeLessThan(sendBounds.x);
+  if (Math.abs(rankingBounds.y - sendBounds.y) < 2) {
+    expect(sendBounds.x - rankingBounds.x - rankingBounds.width).toBeGreaterThanOrEqual(8);
+  }
+  const mapBounds = await dialog.getByRole("button", { name: "マップへ" }).boundingBox();
+  const nextBounds = await dialog.getByRole("button", { name: "次へ" }).boundingBox();
+  if (Math.abs(mapBounds.y - nextBounds.y) < 2) {
+    expect(mapBounds.x).toBeLessThan(nextBounds.x);
+  } else {
+    expect(mapBounds.y).toBeLessThan(nextBounds.y);
+  }
+  await rankingButton.click();
   await expect(dialog.getByRole("button", { name: "マップへ" })).toBeVisible();
 });
 
