@@ -12,6 +12,7 @@ import stage4 from "../public/stages/stage-4.json" with { type: "json" };
 import stage5 from "../public/stages/stage-5.json" with { type: "json" };
 import stage6 from "../public/stages/stage-6.json" with { type: "json" };
 import stage7 from "../public/stages/stage-7.json" with { type: "json" };
+import manifest from "../public/stages/manifest.json" with { type: "json" };
 
 const safeName = /^[^\p{Cc}\p{Cf}<>]*$/u;
 const replayStages = new Map([
@@ -24,6 +25,7 @@ const replayStages = new Map([
   ["stage-7", stage7],
 ]);
 export const replayStageIds = [...replayStages.keys()];
+const currentStageVersions = new Map(manifest.stages.map((entry) => [entry.id, entry.version ?? manifest.version]));
 const MAX_REPLAY_TICKS = 20000;
 
 function requiredString(value, key) {
@@ -53,6 +55,7 @@ export function validateScope(input) {
 
 export function validateRunPayload(input) {
   const scope = validateScope(input);
+  if (scope.stageVersion !== currentStageVersions.get(scope.stageId)) throw new RangeError("old stage version is read-only");
   const runId = requiredString(input.runId, "runId");
   const playerId = requiredString(input.playerId, "playerId");
   if (!isValidId(runId) || !isValidId(playerId)) throw new RangeError("invalid runId or playerId");

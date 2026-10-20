@@ -142,7 +142,7 @@ async function loadCurrentStage() {
     ]);
     if (request !== loadRequest) return;
     stage.value = stageData;
-    stageVersion.value = manifest.version ?? "unknown";
+    stageVersion.value = manifest.stages.find((item) => item.id === id)?.version ?? manifest.version ?? "unknown";
     dict.value = dictionary;
   } catch (error: unknown) {
     if (request !== loadRequest) return;
