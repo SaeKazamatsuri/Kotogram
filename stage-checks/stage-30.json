@@ -1,0 +1,42 @@
+{
+  "stageId": "stage-30",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner",
+      "role": "beginner",
+      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "short-variant",
+      "role": "short",
+      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "sprint-variant",
+      "role": "fast",
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "missing-actions",
+      "role": "negative",
+      "source": "あるく",
+      "expect": "failed"
+    },
+    {
+      "name": "jump-over-trap",
+      "role": "regression",
+      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちじゃんぷ\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "ordinary-single-jump-fails",
+      "role": "negative",
+      "source": "かべ1かいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "failed"
+    }
+  ]
+}
