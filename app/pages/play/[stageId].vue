@@ -67,6 +67,10 @@ function goNext() {
   router.push(next ? `/play/${next}` : "/stages");
 }
 
+function goMap() {
+  router.push("/stages");
+}
+
 function resolveHint(reason: FailReason): string {
   const meta = stage.value?.meta;
   const byReason = meta?.failHints?.[reason];
@@ -182,6 +186,11 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks, rawText, stageVersion.value);
   lastSeconds.value = result.seconds;
   lastChars.value = chars;
+  try {
+    window.sessionStorage.setItem("kotogram.recentClear", stageId.value);
+  } catch {
+    if (import.meta.dev) console.warn("Could not retain recent stage clear for map feedback");
+  }
   lastRun.value = { source: rawText, elapsedTicks: timing.elapsedTicks, charCount: chars };
   scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars }) : null;
   bests.value = getBestRecords(stageId.value, stageVersion.value);
@@ -304,6 +313,7 @@ watch(stageId, () => {
       :bests="bests"
       @close="closeClear"
       @next="goNext"
+      @map="goMap"
       @register="onRegister"
     />
   </div>

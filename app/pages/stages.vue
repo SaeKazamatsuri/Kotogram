@@ -13,6 +13,7 @@ const error = ref<string | null>(null);
 const stages = ref<Item[]>([]);
 const stats = ref<Record<string, { seconds: number; chars: number }>>({});
 const mapViewport = ref<HTMLElement | null>(null);
+const recentlyClearedId = ref<string | null>(null);
 const clearedCount = computed(() => stages.value.filter((stage) => isComplete(stage.id)).length);
 const currentStageId = computed(() => currentWorldStageId(stages.value, isComplete));
 const allCleared = computed(() => stages.value.length > 0 && clearedCount.value === stages.value.length);
@@ -40,6 +41,7 @@ function onReset() {
   if (typeof window !== "undefined" && !window.confirm("次の人のために、きろくを消してもいい？")) return;
   reset();
   stats.value = {};
+  recentlyClearedId.value = null;
 }
 
 function moveMap(direction: -1 | 1) {
@@ -79,6 +81,13 @@ watch([loading, currentStageId], () => {
 
 onMounted(() => {
   stats.value = getAll();
+  try {
+    const lastClear = window.sessionStorage.getItem("kotogram.recentClear");
+    window.sessionStorage.removeItem("kotogram.recentClear");
+    recentlyClearedId.value = lastClear && isComplete(lastClear) ? lastClear : null;
+  } catch {
+    recentlyClearedId.value = null;
+  }
   void loadStages();
 });
 </script>
@@ -140,6 +149,7 @@ onMounted(() => {
               :class="{
                 'is-current': currentStageId === stage.id,
                 'is-cleared': isComplete(stage.id),
+                'is-celebrating': recentlyClearedId === stage.id,
                 'is-locked': !stageUnlocked(stage.id),
               }"
               :style="{
@@ -153,6 +163,7 @@ onMounted(() => {
                 <span class="map-hero__head"><span class="map-hero__eyes" /></span>
                 <span class="map-hero__feet" />
               </div>
+              <span v-if="isComplete(stage.id)" class="map-stop__flag" aria-hidden="true"><Icon name="lucide:flag-triangle-right" /></span>
               <NuxtLink
                 v-if="stageUnlocked(stage.id)"
                 class="map-stop__link"
@@ -393,6 +404,9 @@ onMounted(() => {
   animation: map-breathe 2.6s ease-in-out infinite;
 }
 .map-stop.is-cleared .map-stop__circle { background: #8ce9be; color: #164f44; }
+.map-stop__flag { position: absolute; z-index: 3; right: 13px; top: -20px; color: #ffedbd; font-size: 30px; filter: drop-shadow(2px 3px 0 #37515b); pointer-events: none; }
+.map-stop.is-celebrating .map-stop__circle { animation: map-level-up .8s ease-out 2; }
+.map-stop.is-celebrating::before { position: absolute; z-index: -1; left: 30%; top: -30px; width: 70px; height: 70px; border-radius: 50%; content: ""; box-shadow: -45px -8px 0 -31px #fff3b5, 53px 13px 0 -29px #ffd67b, -16px -30px 0 -28px #fff3b5, 30px -27px 0 -29px #fff3b5; animation: map-sparkle 1.2s ease-out both; pointer-events: none; }
 .map-stop.is-locked .map-stop__circle { background: #60748a; color: #fff8eb; border-color: #b9c1c4; box-shadow: 0 6px 0 #334559; }
 .map-stop.is-locked .map-stop__sign { background: #e1e4dc; color: #4b5a61; border-color: #798994; }
 .map-stop.is-locked .map-stop__stage { color: #4b5a61; }
@@ -448,6 +462,8 @@ onMounted(() => {
 .map-arrows button { display: grid; place-items: center; width: 48px; height: 45px; border: 2px solid #8fa6ad; border-radius: 14px; background: #354e63; color: #fff8e5; font-size: 25px; }
 .map-arrows button:hover { background: #476d7f; }
 .map-congratulations { display: inline-flex; align-items: center; gap: 8px; color: #ffdc90; font-size: 18px; font-weight: 900; }
+@keyframes map-level-up { 0% { transform: scale(.75); } 40% { transform: scale(1.22); } 100% { transform: scale(1); } }
+@keyframes map-sparkle { from { transform: scale(.3); opacity: 0; } 30% { opacity: 1; } to { transform: scale(1.3); opacity: 0; } }
 @keyframes map-breathe { 50% { box-shadow: 0 0 0 13px #fff4ca57, 0 7px 0 #37515b, 0 0 38px #fff4b8; } }
 @keyframes map-hop { 50% { transform: translateY(-9px) rotate(-6deg); } }
 @media (max-width: 639px) {
@@ -480,7 +496,7 @@ onMounted(() => {
   .map-legend { justify-content: center; width: 100%; font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .map-hero, .map-stop.is-current .map-stop__circle { animation: none; }
+  .map-hero, .map-stop.is-current .map-stop__circle, .map-stop.is-celebrating .map-stop__circle, .map-stop.is-celebrating::before { animation: none; }
   .map-stop__link { transition: none; }
 }
 </style>
