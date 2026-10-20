@@ -15,13 +15,14 @@ function play(stage, source) {
   return runToCompletion(createGame(stage, parsed.program));
 }
 
-test("ステージ5候補は独立したJSONであり公開ステージを変更しない", () => {
+test("ステージ5 r2には実験候補の配置を採用し、候補fixtureは非公開のままにする", () => {
   assert.deepEqual(validateStage(candidate.id, candidate, true), []);
-  assert.equal(original.objects.find(({ id }) => id === "solo-ghost").position, 1000);
-  assert.equal(original.objects.find(({ id }) => id === "middle-hole").position, 1440);
-  assert.equal(candidate.objects.find(({ id }) => id === "solo-ghost").position, 1340);
-  assert.equal(candidate.objects.find(({ id }) => id === "middle-hole").position, 1456);
+  assert.deepEqual(validateStage(original.id, original, true), []);
+  assert.deepEqual(original.objects, candidate.objects);
+  assert.equal(original.objects.find(({ id }) => id === "solo-ghost").position, 1340);
+  assert.equal(original.objects.find(({ id }) => id === "middle-hole").position, 1456);
   const manifest = load("public/stages/manifest.json");
+  assert.equal(manifest.stages.find(({ id }) => id === "stage-5").version, "2026-10-20-r2");
   assert.ok(!manifest.stages.some(({ id }) => id === candidate.id));
 });
 

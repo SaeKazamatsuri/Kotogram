@@ -129,6 +129,34 @@ test("過去のランキングは参照可能なまま旧版への新規投稿�
   assert.notEqual(scopeObjectId(historical), scopeObjectId(updated));
 });
 
+test("ステージ5の旧版r1を読み取り専用で維持しr2だけを再実行登録する", async () => {
+  const old = { ...scope, stageId: "stage-5", stageVersion: "2026-10-20-r1" };
+  const legacy = { ...old, stageVersion: "2025-10-26" };
+  const current = { ...old, stageVersion: "2026-10-20-r2" };
+  assert.equal(validateScope(old).stageVersion, "2026-10-20-r1");
+  assert.equal(validateScope(legacy).stageVersion, "2025-10-26");
+  assert.equal(validateScope(current).stageVersion, "2026-10-20-r2");
+  assert.notEqual(scopeObjectId(old), scopeObjectId(current));
+  assert.notEqual(scopeObjectId(legacy), scopeObjectId(current));
+  const source = "かべとあなとぶ\nおばけしゃがむ";
+  const elapsedTicks = runToCompletion(createGame(stage5, analyzeProgram(source).program)).elapsedTicks;
+  assert.equal(elapsedTicks, 746);
+  const run = { ...payload(), ...current, source, elapsedTicks, charCount: [...source.replace(/\n/g, "")].length };
+  assert.equal(validateRunPayload(run).stageVersion, "2026-10-20-r2");
+  assert.equal(verifyRunResult(run), elapsedTicks);
+  assert.throws(() => verifyRunResult({ ...run, elapsedTicks: elapsedTicks - 1 }), /verified clear time/);
+  for (const stageVersion of ["2025-10-26", "2026-10-20-r1"]) {
+    assert.throws(() => validateRunPayload({ ...run, stageVersion }), /read-only/);
+    const qs = new URLSearchParams({ ...old, stageVersion, type: "overall" });
+    const response = await handleApi(request("/api/stages/stage-5/rankings?" + qs), mockEnv());
+    assert.equal(response.status, 200);
+  }
+  const env = mockEnv();
+  const posted = await handleApi(request("/api/results", run), env);
+  assert.equal(posted.status, 201);
+  assert.equal((await handleApi(request("/api/results", { ...run, stageVersion: "2026-10-20-r1" }), env)).status, 400);
+});
+
 test("archived language rankings stay readable, not writable, and new phrases replay identically", () => {
   const previous = { ...scope, languageVersion: "2026-language-v1" };
   assert.equal(validateScope(previous).languageVersion, "2026-language-v1");
