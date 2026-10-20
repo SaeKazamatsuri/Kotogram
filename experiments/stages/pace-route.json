@@ -1,0 +1,37 @@
+{
+  "id": "stage-pace-route",
+  "goal": 1600,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "歩くと安全に進める区間を見つける",
+    "走りながら危ない場所の手前で歩く",
+    "障害物を見分けて走る・歩く・ジャンプを組み合わせる"
+  ],
+  "objects": [
+    {
+      "id": "ghost-early",
+      "type": "ghost",
+      "position": 600
+    },
+    {
+      "id": "hole-middle",
+      "type": "hole",
+      "position": 700,
+      "width": 80
+    },
+    {
+      "id": "wall-late",
+      "type": "wall",
+      "position": 1200
+    }
+  ],
+  "meta": {
+    "title": "はしると あるくの じっけん",
+    "hint": "おばけの すぐうしろに あなが あるよ。 はしったままで だいじょうぶ？",
+    "failHints": {
+      "hole": "あなの まえで あるくか、あなに あわせて ジャンプしよう",
+      "enemy": "おばけが きたら しゃがもう",
+      "wall": "さいごの かべも とびこそう"
+    }
+  }
+}
