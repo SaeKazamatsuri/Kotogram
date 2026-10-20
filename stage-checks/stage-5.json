@@ -52,6 +52,32 @@
       "source": "かべとぶ\nおばけしゃがむ",
       "expect": "failed",
       "failureReason": "hole"
+    },
+    {
+      "name": "generic-ahead-walk-safe",
+      "role": "regression",
+      "source": "まえとぶ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "generic-ahead-run-fails-on-nearby-hole",
+      "role": "negative",
+      "source": "はしる\nまえとぶ\nおばけしゃがむ",
+      "expect": "failed",
+      "failureReason": "hole"
+    },
+    {
+      "name": "walk-before-hole-recovers-run",
+      "role": "regression",
+      "source": "はしる\nあなあるく\nまえとぶ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "precise-conditions-keep-running-safe",
+      "role": "regression",
+      "source": "はしる\nかべとあなとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 574
     }
   ]
 }
