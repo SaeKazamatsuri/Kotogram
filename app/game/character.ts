@@ -72,23 +72,11 @@ export function resolveCharacterMotion(game: GameState, visualTick = game.elapse
   };
 }
 
-export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks, idle = false, failureProgress = 1): void {
-  const motion = resolveCharacterMotion(game, visualTick, idle, failureProgress);
-  const x = GAME.playerScreenX + GAME.playerWidth / 2;
+export type CharacterArtworkState = Pick<CharacterMotion, "pose" | "stride" | "blink" | "stunned">;
+
+export function drawCharacterArtwork(ctx: CanvasRenderingContext2D, motion: CharacterArtworkState): void {
   const airborne = motion.pose === "jumping" || motion.pose === "crouch-jumping";
   const tucked = motion.pose === "crouch-jumping";
-  ctx.save();
-  ctx.globalAlpha = motion.fade;
-  if (game.failureReason !== "hole" || game.status !== "failed") {
-    ctx.fillStyle = "rgba(43, 41, 64, 0.21)";
-    ctx.beginPath();
-    ctx.ellipse(x, GAME.groundY + 2, (airborne ? 14 : 19) * motion.shadowScale, 4 * motion.shadowScale, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  ctx.translate(x + motion.offsetX, game.py + GAME.epsilon + motion.offsetY - motion.bounce * 0.2 - motion.breathe * 0.5);
-  ctx.rotate(motion.tilt);
-  ctx.scale(1, motion.squash);
-
   ctx.lineCap = "round";
   ctx.lineWidth = 7;
   ctx.strokeStyle = "#4e4963";
@@ -185,5 +173,24 @@ export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameS
     ctx.ellipse(cheekX, -41, 3, 1.5, 0, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks, idle = false, failureProgress = 1): void {
+  const motion = resolveCharacterMotion(game, visualTick, idle, failureProgress);
+  const x = GAME.playerScreenX + GAME.playerWidth / 2;
+  const airborne = motion.pose === "jumping" || motion.pose === "crouch-jumping";
+  ctx.save();
+  ctx.globalAlpha = motion.fade;
+  if (game.failureReason !== "hole" || game.status !== "failed") {
+    ctx.fillStyle = "rgba(43, 41, 64, 0.21)";
+    ctx.beginPath();
+    ctx.ellipse(x, GAME.groundY + 2, (airborne ? 14 : 19) * motion.shadowScale, 4 * motion.shadowScale, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.translate(x + motion.offsetX, game.py + GAME.epsilon + motion.offsetY - motion.bounce * 0.2 - motion.breathe * 0.5);
+  ctx.rotate(motion.tilt);
+  ctx.scale(1, motion.squash);
+
+  drawCharacterArtwork(ctx, motion);
   ctx.restore();
 }
