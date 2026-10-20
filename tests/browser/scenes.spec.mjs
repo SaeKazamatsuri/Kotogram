@@ -325,3 +325,64 @@ test("空中の木をなくしてもマップを横方向に動かせる", async
     await expect.poll(() => map.evaluate((element) => element.scrollLeft)).toBeGreaterThan(before);
   }
 });
+
+test("タイトルとマップでゲームと同じキャラクターの絵を使う", async ({ page }) => {
+  async function getCharacterSignature(selector) {
+    return page.locator(selector).evaluate((canvas) => {
+      const ctx = canvas.getContext("2d");
+      const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+      let hash = 0;
+      let filled = 0;
+      for (let i = 0; i < pixels.length; i += 4) {
+        if (pixels[i + 3] > 0) filled++;
+        for (let j = 0; j < 4; j++) hash = (Math.imul(hash, 31) + pixels[i + j]) >>> 0;
+      }
+      return { hash, filled };
+    });
+  }
+
+  await page.goto("/");
+  await expect(page.locator(".title-world__avatar canvas")).toBeVisible();
+  const title = await getCharacterSignature(".title-world__avatar canvas");
+  expect(title.filled).toBeGreaterThan(1000);
+  await page.getByRole("link", { name: "遊ぶ" }).click();
+  await expect(page.locator(".map-hero canvas")).toBeVisible();
+  const map = await getCharacterSignature(".map-hero canvas");
+  expect(map).toEqual(title);
+});
+
+test("マップをドラッグで横と縦に動かし、ステージの誤選択を防ぐ", async ({ page }, testInfo) => {
+  await page.goto("/stages");
+  const map = page.getByRole("region", { name: "ステージマップ" });
+  await expect(map).toBeVisible();
+  const mobile = testInfo.project.use.viewport.width <= 639;
+  await map.evaluate((el, isMobile) => {
+    el.scrollLeft = isMobile ? 0 : 200;
+    el.scrollTop = isMobile ? 150 : 0;
+  }, mobile);
+  const before = await map.evaluate((el) => mobile ? el.scrollTop : el.scrollLeft);
+  const bounds = await map.boundingBox();
+  const x = bounds.x + bounds.width * 0.5;
+  const y = bounds.y + bounds.height * 0.5;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(mobile ? x : x - 110, mobile ? y - 100 : y, { steps: 8 });
+  await page.mouse.up();
+  const after = await map.evaluate((el) => mobile ? el.scrollTop : el.scrollLeft);
+  expect(after).toBeGreaterThan(before + 25);
+  await expect(page).toHaveURL(/\/stages$/);
+  await expect(map).not.toHaveClass(/is-dragging/);
+
+  if (!mobile) {
+    await map.evaluate((el) => { el.scrollLeft = 0; });
+    const stage = page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ });
+    const box = await stage.boundingBox();
+    await page.mouse.move(box.x + box.width / 2, box.y + 25);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 - 70, box.y + 25, { steps: 8 });
+    await page.mouse.up();
+    await expect(page).toHaveURL(/\/stages$/);
+    await stage.click();
+    await expect(page).toHaveURL(/\/play\/stage-1$/);
+  }
+});
