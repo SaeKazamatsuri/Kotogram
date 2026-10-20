@@ -72,7 +72,7 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
 
 
 test("エディターの例文と未対応の言葉を正しく案内する", async ({ page }) => {
-  await page.goto("/play/stage-3");
+  await page.goto("/play/stage-1");
   const editor = page.getByRole("textbox", { name: "コードを書く" });
   const example = "かべがまえにあったらじゃんぷをする";
   await expect(editor).toHaveAttribute("placeholder", example);
