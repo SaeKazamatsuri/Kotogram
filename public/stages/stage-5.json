@@ -44,5 +44,6 @@
       "hole": "あなも じゃんぷして こえよう"
     },
     "bg": "twilight"
-  }
+  },
+  "jumpSensorProfile": "centered-holes"
 }

@@ -1,6 +1,6 @@
 import type { FailReason } from "~/types/game";
 
-export type StageListItem = { id: string; title: string; file: string };
+export type StageListItem = { id: string; title: string; file: string; version?: string };
 export type StageManifest = { version?: string; stages: StageListItem[] };
 export type StageMeta = {
   title?: string;
@@ -61,7 +61,7 @@ export function useStageLoader() {
     const item = manifest.stages.find((stage) => stage.id === id);
     if (!item) throw new Error("ステージが みつからなかったよ");
     try {
-      return await get<StageData>(item.file, { version: manifest.version, ttlMs: stageCacheTtlMs });
+      return await get<StageData>(item.file, { version: item.version ?? manifest.version, ttlMs: stageCacheTtlMs });
     } catch {
       throw new Error("ステージを よみこめなかったよ。ホームから もういちど ためしてね");
     }

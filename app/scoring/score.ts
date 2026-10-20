@@ -38,9 +38,17 @@ const knownReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-7": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 679, characters: 10, product: 6790 },
 };
 
+const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-2": { ...knownReferences["stage-2"]!, stageVersion: "2026-10-20-r1" },
+  "stage-3": { stageVersion: "2026-10-20-r1", scoringVersion: SCORING_VERSION, timeTicks: 834, characters: 14, product: 11676 },
+  "stage-5": { ...knownReferences["stage-5"]!, stageVersion: "2026-10-20-r1" },
+};
+
 export function getScoreReference(stageId: string, stageVersion: string): ScoreReference | null {
-  const value = knownReferences[stageId];
-  return value && value.stageVersion === stageVersion ? { stageId, ...value } : null;
+  const baseline = knownReferences[stageId];
+  const revised = revisedReferences[stageId];
+  const value = revised?.stageVersion === stageVersion ? revised : baseline;
+  return value?.stageVersion === stageVersion ? { stageId, ...value } : null;
 }
 
 export function countSourceCharacters(source: string): number {

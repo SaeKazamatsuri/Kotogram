@@ -7,14 +7,14 @@
       "role": "beginner",
       "source": "かべならじゃんぷ\nあなならじゃんぷ\nおばけならしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 1434
+      "expectedTicks": 834
     },
     {
       "name": "short-or-plus-ghost",
       "role": "short",
       "source": "かべとあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 1434
+      "expectedTicks": 834
     },
     {
       "name": "missing-crouch",
@@ -29,7 +29,7 @@
       "role": "fast",
       "source": "はしる\nかべとあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 1104
+      "expectedTicks": 642
     },
     {
       "name": "run-without-jump-still-fails",

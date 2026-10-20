@@ -65,6 +65,9 @@ export function validateManifest(value: unknown): ValidationIssue[] {
     else if (ids.has(entry.id)) issues.push({ path: root + ".id", message: "duplicate stage ID" });
     else ids.add(entry.id);
     if (typeof entry.title !== "string" || !entry.title.trim()) issues.push({ path: root + ".title", message: "title required" });
+    if (entry.version !== undefined && (typeof entry.version !== "string" || !/^\d{4}-\d{2}-\d{2}(?:-[a-z0-9-]+)?$/.test(entry.version))) {
+      issues.push({ path: root + ".version", message: "invalid stage version" });
+    }
     if (typeof entry.file !== "string" || !/^\/stages\/stage-[a-z0-9-]+\.json$/.test(entry.file)) {
       issues.push({ path: root + ".file", message: "file must be an absolute /stages/stage-*.json path" });
     } else if (paths.has(entry.file)) issues.push({ path: root + ".file", message: "duplicate filename" });

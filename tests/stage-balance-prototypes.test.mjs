@@ -10,11 +10,11 @@ const load = (name) => JSON.parse(readFileSync(new URL("../experiments/stages/" 
 const play = (stage, source) => runToCompletion(createGame(stage, analyzeProgram(source).program));
 
 test("公開ステージのデフォルト物理は変わらず互換性を保持", () => {
-  const publicStage = JSON.parse(readFileSync(new URL("../public/stages/stage-3.json", import.meta.url), "utf8"));
-  const game = play(publicStage, "かべとあなとぶ\nおばけしゃがむ");
+  const publicStage = JSON.parse(readFileSync(new URL("../public/stages/stage-1.json", import.meta.url), "utf8"));
+  const game = play(publicStage, "かべとぶ");
   assert.equal(game.jumpSensorProfile, "legacy");
   assert.equal(game.status, "cleared");
-  assert.equal(game.elapsedTicks, 1434);
+  assert.equal(game.elapsedTicks, 712);
 });
 
 test("ステージ3短縮の実験版は初心者・最短・高速でクリアする", () => {
