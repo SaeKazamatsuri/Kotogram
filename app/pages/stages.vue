@@ -6,6 +6,7 @@ import { playSe, unlockAudio } from "~/game/audio";
 
 type Item = { id: string; title: string; file: string };
 
+const router = useRouter();
 const { getManifest } = useStageLoader();
 const { getAll, reset } = useStats();
 const loading = ref(true);
@@ -19,9 +20,8 @@ const currentStageId = computed(() => currentWorldStageId(stages.value, isComple
 const allCleared = computed(() => stages.value.length > 0 && clearedCount.value === stages.value.length);
 
 const trees = [
-  { x: 4, y: 16 }, { x: 14, y: 24 }, { x: 26, y: 81 }, { x: 31, y: 15 },
-  { x: 43, y: 76 }, { x: 54, y: 78 }, { x: 57, y: 10 }, { x: 70, y: 12 },
-  { x: 74, y: 77 }, { x: 87, y: 17 }, { x: 97, y: 79 },
+  { x: 26, y: 81 }, { x: 43, y: 76 }, { x: 54, y: 78 },
+  { x: 74, y: 77 }, { x: 97, y: 79 },
 ];
 
 function isComplete(id: string): boolean {
@@ -42,6 +42,12 @@ function onReset() {
   reset();
   stats.value = {};
   recentlyClearedId.value = null;
+  try {
+    window.sessionStorage.removeItem("kotogram.recentClear");
+  } catch {
+    recentlyClearedId.value = null;
+  }
+  void router.push("/");
 }
 
 function moveMap(direction: -1 | 1) {
@@ -119,7 +125,7 @@ onMounted(() => {
       <button type="button" class="game-button game-button--night" @click="loadStages">もう一度 読みこむ</button>
     </div>
     <template v-else>
-      <div ref="mapViewport" class="map-viewport" role="region" aria-label="ステージマップ" tabindex="0">
+      <div ref="mapViewport" class="map-viewport scrollbar-hidden" role="region" aria-label="ステージマップ" tabindex="0">
         <div class="map-land" :class="{ 'map-land--expanded': stages.length > 7 }">
           <div class="map-sun" aria-hidden="true" />
           <div class="map-cloud map-cloud--one" aria-hidden="true" />
@@ -229,8 +235,7 @@ onMounted(() => {
   border-radius: 28px;
   background: #9ad6c7;
   box-shadow: 0 9px 0 #090f21, 0 18px 42px #050b1c77;
-  scrollbar-color: #466f70 #bde6d4;
-  scrollbar-width: thin;
+  scrollbar-width: none;
   isolation: isolate;
 }
 .map-land {
