@@ -355,6 +355,10 @@ export function compileProgram(parsed: ParseResult): CompileResult {
       if (node.repeat === 1) rules.push({ action: node.action });
     } else if (node.kind === "if") {
       if (node.body.length === 1 && node.body[0].kind === "action" && node.body[0].repeat === 1) {
+        if (node.body[0].action === "skip" && (node.conditions.length !== 1 || node.conditions[0] !== "switch")) {
+          diagnostics.push(error("unsupported", "みおくる のは『すいっち』だけだよ", node.span.start));
+          continue;
+        }
         watcher({
           kind: "rule",
           conditions: node.conditions,

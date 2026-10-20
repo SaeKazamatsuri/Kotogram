@@ -173,3 +173,12 @@ test("switch skip language binds to switches and rejects other objects", () => {
     assert.ok(analyzeProgram(invalid).diagnostics.length, invalid);
   }
 });
+
+test("if blocks only allow skip on switches", () => {
+  const accepted = valid("もしすいっちがあったら\nみおくる\nおわり");
+  assert.deepEqual(accepted.program.watchers[0]?.conds, ["switch"]);
+  assert.equal(accepted.program.watchers[0]?.action, "skip");
+  const invalid = analyzeProgram("もしかべがあったら\nみおくる\nおわり");
+  assert.ok(invalid.diagnostics.some(item => item.code === "unsupported"));
+  assert.deepEqual(invalid.program, { watchers: [], steps: [] });
+});
