@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { handleApi } from "../worker/router.mjs";
-import { validateRunPayload, verifyRunResult, replayStageIds, scopeObjectId } from "../worker/validation.mjs";
+import { validateScope, validateRunPayload, verifyRunResult, replayStageIds, scopeObjectId } from "../worker/validation.mjs";
 import { ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID } from "../app/scoring/score.ts";
 import manifest from "../public/stages/manifest.json" with { type: "json" };
 import stage4 from "../public/stages/stage-4.json" with { type: "json" };
@@ -116,4 +116,13 @@ test("every publicly listed stage has a matching replay configuration", () => {
     assert.equal(run.status, "cleared");
     assert.equal(verifyRunResult({ stageId: id, source, elapsedTicks: run.elapsedTicks }), run.elapsedTicks);
   }
+});
+
+test("過去のランキングは参照可能なまま旧版への新規投稿だけを拒否する", () => {
+  const historical = { ...scope, stageId: "stage-3", stageVersion: "2025-10-26" };
+  assert.equal(validateScope(historical).stageVersion, "2025-10-26");
+  assert.throws(() => validateRunPayload({ ...payload(), ...historical }), /read-only/);
+  const updated = { ...scope, stageId: "stage-3", stageVersion: "2026-10-20-r1" };
+  assert.equal(validateScope(updated).stageVersion, "2026-10-20-r1");
+  assert.notEqual(scopeObjectId(historical), scopeObjectId(updated));
 });
