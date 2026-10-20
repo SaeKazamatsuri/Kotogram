@@ -36,14 +36,37 @@ export function drawSpeedTrail(ctx: CanvasRenderingContext2D, game: GameState, v
   ctx.restore();
 }
 
-export function drawResultEffects(ctx: CanvasRenderingContext2D, game: GameState): void {
+export function drawResultEffects(ctx: CanvasRenderingContext2D, game: GameState, failureProgress = 1): void {
   if (game.status !== "failed") return;
+  const progress = Math.max(0, Math.min(1, failureProgress));
   ctx.save();
   const shade = ctx.createLinearGradient(0, 0, 0, GAME.height);
   shade.addColorStop(0, "rgba(72, 36, 69, 0.35)");
   shade.addColorStop(0.5, "rgba(72, 36, 69, 0)");
   shade.addColorStop(1, "rgba(72, 36, 69, 0.12)");
+  ctx.globalAlpha = 0.3 + 0.7 * progress;
   ctx.fillStyle = shade;
   ctx.fillRect(0, 0, GAME.width, GAME.height);
+
+  if (game.failureReason !== "hole" && game.failureReason !== "coin" && progress < 0.5) {
+    const alpha = 1 - progress * 2;
+    const x = GAME.playerScreenX + GAME.playerWidth / 2;
+    const y = game.py - GAME.playerHeight / 2;
+    ctx.globalAlpha = alpha;
+    ctx.strokeStyle = "#fff0ae";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(x, y, 18 + progress * 110, 0, Math.PI * 2);
+    ctx.stroke();
+    for (let index = 0; index < 8; index++) {
+      const angle = index * Math.PI / 4;
+      const inner = 24 + progress * 60;
+      const outer = inner + 12 + 10 * (1 - progress);
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(angle) * inner, y + Math.sin(angle) * inner);
+      ctx.lineTo(x + Math.cos(angle) * outer, y + Math.sin(angle) * outer);
+      ctx.stroke();
+    }
+  }
   ctx.restore();
 }
