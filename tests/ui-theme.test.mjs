@@ -36,9 +36,9 @@ test("visible scenes omit English and stage titles use elementary kanji", () => 
   }
   const manifest = JSON.parse(read("public/stages/manifest.json"));
   assert.equal(manifest.stages.length, 7);
-  assert.match(manifest.stages[3].title, /回数/);
-  assert.match(manifest.stages[5].title, /集めて/);
-  assert.match(manifest.stages[6].title, /開ける/);
+  assert.match(manifest.stages[3].title, /4回/);
+  assert.match(manifest.stages[5].title, /とる/);
+  assert.match(manifest.stages[6].title, /おす/);
 });
 
 test("devtools launcher is not visible in the public game UI", () => {
