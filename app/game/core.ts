@@ -1,7 +1,7 @@
 export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch";
 export type GameAction = "jump" | "crouch" | "collect" | "run" | "walk" | "press";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
-/** Watchers are active from tick zero; the procedure advances in source order. */
+
 export type GameInstruction =
   | { op: "action"; action: GameAction; count: number }
   | { op: "wait"; conds: GameCondition[]; action?: GameAction; count: number }
@@ -9,7 +9,7 @@ export type GameInstruction =
   | { op: "repeat-end"; start: number };
 export type GameProgram = { watchers: GameRule[]; steps: GameInstruction[] };
 export type LoopFrame = { start: number; remaining: number };
-export type GameStatus = "running" | "cleared" | "failed" | "timeout";
+export type GameStatus = "ready" | "running" | "cleared" | "failed" | "timeout";
 export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "void";
 
 export type GameStage = {
@@ -211,6 +211,17 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   };
 }
 
+export function createReadyGame(stage: GameStage, program: readonly GameRule[] | GameProgram = []): GameState {
+  const game = createGame(stage, program);
+  game.status = "ready";
+  return game;
+}
+
+export function startGame(game: GameState): void {
+  if (game.status !== "ready") throw new Error("Only a ready game can start");
+  game.status = "running";
+}
+
 export function isCrouching(game: GameState): boolean {
   return game.elapsedTicks <= game.crouchUntilTick;
 }
@@ -259,7 +270,6 @@ function issueJump(game: GameState): boolean {
   return true;
 }
 
-/** An action is counted only when the engine accepts it. */
 function acceptAction(game: GameState, action: GameAction): boolean {
   if (action === "run") {
     game.vx = game.baseSpeed * GAME.runMultiplier;
@@ -316,16 +326,6 @@ function applyProgram(game: GameState) {
   }
 }
 
-/**
- * The procedural half of the hybrid interpreter.
- *
- * - Top-level conditional rules are independent continuous watchers.
- * - In a multi-statement repeat, conditions become blocking waits for the
- *   next *distinct* obstacle. A wait consumes its event only after acceptance.
- * - Actions and nested loops follow their source order without unrolling.
- * - Multiple non-blocking commands may complete in one tick, but each wait
- *   consumes at most one event per tick. The step budget prevents spin loops.
- */
 function applySequence(game: GameState): void {
   const instructionBudget = 128;
   for (let stepsTaken = 0; stepsTaken < instructionBudget && game.cursor < game.steps.length; stepsTaken++) {
@@ -341,7 +341,7 @@ function applySequence(game: GameState): void {
       if (--top.remaining > 0) {
         game.cursor = op.start + 1;
         game.sequenceProgress = 0;
-        return; // Run at most one iteration of this loop per tick.
+        return;
       } else {
         game.loops.pop();
         game.cursor++;
@@ -350,12 +350,12 @@ function applySequence(game: GameState): void {
       continue;
     }
     if (op.op === "action") {
-      if (!acceptAction(game, op.action)) return; // Wait until landing / cooldown.
+      if (!acceptAction(game, op.action)) return;
       if (++game.sequenceProgress >= op.count) {
         game.sequenceProgress = 0;
         game.cursor++;
       }
-      // Limit repeated actions to one successful activation per tick.
+
       if (game.sequenceProgress > 0) return;
       continue;
     }
@@ -367,7 +367,7 @@ function applySequence(game: GameState): void {
       game.sequenceProgress = 0;
       game.cursor++;
     }
-    return; // No obstacle can count twice within the same tick.
+    return;
   }
 }
 
@@ -429,6 +429,7 @@ export function stepGame(game: GameState): GameStatus {
 
 export function runToCompletion(game: GameState, maxTicks = 100_000): GameState {
   if (!Number.isSafeInteger(maxTicks) || maxTicks < 1) throw new RangeError("maxTicks must be a positive safe integer");
+  if (game.status === "ready") throw new Error("Start a ready game before running it to completion");
   while (game.status === "running" && game.elapsedTicks < maxTicks) stepGame(game);
   if (game.status === "running") game.status = "timeout";
   return game;
