@@ -1,3 +1,5 @@
+import { writeFileSync } from "node:fs";
+
 export function renderTitleAdventure() {
   const rate=16000,bpm=112,beat=60/bpm,bars=8,seconds=bars*4*beat;
   const count=Math.round(seconds*rate);
@@ -6,7 +8,7 @@ export function renderTitleAdventure() {
   function tone(midi,start,duration,amp,kind) {
     const freq=hz(midi),begin=Math.round(start*rate),length=Math.round(duration*rate);
     for(let i=0;i<length && begin+i<count;i++){
-      const t=i/rate,p=i/Math.max(1,length),ph=2*Math.PI*freq*t;
+      const t=i/rate,ph=2*Math.PI*freq*t;
       const attack=Math.min(1,t/(kind==="pad"?.09:.008)),release=Math.min(1,(duration-t)/.09);
       const decay=kind==="pluck"?Math.exp(-2.4*t):kind==="bell"?Math.exp(-2*t):kind==="bass"?Math.exp(-1.3*t):1;
       const wave=kind==="pluck"?.81*Math.sin(ph)+.25*Math.sin(2*ph)+.07*Math.sin(3*ph)
@@ -86,8 +88,6 @@ export function renderTitleAdventure() {
   }
   return data;
 }
-
-import { writeFileSync } from "node:fs";
 
 if (process.argv[1]?.endsWith("generate_title_adventure.mjs")) {
   writeFileSync(new URL("../public/audio/bgm/title_adventure.wav", import.meta.url), Buffer.from(renderTitleAdventure()));
