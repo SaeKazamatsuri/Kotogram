@@ -7,7 +7,7 @@ const { test, expect } = require("@playwright/test");
 test("ステージ画面の描画が見え、画面の横はみ出しがない", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.getByRole("link", { name: "遊ぶ" }).click();
-  await page.getByRole("link", { name: /ジャンプで かべを こえる/ }).click();
+  await page.getByRole("link", { name: /かべで ジャンプ/ }).click();
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   const image = await canvas.evaluate((element) => {
@@ -65,9 +65,23 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
   await expect(page.getByRole("alert")).toContainText("ステージを 読みこめませんでした");
   await expect(page.getByRole("link", { name: /ステージ 1/ })).toHaveCount(0);
   await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
-  await expect(page.getByRole("link", { name: /ジャンプで かべを こえる/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /かべで ジャンプ/ })).toBeVisible();
   await expect(page.getByRole("listitem")).toHaveCount(7);
   expect(failedOnce).toBe(true);
+});
+
+
+test("エディターの例文と未対応の言葉を正しく案内する", async ({ page }) => {
+  await page.goto("/play/stage-3");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  const example = "かべがまえにあったらじゃんぷをする";
+  await expect(editor).toHaveAttribute("placeholder", example);
+  await editor.fill("かべとぶ\\nあなとぶ\\nおばけよける".replaceAll("\\n", "\n"));
+  await expect(page.getByRole("alert")).toContainText("『よける』");
+  await expect(page.getByRole("alert")).not.toContainText("『よ』");
+  await editor.fill(example);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "動かす" })).toBeEnabled();
 });
 
 test("ゲーム中にコードを編集しても開始時のプログラムで採点・登録する", async ({ page }) => {
@@ -231,6 +245,8 @@ test("リザルト画面で次へ・マップへ・コードを直すが常に�
   await page.getByRole("button", { name: "動かす" }).click();
   const dialog = page.getByRole("dialog", { name: "ステージクリア" });
   await expect(dialog).toBeVisible({ timeout: 30000 });
+  await expect(dialog.locator(".celebration-confetti")).toHaveCount(96);
+  await expect(dialog.getByText("やったね！")).toBeVisible();
   for (const name of ["次へ", "マップへ", "コードを直す"]) {
     const action = dialog.getByRole("button", { name });
     await expect(action).toBeVisible();
