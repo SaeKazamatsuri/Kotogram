@@ -19,3 +19,7 @@ JSONの各 `jumps` には `startTick`、`peakTick`、`landingTick`、足元で�
 3. 検証後に本番のエンジンバージョン、サーバー検証、ランキング分離と同時にリリース
 
 この変更だけではジャンプ軌道やランキングの規則は変わらない。
+
+## 実験的な補正を試す
+
+`GameStage.jumpSensorProfile` が `centered-holes` の場合、穴の検知距離を `(holeWidth - wallWidth)/2` だけ短くする。これはジャンプ頂点のプレイヤー前端を穴中心に近づけるための実験機能であり、公開ステージ7件では`legacy`のまま。両パターンの成否・最高点位置を`tests/stage-balance-prototypes.test.mjs`で回帰する。

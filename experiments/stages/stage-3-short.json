@@ -1,0 +1,53 @@
+{
+  "id": "stage-3-lab",
+  "goal": 3400,
+  "scrollSpeed": 4,
+  "jumpSensorProfile": "centered-holes",
+  "learningObjectives": [
+    "かべと あなに ジャンプする",
+    "おばけでは しゃがむ"
+  ],
+  "objects": [
+    {
+      "id": "wall-a",
+      "type": "wall",
+      "position": 600
+    },
+    {
+      "id": "ghost-a",
+      "type": "ghost",
+      "position": 1000
+    },
+    {
+      "id": "hole-a",
+      "type": "hole",
+      "position": 1400,
+      "width": 100
+    },
+    {
+      "id": "wall-b",
+      "type": "wall",
+      "position": 1800
+    },
+    {
+      "id": "ghost-b",
+      "type": "ghost",
+      "position": 2200
+    },
+    {
+      "id": "hole-b",
+      "type": "hole",
+      "position": 2600,
+      "width": 120
+    },
+    {
+      "id": "wall-c",
+      "type": "wall",
+      "position": 3000
+    }
+  ],
+  "meta": {
+    "title": "おばけには しゃがむ",
+    "bg": "sunset"
+  }
+}
