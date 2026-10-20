@@ -85,18 +85,20 @@ function bestScore(kind: "time" | "chars" | "overall") {
           <label for="ranking-nickname" class="mb-2 block text-sm font-black text-[#183f35]">ランキングの名前</label>
           <input id="ranking-nickname" v-model="nickname" :disabled="saving" :maxlength="16" type="text" class="w-full rounded-xl border-2 border-[#5b9c86] bg-white p-3 text-base font-semibold text-[#172439]" autocomplete="off" placeholder="名前なしなら ゲスト">
           <p class="mt-2 text-xs font-bold text-[#274d43]">本名は 書かないでね</p>
-          <button type="button" :disabled="saving" class="game-button game-button--mint mt-3 text-sm disabled:opacity-50" @click="emit('register', nickname)"><Icon name="lucide:send" class="game-icon" aria-hidden="true"/>{{ saving ? '送っているよ…' : 'きろくを 送る' }}</button>
           <p v-if="saveError" role="alert" class="mt-3 text-sm font-black text-[#a53148]">{{ saveError }} もう一度 おしてね。</p>
         </template>
         <p v-else class="text-sm font-black text-[#155b44]">「{{ savedName }}」で とうろくできたよ！</p>
-        <button type="button" class="game-button game-button--ghost mt-3 text-sm" @click="showRanking = !showRanking"><Icon name="lucide:list-ordered" class="game-icon" aria-hidden="true"/>{{ showRanking ? 'ランキングを とじる' : 'ランキングを 見る' }}</button>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <button type="button" class="game-button game-button--ghost text-sm" @click="showRanking = !showRanking"><Icon name="lucide:list-ordered" class="game-icon" aria-hidden="true"/>{{ showRanking ? 'ランキングを とじる' : 'ランキングを 見る' }}</button>
+          <button v-if="!savedName" type="button" :disabled="saving" class="game-button game-button--mint ml-auto text-sm disabled:opacity-50" @click="emit('register', nickname)"><Icon name="lucide:send" class="game-icon" aria-hidden="true"/>{{ saving ? '送っているよ…' : 'きろくを 送る' }}</button>
+        </div>
       </section>
       <RankingPanel v-if="showRanking && apiBase" :stage-id="stageId" :stage-version="stageVersion" :api-base="apiBase" :refresh="rankingRefresh ?? 0" />
       </div>
       <div class="relative z-10 shrink-0 border-t-2 border-[#c2cdd4] bg-[#fffaf1] px-4 py-3 sm:px-7"> 
       <div class="flex flex-wrap gap-3">
-        <button type="button" class="game-button game-button--mint flex-1 text-base" @click="emit('next')"><Icon name="lucide:arrow-right" class="game-icon" aria-hidden="true"/>{{ hasNext ? '次へ' : 'ステージへ' }}</button>
         <button type="button" class="game-button game-button--ghost flex-1 text-base" @click="emit('map')"><Icon name="lucide:map" class="game-icon" aria-hidden="true"/> マップへ</button>
+        <button type="button" class="game-button game-button--mint flex-1 text-base" @click="emit('next')"><Icon name="lucide:arrow-right" class="game-icon" aria-hidden="true"/>{{ hasNext ? '次へ' : 'ステージへ' }}</button>
       </div>
       <button type="button" class="mt-2 flex min-h-10 w-full items-center justify-center gap-2 rounded-xl px-3 py-1 text-sm font-black text-[#405978] hover:bg-[#e8f0f5]" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
       </div>
