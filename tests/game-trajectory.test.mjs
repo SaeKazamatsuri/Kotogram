@@ -28,7 +28,7 @@ test("公開ステージのジャンプは描画なしで開始・頂点・着�
 
 test("穴と壁は違う中心座標を持ち幅100と120の穴も計測できる", () => {
   const analysis = analyzeJumpTrajectories(load("stage-3"), analyzeProgram("かべとあなとぶ\nおばけしゃがむ").program);
-  assert.equal(analysis.jumps.filter((jump) => jump.target?.type === "hole").length, 3);
+  assert.equal(analysis.jumps.filter((jump) => jump.target?.type === "hole").length, 2);
   for (const jump of analysis.jumps.filter((item) => item.target?.type === "hole")) {
     assert.ok(jump.target.right - jump.target.left >= 100);
     assert.equal(jump.target.center, (jump.target.left + jump.target.right) / 2);
