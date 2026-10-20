@@ -31,6 +31,12 @@
       "role": "negative",
       "source": "かべ1かいじゃんぷ\nあなとぶ\nおばけしゃがむ",
       "expect": "failed"
+    },
+    {
+      "name": "ordinary-actions-without-secret-command",
+      "role": "regression",
+      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
+      "expect": "cleared"
     }
   ]
 }

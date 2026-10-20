@@ -25,6 +25,12 @@
       "role": "negative",
       "source": "あるく",
       "expect": "failed"
+    },
+    {
+      "name": "ordinary-actions-without-secret-command",
+      "role": "regression",
+      "source": "はしる\nあなとぶ",
+      "expect": "cleared"
     }
   ]
 }
