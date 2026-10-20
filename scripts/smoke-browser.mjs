@@ -71,11 +71,11 @@ try {
   await saveScene(page, "title-desktop");
   await page.getByRole("link", { name: "遊ぶ" }).click();
   await page.waitForURL(/\/stages$/);
-  const firstStage = page.getByRole("link", { name: /ジャンプで かべを こえる/ });
+  const firstStage = page.getByRole("link", { name: /かべで ジャンプ/ });
   await firstStage.waitFor();
   await saveScene(page, "map-desktop");
   await page.evaluate(() => localStorage.setItem("external.test.key", "preserved"));
-  assert.equal(await page.getByRole("link", { name: /かべと あなを よける/ }).count(), 0);
+  assert.equal(await page.getByRole("link", { name: /かべと あなで ジャンプ/ }).count(), 0);
 
   await firstStage.click();
   const editor = page.locator("textarea");
@@ -139,11 +139,11 @@ try {
   await editor.waitFor({ state: "visible" });
   assert.equal(await editor.inputValue(), "");
   await page.getByRole("link", { name: /ステージへ/ }).click();
-  await page.getByRole("link", { name: /かべと あなを よける/ }).waitFor();
+  await page.getByRole("link", { name: /かべと あなで ジャンプ/ }).waitFor();
 
   await page.getByRole("button", { name: /次の人へ/ }).click();
   await firstStage.waitFor();
-  assert.equal(await page.getByRole("link", { name: /かべと あなを よける/ }).count(), 0);
+  assert.equal(await page.getByRole("link", { name: /かべと あなで ジャンプ/ }).count(), 0);
   const storage = await page.evaluate(() => ({
     external: localStorage.getItem("external.test.key"),
     player: localStorage.getItem("kotogram.player"),
@@ -158,9 +158,9 @@ try {
   await mobile.getByRole("link", { name: "遊ぶ" }).waitFor();
   await saveScene(mobile, "title-mobile");
   await mobile.getByRole("link", { name: "遊ぶ" }).click();
-  await mobile.getByRole("link", { name: /ジャンプで かべを こえる/ }).waitFor();
+  await mobile.getByRole("link", { name: /かべで ジャンプ/ }).waitFor();
   await saveScene(mobile, "map-mobile");
-  await mobile.getByRole("link", { name: /ジャンプで かべを こえる/ }).click();
+  await mobile.getByRole("link", { name: /かべで ジャンプ/ }).click();
   await mobile.locator("textarea").waitFor();
   await saveScene(mobile, "play-mobile");
   await mobile.close();
