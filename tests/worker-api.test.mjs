@@ -126,3 +126,12 @@ test("過去のランキングは参照可能なまま旧版への新規投稿�
   assert.equal(validateScope(updated).stageVersion, "2026-10-20-r1");
   assert.notEqual(scopeObjectId(historical), scopeObjectId(updated));
 });
+
+test("archived language rankings stay readable, not writable, and new phrases replay identically", () => {
+  const previous = { ...scope, languageVersion: "2026-language-v1" };
+  assert.equal(validateScope(previous).languageVersion, "2026-language-v1");
+  assert.throws(() => validateRunPayload({ ...payload(), ...previous }), /read-only/);
+  const source = "かべをみつけたらじゃんぷする";
+  assert.equal(verifyRunResult({ ...payload(), source }), 712);
+  assert.notEqual(scopeObjectId(previous), scopeObjectId(scope));
+});

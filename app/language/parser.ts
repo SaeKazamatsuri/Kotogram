@@ -1,4 +1,6 @@
 import type { GameInstruction, GameProgram } from "../game/core";
+import conditionsDictionary from "../../public/dictionary/conditions.json" with { type: "json" };
+import actionsDictionary from "../../public/dictionary/actions.json" with { type: "json" };
 export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin" | "switch";
 export type Action = "jump" | "crouch" | "collect" | "run" | "walk" | "press";
 export type Vocabulary = {
@@ -16,7 +18,7 @@ export type Diagnostic = {
 export type TokenKind =
   | "condition" | "action" | "number" | "count" | "repeat" | "end"
   | "if" | "then" | "or" | "particle" | "unknown";
-export type Token = { kind: TokenKind; value: string; raw: string; line: number; column: number };
+export type Token = { kind: TokenKind; value: string; raw: string; line: number; column: number; endColumn?: number };
 export type RuleStatement = {
   kind: "rule";
   conditions: Condition[];
@@ -33,29 +35,39 @@ export type ParseResult = { body: Statement[]; diagnostics: Diagnostic[]; tokens
 export type ExecutableRule = { cond?: Condition; conds?: Condition[]; action: Action; maxFires?: number };
 export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; diagnostics: Diagnostic[] };
 
-const DEFAULT_CONDITIONS: Record<Condition, string[]> = {
-  wall: ["かべ"], hole: ["あな"], enemy: ["おばけ", "てき"],
-  ahead: ["まえ"], coin: ["こいん"], switch: ["すいっち"],
-};
-const DEFAULT_ACTIONS: Record<Action, string[]> = {
-  jump: ["じゃんぷ", "とぶ"], crouch: ["しゃがむ", "かがむ"], collect: ["とる"],
-  run: ["はしる"], walk: ["あるく"], press: ["おす"],
-};
+const DEFAULT_CONDITIONS: Record<Condition, string[]> = conditionsDictionary;
+const DEFAULT_ACTIONS: Record<Action, string[]> = actionsDictionary;
 const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "くりかえす", kind: "repeat" },
   { raw: "くりかえし", kind: "repeat" },
   { raw: "くりかえ", kind: "repeat" },
+  { raw: "みつけたら", kind: "then" },
+  { raw: "みつけると", kind: "then" },
+  { raw: "みえたら", kind: "then" },
+  { raw: "あったときは", kind: "then" },
+  { raw: "あるときは", kind: "then" },
+  { raw: "あるとき", kind: "then" },
   { raw: "あったら", kind: "then" },
-  { raw: "する", kind: "particle" },
+  { raw: "あれば", kind: "then" },
+  { raw: "いるときは", kind: "then" },
+  { raw: "きたら", kind: "then" },
+  { raw: "ならば", kind: "then" },
+  { raw: "なら", kind: "then" },
+  { raw: "ときは", kind: "then" },
   { raw: "おわり", kind: "end" },
   { raw: "かい", kind: "count" },
   { raw: "もし", kind: "if" },
-  { raw: "なら", kind: "then" },
+  { raw: "する", kind: "particle" },
+  { raw: "して", kind: "particle" },
   { raw: "と", kind: "or" },
   { raw: "に", kind: "particle" },
   { raw: "が", kind: "particle" },
   { raw: "を", kind: "particle" },
   { raw: "の", kind: "particle" },
+  { raw: "で", kind: "particle" },
+  { raw: "は", kind: "particle" },
+  { raw: "へ", kind: "particle" },
+  { raw: "も", kind: "particle" },
 ];
 const MAX_SOURCE = 2000;
 const MAX_LINES = 100;
@@ -70,10 +82,18 @@ export function normalizeLine(input: string): string {
 
 function createLexicon(vocabulary: Vocabulary) {
   const words: { raw: string; kind: TokenKind; value: string }[] = [];
+  const seen = new Map<string, string>();
   const pushWords = (source: Record<string, string[]>, kind: TokenKind) => {
     for (const [value, variants] of Object.entries(source)) {
       for (const raw of variants) {
-        if (raw && /^[ぁ-ゟー]+$/u.test(raw)) words.push({ raw, kind, value });
+        if (!raw || !/^[ぁ-ゟー]+$/u.test(raw)) continue;
+        const meaning = kind + ":" + value;
+        const previous = seen.get(raw);
+        if (previous && previous !== meaning) throw new Error("Conflicting vocabulary: " + raw);
+        if (!previous) {
+          seen.set(raw, meaning);
+          words.push({ raw, kind, value });
+        }
       }
     }
   };
@@ -81,11 +101,20 @@ function createLexicon(vocabulary: Vocabulary) {
   const allowedActions = Object.fromEntries(Object.entries(DEFAULT_ACTIONS).map(([key, words]) => [key, [...words, ...(vocabulary.actions?.[key] ?? [])]]));
   pushWords(allowedConditions, "condition");
   pushWords(allowedActions, "action");
-  for (const { raw, kind } of CONTROL) words.push({ raw, kind, value: raw });
+  for (const { raw, kind } of CONTROL) {
+    if (seen.has(raw)) throw new Error("Vocabulary conflicts with control word: " + raw);
+    seen.set(raw, kind + ":" + raw);
+    words.push({ raw, kind, value: raw });
+  }
   return words.sort((a, b) => b.raw.length - a.raw.length);
 }
 
 export function tokenizeLine(source: string, line: number, vocabulary: Vocabulary = {}): Token[] {
+  const normalized = source.normalize("NFC").replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0));
+  const columns: number[] = [];
+  for (let column = 0; column < normalized.length; column++) {
+    if (!/[ \t\u3000]/u.test(normalized[column]!)) columns.push(column + 1);
+  }
   const input = normalizeLine(source);
   const lexicon = createLexicon(vocabulary);
   const tokens: Token[] = [];
@@ -94,20 +123,20 @@ export function tokenizeLine(source: string, line: number, vocabulary: Vocabular
     const rest = input.slice(offset);
     const digit = rest.match(/^\d+/u)?.[0];
     if (digit) {
-      tokens.push({ kind: "number", value: digit, raw: digit, line, column: offset + 1 });
+      tokens.push({ kind: "number", value: digit, raw: digit, line, column: columns[offset]!, endColumn: columns[offset + digit.length - 1]! + 1 });
       offset += digit.length;
       continue;
     }
     const match = lexicon.find((word) => rest.startsWith(word.raw));
     if (match) {
-      tokens.push({ kind: match.kind, value: match.value, raw: match.raw, line, column: offset + 1 });
+      tokens.push({ kind: match.kind, value: match.value, raw: match.raw, line, column: columns[offset]!, endColumn: columns[offset + match.raw.length - 1]! + 1 });
       offset += match.raw.length;
       continue;
     }
     let end = offset + 1;
     while (end < input.length && !/^\d/u.test(input.slice(end)) && !lexicon.some((word) => input.startsWith(word.raw, end))) end++;
     const raw = input.slice(offset, end);
-    tokens.push({ kind: "unknown", value: raw, raw, line, column: offset + 1 });
+    tokens.push({ kind: "unknown", value: raw, raw, line, column: columns[offset]!, endColumn: columns[end - 1]! + 1 });
     offset = end;
   }
   return tokens;
@@ -117,7 +146,7 @@ const error = (code: Diagnostic["code"], message: string, token: Token | { line:
   ({ code, message, line: token.line, column: token.column });
 const spanOf = (tokens: Token[]): Span => ({
   start: { line: tokens[0].line, column: tokens[0].column },
-  end: { line: tokens.at(-1)!.line, column: tokens.at(-1)!.column + tokens.at(-1)!.raw.length },
+  end: { line: tokens.at(-1)!.line, column: tokens.at(-1)!.endColumn ?? tokens.at(-1)!.column + tokens.at(-1)!.raw.length },
 });
 
 function positiveCount(token: Token, diagnostics: Diagnostic[]): number | null {
@@ -130,6 +159,11 @@ function positiveCount(token: Token, diagnostics: Diagnostic[]): number | null {
 }
 
 function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[] | null {
+  const misplaced = tokens.find((token, index) => token.kind === "then" && tokens[index + 1]?.kind === "particle");
+  if (misplaced) {
+    diagnostics.push(error("syntax", "じょうけんの あとに ことばが つづいているよ", misplaced));
+    return null;
+  }
   const meaningful = tokens.filter((token) => token.kind !== "particle" && token.kind !== "then" && token.kind !== "if");
   if (meaningful.length >= 2 && meaningful[0].value === "ahead" && meaningful[1].kind === "condition") meaningful.shift();
   else if (meaningful.length === 2 && meaningful[0].kind === "condition" && meaningful[1].value === "ahead") meaningful.pop();
@@ -154,7 +188,7 @@ function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[
 }
 
 function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement | ActionStatement | null {
-  const longForm = tokens.slice(-2).map((token) => token.raw).join("") === "をする";
+  const longForm = ["をする", "をして"].includes(tokens.slice(-2).map((token) => token.raw).join(""));
   const actionIndex = longForm ? tokens.length - 3 : tokens.length - 1;
   const actionToken = tokens[actionIndex];
   if (!actionToken || actionToken.kind !== "action") {

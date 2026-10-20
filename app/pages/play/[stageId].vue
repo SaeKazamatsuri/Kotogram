@@ -5,7 +5,7 @@ import CommandEditor from "~/components/editor/CommandEditor.vue";
 import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
-import { calculateScores, countSourceCharacters, getScoreReference, type BestRuns, type ScoredRun } from "~/scoring/score";
+import { calculateScores, countSourceCharacters, getScoreReference, LANGUAGE_VERSION, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
 import { playSe, setBgm, unlockAudio } from "~/game/audio";
@@ -138,7 +138,7 @@ async function loadCurrentStage() {
     }
     const [stageData, dictionary] = await Promise.all([
       loadStage(id),
-      loadDictionary({ version: manifest.version, ttlMs: 24 * 3600 * 1000 }),
+      loadDictionary({ version: LANGUAGE_VERSION, ttlMs: 24 * 3600 * 1000 }),
     ]);
     if (request !== loadRequest) return;
     stage.value = stageData;
