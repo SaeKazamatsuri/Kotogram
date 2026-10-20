@@ -1,0 +1,48 @@
+{
+  "stageId": "stage-8",
+  "maxTicks": 20000,
+  "cases": [
+    {
+      "name": "beginner-expanded-sequence",
+      "role": "beginner",
+      "source": "1かいくりかえす\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 846
+    },
+    {
+      "name": "short-ordered-repeat",
+      "role": "short",
+      "source": "3かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 846
+    },
+    {
+      "name": "fast-ordered-repeat",
+      "role": "fast",
+      "source": "はしる\n3かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 651
+    },
+    {
+      "name": "watchers-trigger-wrong-switch",
+      "role": "negative",
+      "source": "こいんとる\nすいっちおす",
+      "expect": "failed",
+      "failureReason": "trap"
+    },
+    {
+      "name": "reverse-order-presses-trap",
+      "role": "negative",
+      "source": "3かいくりかえす\nすいっちおす\nこいんとる\nおわり",
+      "expect": "failed",
+      "failureReason": "trap"
+    },
+    {
+      "name": "only-two-deliveries",
+      "role": "negative",
+      "source": "2かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "expect": "failed",
+      "failureReason": "door"
+    }
+  ]
+}

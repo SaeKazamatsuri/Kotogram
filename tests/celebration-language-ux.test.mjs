@@ -39,6 +39,7 @@ test("every published stage title matches the actual playable goal and manifest"
   const wanted = [
     "かべで ジャンプ", "かべと あなで ジャンプ", "おばけには しゃがむ",
     "4回 ジャンプ", "ジャンプと しゃがむを 同時に", "コインを とる", "スイッチを おす",
+    "3回のおつかい",
   ];
   assert.deepEqual(manifest.stages.map((item) => item.title), wanted);
   for (const stage of manifest.stages) {

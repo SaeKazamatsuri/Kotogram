@@ -48,6 +48,10 @@ export function candidatePrograms(): string[] {
       }
     }
   }
+  for (const count of [2, 3]) {
+    const source = count + "かいくりかえす\nこいんとる\nすいっちおす\nおわり";
+    programs.push(source, "はしる\n" + source);
+  }
   return programs;
 }
 

@@ -50,3 +50,11 @@ test("explorer finds a clearing stage 7 program that presses switches", () => {
   assert.match(report.best.time?.source ?? "", /すいっちおす/);
   assert.ok(report.best.time?.elapsedTicks <= 679);
 });
+
+test("bounded explorer discovers stage 8's ordered loop rather than watcher-only rules", () => {
+  const stage8 = JSON.parse(readFileSync(new URL("../public/stages/stage-8.json", import.meta.url), "utf8"));
+  const result = exploreStage(stage8, { maxCandidates: 128 });
+  assert.ok(result.cleared > 0);
+  assert.match(result.best.chars?.source ?? "", /くりかえす/);
+  assert.ok(result.best.time?.elapsedTicks <= 846);
+});

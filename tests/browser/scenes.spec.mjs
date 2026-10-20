@@ -66,7 +66,7 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
   await expect(page.getByRole("link", { name: /ステージ 1/ })).toHaveCount(0);
   await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
   await expect(page.getByRole("link", { name: /かべで ジャンプ/ })).toBeVisible();
-  await expect(page.getByRole("listitem")).toHaveCount(7);
+  await expect(page.getByRole("listitem")).toHaveCount(8);
   expect(failedOnce).toBe(true);
 });
 
@@ -165,13 +165,13 @@ test("次の人へ初期化した後に前利用者の遅い送信結果が名�
   expect(await page.evaluate(() => localStorage.getItem("kotogram.nickname"))).toBeNull();
 });
 
-test("ぼうけんマップに進行状態と7つのステージが表示される", async ({ page }, testInfo) => {
+test("ぼうけんマップに進行状態と8つのステージが表示される", async ({ page }, testInfo) => {
   await page.goto("/stages");
   const map = page.getByRole("region", { name: "ステージマップ" });
   await expect(map).toBeVisible();
-  await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(7);
+  await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(8);
   await expect(page.locator(".map-stop.is-current")).toHaveCount(1);
-  await expect(page.locator(".map-stop.is-locked")).toHaveCount(6);
+  await expect(page.locator(".map-stop.is-locked")).toHaveCount(7);
   await expect(page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /ステージ 2/ })).toHaveCount(0);
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);

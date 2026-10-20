@@ -13,8 +13,9 @@ const stops: readonly WorldMapPosition[] = [
   { x: 36, y: 62, mobileX: 29, mobileY: 35 },
   { x: 50, y: 24, mobileX: 71, mobileY: 48 },
   { x: 65, y: 65, mobileX: 28, mobileY: 61 },
-  { x: 79, y: 35, mobileX: 71, mobileY: 74 },
-  { x: 94, y: 48, mobileX: 50, mobileY: 87 },
+  { x: 79, y: 35, mobileX: 71, mobileY: 70 },
+  { x: 94, y: 48, mobileX: 50, mobileY: 80 },
+  { x: 90, y: 82, mobileX: 71, mobileY: 91 },
 ];
 
 export function worldMapPosition(index: number): WorldMapPosition {

@@ -8,12 +8,12 @@ import { getScoreReference } from "../app/scoring/score.ts";
 
 const read = (path) => JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
 
-test("ステージ2/3/5だけを新しい版へ切替え、他は現行のランキング版を維持する", () => {
+test("ステージ2/3/5の更新版と新ステージ8を分離し、他のランキング版を維持する", () => {
   const manifest = read("public/stages/manifest.json");
   assert.deepEqual(validateManifest(manifest), []);
   assert.equal(manifest.version, "2025-10-26");
   for (const entry of manifest.stages) {
-    assert.equal(entry.version, ["stage-2", "stage-3", "stage-5"].includes(entry.id) ? "2026-10-20-r1" : undefined);
+    assert.equal(entry.version, ["stage-2", "stage-3", "stage-5", "stage-8"].includes(entry.id) ? "2026-10-20-r1" : undefined);
     assert.ok(getScoreReference(entry.id, entry.version ?? manifest.version));
   }
   assert.ok(validateManifest({ ...manifest, stages: [{ ...manifest.stages[0], version: " " }, ...manifest.stages.slice(1)] }).length > 0);
@@ -24,6 +24,8 @@ test("変更前後の採点基準を異なる版で保持する", () => {
   assert.equal(getScoreReference("stage-3", "2026-10-20-r1")?.timeTicks, 834);
   assert.equal(getScoreReference("stage-3", "2026-10-20-r1")?.product, 11676);
   assert.equal(getScoreReference("stage-1", "2026-10-20-r1"), null);
+  assert.equal(getScoreReference("stage-8", "2026-10-20-r1")?.timeTicks, 846);
+  assert.equal(getScoreReference("stage-8", "2026-10-20-r1")?.product, 18612);
 });
 
 test("公開ステージ3の短縮版は通常と高速でクリアする", () => {
