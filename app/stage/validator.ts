@@ -203,6 +203,7 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
     if (diagnostics.length) errors.push("program has syntax/semantic errors");
     else {
       const run = runToCompletion(createGame(source, analysis.program), maxTicks);
+      if (run.status === "ready") throw new Error("Headless validation cannot finish in ready state");
       outcome = run.status === "running" ? "timeout" : run.status;
       elapsedTicks = run.elapsedTicks;
       failureReason = run.failureReason;
