@@ -1,5 +1,5 @@
 export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch";
-export type GameAction = "jump" | "crouch" | "collect" | "run" | "walk" | "press" | "skip";
+export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
 export type GameInstruction =
@@ -81,8 +81,10 @@ export const GAME = {
   approachBase: 72,
   reactionFrames: 14,
   runMultiplier: 1.3,
+  sprintMultiplier: 1.75,
   gravity: 0.46,
   jumpVelocity: -12.2,
+  powerJumpVelocity: -16,
   jumpCooldownTicks: 32,
   crouchDurationTicks: 26,
   coinPickupRange: 48,
@@ -274,9 +276,9 @@ function issueCrouch(game: GameState) {
   game.crouchUntilTick = Math.max(game.crouchUntilTick, game.elapsedTicks + GAME.crouchDurationTicks);
 }
 
-function issueJump(game: GameState): boolean {
+function issueJump(game: GameState, velocity: number = GAME.jumpVelocity): boolean {
   if (game.elapsedTicks < game.jumpReadyTick || game.vy !== 0 || Math.abs(game.py - (GAME.groundY - GAME.epsilon)) > 0.1) return false;
-  game.vy = GAME.jumpVelocity;
+  game.vy = velocity;
   game.jumpReadyTick = game.elapsedTicks + GAME.jumpCooldownTicks;
   return true;
 }
@@ -286,11 +288,16 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
     game.vx = game.baseSpeed * GAME.runMultiplier;
     return true;
   }
+  if (action === "sprint") {
+    game.vx = game.baseSpeed * GAME.sprintMultiplier;
+    return true;
+  }
   if (action === "walk") {
     game.vx = game.baseSpeed;
     return true;
   }
   if (action === "jump") return issueJump(game);
+  if (action === "powerJump") return issueJump(game, GAME.powerJumpVelocity);
   if (action === "crouch") {
     issueCrouch(game);
     return true;
@@ -416,6 +423,13 @@ export function stepGame(game: GameState): GameStatus {
     game.vy = 0;
   }
   game.elapsedTicks += 1;
+  if (game.py < GAME.groundY - GAME.epsilon - 8) {
+    for (const item of game.switches) {
+      if (!item.activated && !item.skipped && front >= item.x && game.px <= item.x + GAME.pad) {
+        item.skipped = true;
+      }
+    }
+  }
   if (overHole(game, front) && game.py >= GAME.groundY + GAME.playerHeight / 2) {
     fail(game, "hole");
     return game.status;
