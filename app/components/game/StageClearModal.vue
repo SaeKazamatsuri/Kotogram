@@ -30,8 +30,9 @@ function bestScore(kind: "time" | "chars" | "overall") {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-[#090e1d]/90 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ステージクリア" @click.self="emit('close')">
-    <div class="game-panel my-4 max-h-[95vh] w-[min(640px,96vw)] overflow-y-auto p-5 sm:p-7">
+  <div class="fixed inset-0 z-[80] grid place-items-center overflow-hidden bg-[#090e1d]/90 p-3 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label="ステージクリア" @click.self="emit('close')">
+    <div class="game-panel flex max-h-[calc(100dvh-24px)] w-[min(640px,96vw)] min-h-0 flex-col overflow-hidden p-0">
+      <div class="min-h-0 flex-1 overflow-y-auto px-4 pt-4 pb-3 sm:px-7 sm:pt-6">
       <div class="mb-5 flex items-center gap-4">
         <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-[#ffdc90] text-[#172439]"><Icon name="lucide:trophy" class="text-4xl" aria-hidden="true"/></div>
         <h2 class="game-heading text-3xl text-[#172439]">ステージクリア！</h2>
@@ -69,11 +70,14 @@ function bestScore(kind: "time" | "chars" | "overall") {
         <button type="button" class="game-button game-button--ghost mt-3 text-sm" @click="showRanking = !showRanking"><Icon name="lucide:list-ordered" class="game-icon" aria-hidden="true"/>{{ showRanking ? 'ランキングを とじる' : 'ランキングを 見る' }}</button>
       </section>
       <RankingPanel v-if="showRanking && apiBase" :stage-id="stageId" :stage-version="stageVersion" :api-base="apiBase" :refresh="rankingRefresh ?? 0" />
-      <div class="mt-5 flex flex-wrap gap-3">
+      </div>
+      <div class="shrink-0 border-t-2 border-[#c2cdd4] bg-[#fffaf1] px-4 py-3 sm:px-7"> 
+      <div class="flex flex-wrap gap-3">
         <button type="button" class="game-button game-button--mint flex-1 text-base" @click="emit('next')"><Icon name="lucide:arrow-right" class="game-icon" aria-hidden="true"/>{{ hasNext ? '次へ' : 'ステージへ' }}</button>
         <button type="button" class="game-button game-button--ghost flex-1 text-base" @click="emit('map')"><Icon name="lucide:map" class="game-icon" aria-hidden="true"/> マップへ</button>
       </div>
-      <button type="button" class="mt-4 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-black text-[#405978] hover:bg-[#e8f0f5]" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
+      <button type="button" class="mt-2 flex min-h-10 w-full items-center justify-center gap-2 rounded-xl px-3 py-1 text-sm font-black text-[#405978] hover:bg-[#e8f0f5]" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
+      </div>
     </div>
   </div>
 </template>

@@ -1,4 +1,4 @@
-export type BgmName = "title_loop" | "game_loop" | "result_loop";
+export type BgmName = "title_adventure" | "title_loop" | "game_loop" | "result_loop";
 export type SoundName =
   | "avoid" | "confirm" | "crouch" | "gameover" | "high_score"
   | "hit" | "jump" | "land" | "score" | "score_bonus"
@@ -9,7 +9,7 @@ const EFFECT_VOLUME = 0.42;
 const BGM_VOLUME = 0.25;
 const voices = new Map<SoundName, HTMLAudioElement[]>();
 const lastEffect = new Map<SoundName, number>();
-let track: BgmName = "title_loop";
+let track: BgmName = "title_adventure";
 let currentTrack: BgmName | null = null;
 let music: HTMLAudioElement | null = null;
 let unlocked = false;
@@ -34,6 +34,7 @@ export function getAudioMuted(): boolean {
 }
 
 function fileUrl(folder: "bgm" | "se", name: string): string {
+  if (folder === "bgm" && name === "title_adventure") return "/audio/bgm/title_adventure.wav";
   if (!extension) {
     extension = document.createElement("audio").canPlayType('audio/ogg; codecs="vorbis"') ? "ogg" : "mp3";
   }

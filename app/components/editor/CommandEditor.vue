@@ -143,7 +143,7 @@ defineExpose({ getText });
 </script>
 
 <template>
-  <div class="flex min-w-0 flex-col">
+  <div class="flex h-full min-h-0 min-w-0 flex-col overflow-y-auto">
     <div class="flex min-h-14 items-center justify-between gap-3 border-b border-[#7083a0] bg-[#243551] px-5 py-3 text-[#fffaf1]">
       <h2 class="flex items-center gap-2 text-base font-black"><Icon name="lucide:code-2" class="game-icon text-[#aaf0d0]" aria-hidden="true"/> コードを書く</h2>
       <span class="rounded-full bg-[#17263f] px-3 py-1 text-sm font-black text-white">{{ charCount }} 字</span>
@@ -153,7 +153,7 @@ defineExpose({ getText });
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/> やり直す</button>
       <button type="button" class="ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/> 全部消す</button>
     </div>
-    <div class="flex min-w-0 overflow-hidden bg-[#fffaf1]">
+    <div class="flex min-h-[130px] min-w-0 flex-1 overflow-hidden bg-[#fffaf1]">
       <LineGutter
         :states="lineStates"
         :line-height="taLineHeight"
@@ -164,7 +164,7 @@ defineExpose({ getText });
       />
       <textarea
         ref="textarea"
-        class="min-h-[270px] min-w-0 flex-1 resize-y bg-[#fffaf1] p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a] focus:bg-white"
+        class="min-h-0 min-w-0 flex-1 resize-none bg-[#fffaf1] p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a] focus:bg-white"
         :value="text"
         aria-label="コードを書く"
         :spellcheck="false"
