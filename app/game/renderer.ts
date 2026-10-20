@@ -2,7 +2,7 @@ import { GAME, worldToScreenX, type GameState } from "./core.ts";
 import { drawHoles, drawWorldObjects, drawFinish } from "./obstacles.ts";
 import { drawAmbientEffects, drawSpeedTrail, drawResultEffects } from "./effects.ts";
 import { drawAnimatedCharacter } from "./character.ts";
-import { getPlayerPose, type PlayerPose } from "./visuals.ts";
+import { getPlayerPose, getRepeatProgress, type PlayerPose } from "./visuals.ts";
 import { layerX, PARALLAX_DEPTH, type ScenePalette } from "./scenery.ts";
 
 export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false, failureProgress = 1, reduceMotion = false): void {
@@ -128,6 +128,15 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   ctx.fillStyle = "#0f172a";
   ctx.font = "bold 15px sans-serif";
   ctx.fillText(game.status === "failed" ? "あっ！" : actionLabels[pose], 22, 34);
+
+  const repeat = getRepeatProgress(game);
+  if (repeat) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.fillRect(GAME.width / 2 - 100, 12, 200, 32);
+    ctx.fillStyle = "#0f172a";
+    ctx.font = "bold 15px sans-serif";
+    ctx.fillText("くりかえし " + repeat.current + " / " + repeat.total, GAME.width / 2 - 87, 34);
+  }
 
   if (game.requiredCoins > 0) {
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
