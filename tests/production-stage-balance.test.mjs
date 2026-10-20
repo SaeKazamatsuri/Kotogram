@@ -8,12 +8,12 @@ import { getScoreReference } from "../app/scoring/score.ts";
 
 const read = (path) => JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
 
-test("ステージ2/3/5の更新版と新ステージ8を分離し、他のランキング版を維持する", () => {
+test("ステージ5のr2公開後も他のステージ版を維持する", () => {
   const manifest = read("public/stages/manifest.json");
   assert.deepEqual(validateManifest(manifest), []);
   assert.equal(manifest.version, "2025-10-26");
   for (const entry of manifest.stages) {
-    assert.equal(entry.version, entry.id === "stage-8" ? "2026-10-20-r2" : ["stage-2", "stage-3", "stage-5"].includes(entry.id) ? "2026-10-20-r1" : undefined);
+    assert.equal(entry.version, ["stage-5", "stage-8"].includes(entry.id) ? "2026-10-20-r2" : ["stage-2", "stage-3"].includes(entry.id) || Number(entry.id.slice(6)) >= 9 ? "2026-10-20-r1" : undefined);
     assert.ok(getScoreReference(entry.id, entry.version ?? manifest.version));
   }
   assert.ok(validateManifest({ ...manifest, stages: [{ ...manifest.stages[0], version: " " }, ...manifest.stages.slice(1)] }).length > 0);
@@ -23,6 +23,12 @@ test("変更前後の採点基準を異なる版で保持する", () => {
   assert.equal(getScoreReference("stage-3", "2025-10-26")?.timeTicks, 1434);
   assert.equal(getScoreReference("stage-3", "2026-10-20-r1")?.timeTicks, 834);
   assert.equal(getScoreReference("stage-3", "2026-10-20-r1")?.product, 11676);
+  assert.equal(getScoreReference("stage-5", "2025-10-26")?.timeTicks, 746);
+  assert.equal(getScoreReference("stage-5", "2026-10-20-r1")?.timeTicks, 746);
+  assert.equal(getScoreReference("stage-5", "2026-10-20-r2")?.timeTicks, 746);
+  assert.equal(getScoreReference("stage-5", "2026-10-20-r2")?.characters, 14);
+  assert.equal(getScoreReference("stage-5", "2026-10-20-r2")?.product, 10444);
+  assert.equal(getScoreReference("stage-5", "2026-10-20-r3"), null);
   assert.equal(getScoreReference("stage-1", "2026-10-20-r1"), null);
   assert.equal(getScoreReference("stage-8", "2026-10-20-r1")?.timeTicks, 846);
   assert.equal(getScoreReference("stage-8", "2026-10-20-r1")?.product, 18612);
