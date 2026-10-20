@@ -1,0 +1,50 @@
+{
+  "id": "stage-5-pace-candidate",
+  "goal": 2300,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "かべと おばけの どうじこうどう",
+    "かべと あなを まとめて とぶ",
+    "おばけでは しゃがむ",
+    "おばけと あなが つづく 場所では はしると あるくを えらぶ"
+  ],
+  "objects": [
+    {
+      "id": "combo-wall",
+      "type": "wall",
+      "position": 600
+    },
+    {
+      "id": "combo-ghost",
+      "type": "ghost",
+      "position": 600
+    },
+    {
+      "id": "solo-ghost",
+      "type": "ghost",
+      "position": 1340
+    },
+    {
+      "id": "middle-hole",
+      "type": "hole",
+      "position": 1456,
+      "width": 80
+    },
+    {
+      "id": "finish-wall",
+      "type": "wall",
+      "position": 1800
+    }
+  ],
+  "meta": {
+    "title": "そくどの つかいわけ じっけん",
+    "hint": "おばけと あなが つづくよ。はやさと ジャンプの タイミングを ためそう",
+    "failHints": {
+      "wall": "かべを こえるには じゃんぷが ひつようだよ",
+      "enemy": "おばけは じゃんぷだけだと ぶつかるよ。しゃがんでね",
+      "hole": "おばけの あとに あなが あるよ。あなの まえで あるくか、あなだけを ねらって とぼう"
+    },
+    "bg": "twilight"
+  },
+  "jumpSensorProfile": "centered-holes"
+}
