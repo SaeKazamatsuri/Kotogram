@@ -37,7 +37,7 @@ export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameS
   ctx.beginPath();
   ctx.ellipse(x, GAME.groundY + 2, airborne ? 14 : 19, 4, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.translate(x, game.py - motion.bounce - motion.breathe);
+  ctx.translate(x, game.py + GAME.epsilon - motion.bounce * 0.2 - motion.breathe * 0.5);
   ctx.rotate(motion.tilt);
   ctx.scale(1, motion.squash);
 
