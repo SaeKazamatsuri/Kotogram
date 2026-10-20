@@ -169,7 +169,7 @@ test("ステージクリア後にマップへ戻ると旗と次のステージ�
   await expect(page.locator(".map-stop.is-cleared")).toHaveCount(1);
   await expect(page.locator(".map-stop.is-celebrating")).toHaveCount(1);
   await expect(page.locator(".map-stop.is-current").getByText("ステージ 2")).toBeVisible();
-  await expect(page.getByRole("link", { name: /ステージ 2 かべと あなを よける/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ステージ 2 かべと あなで ジャンプ/ })).toBeVisible();
 });
 
 test("タイトルの冒険シーンはマップとつながり、画面幅からはみ出さない", async ({ page }, testInfo) => {
