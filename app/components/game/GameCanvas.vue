@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { StageData } from "~/composables/useStageLoader";
 import type { FailPayload } from "~/types/game";
-import { GAME, createGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
+import { GAME, createReadyGame, startGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
 import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
 import { resolveScenePalette } from "~/game/scenery";
 import { renderGameFrame } from "~/game/renderer";
@@ -20,7 +20,7 @@ const emit = defineEmits<{
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
-let game: GameState = createGame(props.stage, props.program);
+let game: GameState = createReadyGame(props.stage, props.program);
 let frame = 0;
 let frameClock = createFrameClock();
 let idleFrame = 0;
@@ -79,7 +79,8 @@ function loop(timestamp: number) {
 
 function start() {
   stop();
-  game = createGame(props.stage, props.program);
+  game = createReadyGame(props.stage, props.program);
+  startGame(game);
   draw();
   frame = requestAnimationFrame(loop);
 }
@@ -94,7 +95,7 @@ watch(() => props.running, (running) => {
 watch(() => props.stage, () => {
   if (props.running) start();
   else {
-    game = createGame(props.stage, props.program);
+    game = createReadyGame(props.stage, props.program);
     draw();
     scheduleIdle();
   }
@@ -102,7 +103,7 @@ watch(() => props.stage, () => {
 watch(() => props.program, () => {
   if (props.running) start();
   else {
-    game = createGame(props.stage, props.program);
+    game = createReadyGame(props.stage, props.program);
     draw();
   }
 }, { deep: true });

@@ -3,28 +3,34 @@
   "scrollSpeed": 3.6,
   "objects": [
     {
+      "id": "wall:0",
       "type": "wall",
       "position": 600
     },
     {
+      "id": "hole:0",
       "type": "hole",
       "position": 1100,
       "width": 80
     },
     {
+      "id": "wall:1",
       "type": "wall",
       "position": 1600
     },
     {
+      "id": "hole:1",
       "type": "hole",
       "position": 2100,
       "width": 100
     },
     {
+      "id": "wall:2",
       "type": "wall",
       "position": 2600
     },
     {
+      "id": "wall:3",
       "type": "wall",
       "position": 3100
     }
@@ -36,5 +42,10 @@
       "wall": "かべの てまえで じゃんぷする めいれいを かこう",
       "hole": "あなに さしかかったら じゃんぷする めいれいを いれてみよう"
     }
-  }
+  },
+  "id": "stage-2",
+  "learningObjectives": [
+    "かべと あなを 見分ける",
+    "2つの 条件で ジャンプする"
+  ]
 }

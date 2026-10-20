@@ -3,14 +3,17 @@
   "scrollSpeed": 3,
   "objects": [
     {
+      "id": "wall:0",
       "type": "wall",
       "position": 600
     },
     {
+      "id": "wall:1",
       "type": "wall",
       "position": 1000
     },
     {
+      "id": "wall:2",
       "type": "wall",
       "position": 1400
     }
@@ -21,5 +24,9 @@
     "failHints": {
       "wall": "かべの てまえで じゃんぷする めいれいを いれてみよう"
     }
-  }
+  },
+  "id": "stage-1",
+  "learningObjectives": [
+    "かべに 近づいたら ジャンプする"
+  ]
 }

@@ -3,57 +3,70 @@
   "scrollSpeed": 4,
   "objects": [
     {
+      "id": "wall:0",
       "type": "wall",
       "position": 600
     },
     {
+      "id": "ghost:0",
       "type": "ghost",
       "position": 1000
     },
     {
+      "id": "hole:0",
       "type": "hole",
       "position": 1400,
       "width": 100
     },
     {
+      "id": "wall:1",
       "type": "wall",
       "position": 1800
     },
     {
+      "id": "ghost:1",
       "type": "ghost",
       "position": 2200
     },
     {
+      "id": "wall:2",
       "type": "wall",
       "position": 2600
     },
     {
+      "id": "hole:1",
       "type": "hole",
       "position": 3000,
       "width": 120
     },
     {
+      "id": "ghost:2",
       "type": "ghost",
       "position": 3400
     },
     {
+      "id": "wall:3",
       "type": "wall",
       "position": 3800
     },
     {
+      "id": "ghost:3",
       "type": "ghost",
       "position": 4200
     },
     {
+      "id": "hole:2",
       "type": "hole",
       "position": 4600,
       "width": 100
     },
     {
+      "id": "wall:4",
       "type": "wall",
       "position": 5000
     },
     {
+      "id": "wall:5",
       "type": "wall",
       "position": 5400
     }
@@ -66,5 +79,10 @@
       "wall": "かべの てまえで じゃんぷする めいれいを いれてみよう",
       "hole": "あなに ちかづいたら じゃんぷする めいれいを かこう"
     }
-  }
+  },
+  "id": "stage-3",
+  "learningObjectives": [
+    "おばけを しゃがんで よける",
+    "かべと あなを ジャンプで よける"
+  ]
 }

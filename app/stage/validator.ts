@@ -48,7 +48,6 @@ const MAX_STAGE_OBJECTS = 500;
 const MAX_CASES = 100;
 export const DEFAULT_MAX_TICKS = 20000;
 
-/** Validate a manifest without touching the file system. */
 export function validateManifest(value: unknown): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   if (!isObject(value)) return [{ path: "manifest", message: "JSON object required" }];
@@ -77,11 +76,12 @@ export function validateManifest(value: unknown): ValidationIssue[] {
   return issues;
 }
 
-/** Strictly validates engine-supported stage data, while accepting the legacy no-ID format. */
-export function validateStage(stageId: string, value: unknown): ValidationIssue[] {
+export function validateStage(stageId: string, value: unknown, requireIds = false): ValidationIssue[] {
   const issues: ValidationIssue[] = [];
   if (!isObject(value)) return [{ path: stageId, message: "stage JSON object required" }];
   if (typeof value.id === "string" && value.id !== stageId) issues.push({ path: "id", message: "stage ID differs from manifest" });
+  if (requireIds && value.id !== stageId) issues.push({ path: "id", message: "explicit stage ID required" });
+  if (requireIds && (!Array.isArray(value.learningObjectives) || value.learningObjectives.length === 0)) issues.push({ path: "learningObjectives", message: "at least one learning objective required" });
   if (!isPositiveFinite(value.goal)) issues.push({ path: "goal", message: "goal must be finite and positive" });
   if (!isPositiveFinite(value.scrollSpeed) || value.scrollSpeed > 25) issues.push({ path: "scrollSpeed", message: "speed must be finite and in (0,25]" });
   if (value.learningObjectives !== undefined && (
@@ -110,7 +110,7 @@ export function validateStage(stageId: string, value: unknown): ValidationIssue[
         if (typeof obj.id !== "string" || !obj.id.trim()) issues.push({ path: path + ".id", message: "invalid object ID" });
         else if (objectIds.has(obj.id)) issues.push({ path: path + ".id", message: "duplicate object ID" });
         else objectIds.add(obj.id);
-      }
+      } else if (requireIds) issues.push({ path: path + ".id", message: "explicit object ID required" });
       if (obj.type === "door" && typeof obj.id === "string" && isNonnegativeFinite(obj.position)) {
         doors.set(obj.id, obj.position);
       }
@@ -180,9 +180,8 @@ export function validateChecks(stageId: string, value: unknown): ValidationIssue
   return issues;
 }
 
-/** Deterministic level validation and reference-solution collection. */
 export function validateStageCases(stageId: string, stage: unknown, checks: unknown): StageReport {
-  const issues = [...validateStage(stageId, stage), ...validateChecks(stageId, checks)];
+  const issues = [...validateStage(stageId, stage, true), ...validateChecks(stageId, checks)];
   const report: StageReport = {
     stageId, pass: false, issues, warnings: [], cases: [],
     bestKnown: { ticks: null, characters: null, timeCharactersProduct: null },
@@ -204,6 +203,7 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
     if (diagnostics.length) errors.push("program has syntax/semantic errors");
     else {
       const run = runToCompletion(createGame(source, analysis.program), maxTicks);
+      if (run.status === "ready") throw new Error("Headless validation cannot finish in ready state");
       outcome = run.status === "running" ? "timeout" : run.status;
       elapsedTicks = run.elapsedTicks;
       failureReason = run.failureReason;
