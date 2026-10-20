@@ -172,7 +172,7 @@ defineExpose({ getText });
         @input="onInput"
         @compositionstart="composing = true"
         @compositionend="onCompositionEnd"
-        placeholder="かべとぶ"
+        placeholder="かべがまえにあったらじゃんぷをする"
         @scroll="onScroll"
       />
     </div>
