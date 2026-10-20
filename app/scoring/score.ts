@@ -70,11 +70,14 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-8": { stageVersion: "2026-10-20-r2", scoringVersion: SCORING_VERSION, timeTicks: 846, characters: 30, product: 25380 },
 };
 
+const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-5": { ...revisedReferences["stage-5"]!, stageVersion: "2026-10-20-r2" },
+};
+
 export function getScoreReference(stageId: string, stageVersion: string): ScoreReference | null {
-  const baseline = knownReferences[stageId];
-  const revised = revisedReferences[stageId];
-  const value = revised?.stageVersion === stageVersion ? revised : baseline;
-  return value?.stageVersion === stageVersion ? { stageId, ...value } : null;
+  const value = [latestReferences[stageId], revisedReferences[stageId], knownReferences[stageId]]
+    .find((reference) => reference?.stageVersion === stageVersion);
+  return value ? { stageId, ...value } : null;
 }
 
 export function countSourceCharacters(source: string): number {
