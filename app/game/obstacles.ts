@@ -25,6 +25,14 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
     ctx.moveTo(Math.max(left, right - 12), GAME.groundY);
     ctx.lineTo(right, GAME.groundY);
     ctx.stroke();
+    ctx.strokeStyle = "#e3ecdd";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(left, GAME.groundY + 2);
+    ctx.lineTo(left, GAME.groundY + 18);
+    ctx.moveTo(right, GAME.groundY + 2);
+    ctx.lineTo(right, GAME.groundY + 18);
+    ctx.stroke();
   }
 }
 
@@ -93,6 +101,14 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.beginPath();
     ctx.roundRect(x + 3, y + 1, width, GAME.doorHeight - 3, 4);
     ctx.fill();
+    if (door.open) {
+      ctx.strokeStyle = "#b5f2d8";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(x + GAME.doorWidth - 5, y + 15);
+      ctx.lineTo(x + GAME.doorWidth - 5, GAME.groundY - 6);
+      ctx.stroke();
+    }
     if (!door.open) {
       ctx.strokeStyle = "#cbb0dc";
       ctx.lineWidth = 2;
@@ -129,6 +145,9 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     }
     ctx.fillStyle = "#f0dfca";
     ctx.fillRect(x + 4, top + 1, GAME.wallWidth - 8, 5);
+    ctx.strokeStyle = "#4b485c";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, top, GAME.wallWidth, GAME.wallHeight);
   }
 
   for (const [index, ghost] of game.ghosts.entries()) {
