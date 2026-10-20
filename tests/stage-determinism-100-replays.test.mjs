@@ -28,9 +28,9 @@ function snapshot(game) {
   };
 }
 
-test("all seven published stage solutions are deterministic across 100 fresh replays", () => {
+test("all published stage solutions are deterministic across 100 fresh replays", () => {
   const manifest = readJson("public/stages/manifest.json");
-  assert.equal(manifest.stages.length, 7);
+  assert.equal(manifest.stages.length, 8);
   for (const item of manifest.stages) {
     const stage = readJson("public" + item.file);
     const checks = readJson("stage-checks/" + item.id + ".json");
