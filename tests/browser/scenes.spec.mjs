@@ -157,3 +157,17 @@ test("マップの入口からプレイ画面に進める", async ({ page }) => 
   await expect(page).toHaveURL(new RegExp("/play/stage-1$"));
   await expect(page.locator("canvas")).toBeVisible();
 });
+
+test("ステージクリア後にマップへ戻ると旗と次のステージが表示される", async ({ page }) => {
+  test.setTimeout(60000);
+  await page.goto("/play/stage-1");
+  await page.getByRole("textbox", { name: "コードを書く" }).fill("かべとぶ");
+  await page.getByRole("button", { name: "動かす" }).click();
+  await expect(page.getByRole("heading", { name: "ステージクリア！" })).toBeVisible({ timeout: 30000 });
+  await page.getByRole("button", { name: "マップへ" }).click();
+  await expect(page.getByRole("region", { name: "ステージマップ" })).toBeVisible();
+  await expect(page.locator(".map-stop.is-cleared")).toHaveCount(1);
+  await expect(page.locator(".map-stop.is-celebrating")).toHaveCount(1);
+  await expect(page.locator(".map-stop.is-current").getByText("ステージ 2")).toBeVisible();
+  await expect(page.getByRole("link", { name: /ステージ 2 かべと あなを よける/ })).toBeVisible();
+});
