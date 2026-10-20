@@ -50,7 +50,8 @@ export function candidatePrograms(): string[] {
   }
   for (const count of [2, 3]) {
     const source = count + "かいくりかえす\nこいんとる\nすいっちおす\nおわり";
-    programs.push(source, "はしる\n" + source);
+    const deliberate = count + "かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり";
+    programs.push(source, "はしる\n" + source, deliberate, "はしる\n" + deliberate);
   }
   return programs;
 }
