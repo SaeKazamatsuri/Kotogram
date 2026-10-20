@@ -11,13 +11,15 @@ function toggleAudio() {
   muted.value = next;
 }
 
-watch(() => route.path, () => {
-  if (!route.path.startsWith("/play/")) setBgm("title_loop");
-});
+function syncRouteMusic() {
+  if (!route.path.startsWith("/play/")) setBgm(route.path === "/" ? "title_adventure" : "title_loop");
+}
+
+watch(() => route.path, syncRouteMusic);
 
 onMounted(() => {
   muted.value = getAudioMuted();
-  setBgm("title_loop");
+  syncRouteMusic();
   window.addEventListener("pointerdown", unlockAudio, true);
   window.addEventListener("keydown", unlockAudio, true);
 });
@@ -29,7 +31,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="game-shell">
+  <div class="game-shell" :class="{ 'game-shell--playing': route.path.startsWith('/play/') }">
     <main id="main-content" class="game-scene">
       <slot />
     </main>
