@@ -171,3 +171,16 @@ test("ステージクリア後にマップへ戻ると旗と次のステージ�
   await expect(page.locator(".map-stop.is-current").getByText("ステージ 2")).toBeVisible();
   await expect(page.getByRole("link", { name: /ステージ 2 かべと あなを よける/ })).toBeVisible();
 });
+
+test("タイトルの冒険シーンはマップとつながり、画面幅からはみ出さない", async ({ page }, testInfo) => {
+  await page.goto("/");
+  await expect(page.getByRole("heading", { name: "ことグラム" })).toBeVisible();
+  await expect(page.locator(".title-world__avatar")).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "遊ぶ" })).toBeVisible();
+  const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(pageWidth).toBeLessThanOrEqual(testInfo.project.use.viewport.width + 3);
+  await mkdir("test-artifacts", { recursive: true });
+  await page.screenshot({ path: `test-artifacts/title-scene-${testInfo.project.name}.png`, animations: "disabled" });
+  await page.getByRole("link", { name: "遊ぶ" }).click();
+  await expect(page.getByRole("region", { name: "ステージマップ" })).toBeVisible();
+});
