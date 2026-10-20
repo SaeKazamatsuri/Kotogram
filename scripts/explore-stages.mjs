@@ -29,7 +29,9 @@ async function main() {
     const stage = await readJson("public" + entry.file);
     const issues = validateStage(entry.id, stage);
     if (issues.length) throw new Error(entry.id + ": " + JSON.stringify(issues));
-    const report = exploreStage(stage, limits);
+    const checks = await readJson(`stage-checks/${entry.id}.json`);
+    const knownSources = checks.cases.filter((item) => item.expect === "cleared").map((item) => item.source);
+    const report = exploreStage(stage, limits, knownSources);
     reports.push({ stageId: entry.id, ...report });
   }
   if (json) console.log(JSON.stringify({ reports }, null, 2));
