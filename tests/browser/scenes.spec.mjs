@@ -154,6 +154,6 @@ test("ぼうけんマップに進行状態と7つのステージが表示され�
 test("マップの入口からプレイ画面に進める", async ({ page }) => {
   await page.goto("/stages");
   await page.getByRole("link", { name: /ステージ 1 ジャンプで かべを こえる/ }).click();
-  await expect(page).toHaveURL(/\\/play\\/stage-1$/);
+  await expect(page).toHaveURL(new RegExp("/play/stage-1$"));
   await expect(page.locator("canvas")).toBeVisible();
 });
