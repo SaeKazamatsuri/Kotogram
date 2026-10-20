@@ -142,7 +142,8 @@ try {
   await page.getByRole("link", { name: /かべと あなで ジャンプ/ }).waitFor();
 
   await page.getByRole("button", { name: /次の人へ/ }).click();
-  await firstStage.waitFor();
+  await page.waitForURL(/\\/$/);
+  await page.getByRole("heading", { name: "ことグラム" }).waitFor();
   assert.equal(await page.getByRole("link", { name: /かべと あなで ジャンプ/ }).count(), 0);
   const storage = await page.evaluate(() => ({
     external: localStorage.getItem("external.test.key"),
