@@ -202,3 +202,70 @@ test("プレイ画面はゲームを大きく表示し、狭い画面では一�
   await mkdir("test-artifacts", { recursive: true });
   await page.screenshot({ path: `test-artifacts/play-scene-${testInfo.project.name}.png`, animations: "disabled" });
 });
+
+test("プレイ画面はページ全体をスクロールせずに操作できる", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  await expect(page.locator(".game-workspace--stage")).toBeVisible();
+  const dimensions = await page.evaluate(() => ({
+    viewport: window.innerHeight,
+    document: document.documentElement.scrollHeight,
+    layout: document.querySelector(".play-screen")?.getBoundingClientRect().height,
+  }));
+  expect(dimensions.document).toBeLessThanOrEqual(dimensions.viewport + 2);
+  expect(dimensions.layout).toBeLessThanOrEqual(dimensions.viewport);
+  await expect(page.getByRole("button", { name: "動かす" })).toBeVisible();
+});
+
+test("リザルト画面で次へ・マップへ・コードを直すが常に見える", async ({ page }) => {
+  test.setTimeout(60000);
+  await page.goto("/play/stage-1");
+  await page.getByRole("textbox", { name: "コードを書く" }).fill("かべとぶ");
+  await page.getByRole("button", { name: "動かす" }).click();
+  const dialog = page.getByRole("dialog", { name: "ステージクリア" });
+  await expect(dialog).toBeVisible({ timeout: 30000 });
+  for (const name of ["次へ", "マップへ", "コードを直す"]) {
+    const action = dialog.getByRole("button", { name });
+    await expect(action).toBeVisible();
+    const bounds = await action.boundingBox();
+    expect(bounds).not.toBeNull();
+    expect(bounds.y).toBeGreaterThanOrEqual(0);
+    expect(bounds.y + bounds.height).toBeLessThanOrEqual(page.viewportSize().height);
+  }
+  await dialog.getByRole("button", { name: "ランキングを 見る" }).click();
+  await expect(dialog.getByRole("button", { name: "マップへ" })).toBeVisible();
+});
+
+test("次の人へで記録と直前のクリア演出を消してタイトルへ戻る", async ({ page }) => {
+  page.on("dialog", (dialog) => dialog.accept());
+  await page.goto("/stages");
+  await page.evaluate(() => {
+    localStorage.setItem("kotogram.stats", JSON.stringify({ "stage-1": { seconds: 8, chars: 4 } }));
+    localStorage.setItem("kotogram.nickname", "前の人");
+    sessionStorage.setItem("kotogram.recentClear", "stage-1");
+  });
+  await page.reload();
+  await page.getByRole("button", { name: /次の人へ/ }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.getByRole("heading", { name: "ことグラム" })).toBeVisible();
+  const previous = await page.evaluate(() => ({
+    stats: localStorage.getItem("kotogram.stats"),
+    nickname: localStorage.getItem("kotogram.nickname"),
+    recentClear: sessionStorage.getItem("kotogram.recentClear"),
+  }));
+  expect(previous).toEqual({ stats: null, nickname: null, recentClear: null });
+});
+
+test("空中の木をなくしてもマップを横方向に動かせる", async ({ page }) => {
+  await page.goto("/stages");
+  await expect(page.locator(".map-tree")).toHaveCount(5);
+  const positions = await page.locator(".map-tree").evaluateAll((trees) =>
+    trees.map((tree) => Number.parseInt(tree.style.top, 10)),
+  );
+  expect(positions.every((y) => y >= 70)).toBe(true);
+  if (page.viewportSize().width > 639) {
+    const map = page.getByRole("region", { name: "ステージマップ" });
+    const before = await map.evaluate((element) => element.scrollLeft);
+    await page.getByRole("button", { name: "マップを右へ" }).click();
+    await expect.poll(() => map.evaluate((element) => element.scrollLeft)).toBeGreaterThan(before);
+  }
+});
