@@ -20,10 +20,10 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
     ctx.strokeStyle = "#91b8aa";
     ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(left, GAME.groundY + 2);
-    ctx.lineTo(Math.min(left + 12, right), GAME.groundY + 2);
-    ctx.moveTo(Math.max(left, right - 12), GAME.groundY + 2);
-    ctx.lineTo(right, GAME.groundY + 2);
+    ctx.moveTo(left, GAME.groundY);
+    ctx.lineTo(Math.min(left + 12, right), GAME.groundY);
+    ctx.moveTo(Math.max(left, right - 12), GAME.groundY);
+    ctx.lineTo(right, GAME.groundY);
     ctx.stroke();
   }
 }
@@ -110,7 +110,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     const top = GAME.groundY - GAME.wallHeight;
     ctx.fillStyle = "#485468";
     ctx.beginPath();
-    ctx.roundRect(x - 2, top - 2, GAME.wallWidth + 4, GAME.wallHeight + 3, 4);
+    ctx.roundRect(x - 2, top, GAME.wallWidth + 4, GAME.wallHeight, 4);
     ctx.fill();
     ctx.fillStyle = "#b7aaa8";
     ctx.fillRect(x + 2, top + 3, GAME.wallWidth - 4, GAME.wallHeight - 5);
