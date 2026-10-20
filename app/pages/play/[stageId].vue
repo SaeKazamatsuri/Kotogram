@@ -75,8 +75,7 @@ function goMap() {
 
 function focusSmallScreenPanel(target: HTMLElement | null) {
   if (!import.meta.client || !target || !window.matchMedia("(max-width: 960px)").matches) return;
-  const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-  requestAnimationFrame(() => target.scrollIntoView({ behavior, block: "start" }));
+  target.scrollTo({ top: 0, behavior: "instant" });
 }
 
 function resolveHint(reason: FailReason): string {
@@ -257,22 +256,22 @@ watch(stageId, () => {
 </script>
 
 <template>
-  <div class="scene-enter mx-auto max-w-[1460px] pb-8">
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-4">
+  <div class="play-screen scene-enter mx-auto w-full max-w-[1460px]">
+    <div class="play-screen__navigation flex shrink-0 items-center justify-between gap-3">
       <NuxtLink to="/stages" class="game-button game-button--night text-sm"><Icon name="lucide:arrow-left" class="game-icon" aria-hidden="true"/> ステージへ</NuxtLink>
       <span class="game-chip" aria-label="ステージ番号">ステージ {{ stageNumber }} / {{ stageItems.length || '—' }}</span>
     </div>
 
-    <h1 class="game-screen-title mb-5">{{ stage?.meta?.title || 'ステージ ' + stageNumber }}</h1>
+    <h1 class="game-screen-title play-screen__title shrink-0">{{ stage?.meta?.title || 'ステージ ' + stageNumber }}</h1>
     <div v-if="loading" role="status" class="game-surface p-6">読みこみ中…</div>
     <div v-else-if="loadError" role="alert" class="game-surface-light flex flex-wrap items-center justify-between gap-4 p-6 text-[#a53148]">
       <p class="font-bold">ステージを読みこめませんでした</p>
       <button type="button" class="game-button game-button--night" @click="loadCurrentStage">もう一度 読みこむ</button>
     </div>
 
-    <div v-else-if="stage" class="game-surface overflow-hidden">
-      <div class="game-workspace game-workspace--stage gap-0">
-        <section ref="editorPanel" class="min-w-0 border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
+    <div v-else-if="stage" class="game-surface play-screen__surface min-h-0 flex-1 overflow-hidden">
+      <div class="game-workspace game-workspace--stage h-full min-h-0 gap-0">
+        <section ref="editorPanel" class="play-screen__editor min-h-0 min-w-0 overflow-y-auto border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
           <CommandEditor
             :key="stageId"
             ref="editorRef"
@@ -281,9 +280,9 @@ watch(stageId, () => {
             @run="onRun"
           />
         </section>
-        <section ref="gamePanel" class="game-playview relative flex min-w-0 flex-col" aria-label="ゲーム画面">
+        <section ref="gamePanel" class="game-playview relative flex min-h-0 min-w-0 flex-col overflow-y-auto" aria-label="ゲーム画面">
           <span v-if="running" role="status" class="absolute right-5 top-5 z-10 rounded-full border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]">動いているよ</span>
-          <div class="flex-1 p-3 sm:p-5">
+          <div class="flex min-h-0 flex-1 items-center p-3 sm:p-5">
             <GameCanvas
               :key="stageId"
               :stage="stage"
@@ -304,7 +303,8 @@ watch(stageId, () => {
       </div>
     </div>
 
-    <StageFailModal v-if="failed && failInfo" :reason="failInfo.reason" :hint="failInfo.hint" @close="closeFail" />
+    <Teleport to="body">
+      <StageFailModal v-if="failed && failInfo" :reason="failInfo.reason" :hint="failInfo.hint" @close="closeFail" />
     <StageClearModal
       v-if="cleared"
       :seconds="lastSeconds"
@@ -324,19 +324,38 @@ watch(stageId, () => {
       @map="goMap"
       @register="onRegister"
     />
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
-.game-workspace--stage {
-  grid-template-columns: minmax(370px, .8fr) minmax(0, 1.2fr);
+.play-screen {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
+.play-screen__navigation { margin-bottom: 10px; }
+.play-screen__navigation .game-button { min-height: 42px; padding-block: 6px; }
+.play-screen__title { margin-bottom: 10px; font-size: clamp(1.2rem, 2vw, 1.75rem); }
+.play-screen__surface { min-height: 0; }
+.game-workspace--stage {
+  grid-template-columns: minmax(340px, .8fr) minmax(0, 1.2fr);
+}
+.play-screen__editor { overscroll-behavior: contain; }
+.game-playview { overscroll-behavior: contain; }
 .game-playview {
   background: radial-gradient(ellipse at 50% -10%, #41677a 0%, #263d58 52%, #1d2f4d 100%);
 }
 @media (max-width: 960px) {
   .game-workspace--stage {
     grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1.15fr) minmax(0, .85fr);
   }
+  .play-screen__navigation { margin-bottom: 6px; }
+  .play-screen__title { margin-bottom: 6px; }
+  .play-screen__editor { border-right: 0; }
+  .game-playview { border-top: 2px solid #647b9b; }
 }
 </style>
