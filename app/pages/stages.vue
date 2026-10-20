@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, ref, watch } from "vue";
+import GameCharacterSprite from "~/components/game/CharacterSprite.vue";
 import { canPlayStage } from "~/stage/progression";
 import { currentWorldStageId, worldMapPosition } from "~/stage/world-map";
 import { playSe, unlockAudio } from "~/game/audio";
@@ -14,6 +15,10 @@ const error = ref<string | null>(null);
 const stages = ref<Item[]>([]);
 const stats = ref<Record<string, { seconds: number; chars: number }>>({});
 const mapViewport = ref<HTMLElement | null>(null);
+const mapDragging = ref(false);
+type MapDragState = { pointerId: number; startX: number; startY: number; scrollLeft: number; scrollTop: number; moved: boolean };
+let mapDragState: MapDragState | null = null;
+let blockMapClick = false;
 const recentlyClearedId = ref<string | null>(null);
 const clearedCount = computed(() => stages.value.filter((stage) => isComplete(stage.id)).length);
 const currentStageId = computed(() => currentWorldStageId(stages.value, isComplete));
@@ -52,6 +57,56 @@ function onReset() {
 
 function moveMap(direction: -1 | 1) {
   mapViewport.value?.scrollBy({ left: direction * 560, behavior: "smooth" });
+}
+
+function onMapPointerDown(event: PointerEvent) {
+  const viewport = mapViewport.value;
+  if (!viewport || !event.isPrimary || event.button !== 0) return;
+  mapDragState = {
+    pointerId: event.pointerId,
+    startX: event.clientX,
+    startY: event.clientY,
+    scrollLeft: viewport.scrollLeft,
+    scrollTop: viewport.scrollTop,
+    moved: false,
+  };
+}
+
+function onMapPointerMove(event: PointerEvent) {
+  const viewport = mapViewport.value;
+  const drag = mapDragState;
+  if (!viewport || !drag || event.pointerId !== drag.pointerId) return;
+  const dx = event.clientX - drag.startX;
+  const dy = event.clientY - drag.startY;
+  if (!drag.moved) {
+    if (Math.hypot(dx, dy) < 7) return;
+    drag.moved = true;
+    mapDragging.value = true;
+    viewport.setPointerCapture(event.pointerId);
+  }
+  viewport.scrollLeft = drag.scrollLeft - dx;
+  viewport.scrollTop = drag.scrollTop - dy;
+  event.preventDefault();
+}
+
+function onMapPointerEnd(event: PointerEvent) {
+  const viewport = mapViewport.value;
+  const drag = mapDragState;
+  if (!drag || event.pointerId !== drag.pointerId) return;
+  if (drag.moved) {
+    blockMapClick = true;
+    requestAnimationFrame(() => { blockMapClick = false; });
+  }
+  if (viewport?.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+  mapDragState = null;
+  mapDragging.value = false;
+}
+
+function onMapClickCapture(event: MouseEvent) {
+  if (!blockMapClick) return;
+  event.preventDefault();
+  event.stopPropagation();
+  blockMapClick = false;
 }
 
 async function centerCurrentStage() {
@@ -125,7 +180,20 @@ onMounted(() => {
       <button type="button" class="game-button game-button--night" @click="loadStages">もう一度 読みこむ</button>
     </div>
     <template v-else>
-      <div ref="mapViewport" class="map-viewport scrollbar-hidden" role="region" aria-label="ステージマップ" tabindex="0">
+      <div
+        ref="mapViewport"
+        class="map-viewport scrollbar-hidden"
+        :class="{ 'is-dragging': mapDragging }"
+        role="region"
+        aria-label="ステージマップ"
+        tabindex="0"
+        @pointerdown="onMapPointerDown"
+        @pointermove="onMapPointerMove"
+        @pointerup="onMapPointerEnd"
+        @pointercancel="onMapPointerEnd"
+        @click.capture="onMapClickCapture"
+        @dragstart.prevent
+      >
         <div class="map-land" :class="{ 'map-land--expanded': stages.length > 7 }">
           <div class="map-sun" aria-hidden="true" />
           <div class="map-cloud map-cloud--one" aria-hidden="true" />
@@ -166,8 +234,7 @@ onMounted(() => {
               }"
             >
               <div v-if="currentStageId === stage.id" class="map-hero" aria-hidden="true">
-                <span class="map-hero__head"><span class="map-hero__eyes" /></span>
-                <span class="map-hero__feet" />
+                <GameCharacterSprite />
               </div>
               <span v-if="isComplete(stage.id)" class="map-stop__flag" aria-hidden="true"><Icon name="lucide:flag-triangle-right" /></span>
               <NuxtLink
@@ -237,6 +304,12 @@ onMounted(() => {
   box-shadow: 0 9px 0 #090f21, 0 18px 42px #050b1c77;
   scrollbar-width: none;
   isolation: isolate;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.map-viewport.is-dragging {
+  cursor: grabbing;
 }
 .map-land {
   position: relative;
@@ -427,37 +500,6 @@ onMounted(() => {
   filter: drop-shadow(3px 5px 0 #20384b6b);
   pointer-events: none;
   animation: map-hop 2s ease-in-out infinite;
-}
-.map-hero__head {
-  position: absolute;
-  left: 3px;
-  top: 0;
-  width: 45px;
-  height: 53px;
-  border: 4px solid #24334a;
-  border-radius: 19px 19px 10px 10px;
-  background: #ffdc90;
-}
-.map-hero__eyes::before, .map-hero__eyes::after {
-  position: absolute;
-  top: 23px;
-  width: 5px;
-  height: 7px;
-  border-radius: 50%;
-  background: #24334a;
-  content: "";
-}
-.map-hero__eyes::before { left: 10px; }
-.map-hero__eyes::after { right: 10px; }
-.map-hero__feet {
-  position: absolute;
-  left: 11px;
-  top: 52px;
-  width: 30px;
-  height: 9px;
-  border-radius: 5px;
-  background: #24334a;
-  box-shadow: -5px 5px 0 #24334a, 9px 5px 0 #24334a;
 }
 .map-controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 15px; }
 .map-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: #f7f5e8; font-size: 14px; font-weight: 800; }
