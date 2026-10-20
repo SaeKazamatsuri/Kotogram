@@ -1,5 +1,5 @@
 import {
-  ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
+  ENGINE_VERSION, LANGUAGE_VERSION, LEGACY_LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
   countSourceCharacters, getScoreReference, rankingScopeKey,
 } from "../app/scoring/score.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
@@ -46,7 +46,7 @@ export function validateScope(input) {
   if (
     scope.seasonId !== SEASON_ID ||
     scope.engineVersion !== ENGINE_VERSION ||
-    scope.languageVersion !== LANGUAGE_VERSION ||
+    ![LANGUAGE_VERSION, LEGACY_LANGUAGE_VERSION].includes(scope.languageVersion) ||
     scope.scoringVersion !== SCORING_VERSION ||
     !getScoreReference(scope.stageId, scope.stageVersion)
   ) throw new RangeError("unsupported ranking scope");
@@ -56,6 +56,7 @@ export function validateScope(input) {
 export function validateRunPayload(input) {
   const scope = validateScope(input);
   if (scope.stageVersion !== currentStageVersions.get(scope.stageId)) throw new RangeError("old stage version is read-only");
+  if (scope.languageVersion !== LANGUAGE_VERSION) throw new RangeError("old language version is read-only");
   const runId = requiredString(input.runId, "runId");
   const playerId = requiredString(input.playerId, "playerId");
   if (!isValidId(runId) || !isValidId(playerId)) throw new RangeError("invalid runId or playerId");

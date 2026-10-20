@@ -118,3 +118,45 @@ test("switch and press parse identically in concise and detailed forms", () => {
   assert.deepEqual(valid("すいっちならおす").rules, short.rules);
   assert.equal(valid("すいっち2かいおす").rules[0].maxFires, 2);
 });
+
+test("natural Japanese particles, condition phrases and action inflections share an AST", () => {
+  const expected = valid("かべとぶ").rules;
+  for (const phrase of [
+    "かべがあったらじゃんぷする",
+    "かべをみつけたらとぶ",
+    "かべのまえでとぶ",
+    "かべがあるときはじゃんぷする",
+    "かべがまえにあったらじゃんぷをする",
+    "もし かべが あれば\nじゃんぷして\nおわり",
+  ]) {
+    assert.deepEqual(valid(phrase).rules, expected, phrase);
+  }
+  assert.deepEqual(valid("こいんをみつけたらひろう").rules, valid("こいんとる").rules);
+  assert.deepEqual(valid("ぼたんがあったらおして").rules, valid("すいっちおす").rules);
+  assert.deepEqual(valid("かべとあなをみつけたらとびこえる").rules, valid("かべとあなとぶ").rules);
+});
+
+test("source columns remain tied to visible input after whitespace normalization", () => {
+  const tokens = tokenizeLine("  かべ　が  まえ で　とぶ", 3);
+  assert.deepEqual(tokens.map((token) => token.column), [3, 6, 9, 12, 14]);
+  assert.equal(tokens[0].endColumn, 5);
+  const result = analyzeProgram("  かべ ほげ とぶ");
+  assert.equal(result.diagnostics[0].column, 6);
+});
+
+test("unsupported phrases are not silently ignored", () => {
+  for (const source of ["かべをよける", "かべとあなならのとぶ", "かべをみつけたらよける"]) {
+    assert.notEqual(analyzeProgram(source).diagnostics.length, 0, source);
+  }
+});
+
+test("browser dictionary and bundled parser vocabulary stay consistent", () => {
+  for (const source of ["おかねをひろう", "かいぶつがきたらしゃがむ", "ぼたんをおして", "かべではねる"]) {
+    const base = valid(source);
+    const withDictionary = valid(source, {
+      conditions: { wall: ["かべ"], enemy: ["かいぶつ"], coin: ["おかね"], switch: ["ぼたん"] },
+      actions: { jump: ["はねる"], crouch: ["しゃがむ"], collect: ["ひろう"], press: ["おして"] },
+    });
+    assert.deepEqual(base.program, withDictionary.program);
+  }
+});
