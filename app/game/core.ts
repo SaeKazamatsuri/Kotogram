@@ -10,7 +10,7 @@ export type GameInstruction =
 export type GameProgram = { watchers: GameRule[]; steps: GameInstruction[] };
 export type LoopFrame = { start: number; remaining: number };
 export type GameStatus = "ready" | "running" | "cleared" | "failed" | "timeout";
-export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "void";
+export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "void";
 
 export type GameStage = {
   goal?: number;
@@ -27,7 +27,7 @@ export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
 export type Door = { id: string; x: number; open: boolean };
-export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean };
+export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; trap: boolean };
 export type GameState = {
   status: GameStatus;
   failureReason?: GameFailReason;
@@ -166,6 +166,7 @@ function makeSwitches(stage: GameStage): Switch[] {
       x: object.position as number,
       targetDoorId: object.targetDoorId as string,
       activated: false,
+      trap: object.trap === true,
     }))
     .sort((a, b) => a.x - b.x);
 }
@@ -298,6 +299,10 @@ function acceptAction(game: GameState, action: GameAction): boolean {
     if (!target) return false;
     const door = game.doors.find((item) => item.id === target.targetDoorId);
     if (!door) return false;
+    if (target.trap) {
+      fail(game, "trap");
+      return true;
+    }
     target.activated = true;
     door.open = true;
     return true;
@@ -389,7 +394,9 @@ function fail(game: GameState, reason: GameFailReason) {
 export function stepGame(game: GameState): GameStatus {
   if (game.status !== "running") return game.status;
   applyProgram(game);
+  if (game.status !== "running") return game.status;
   applySequence(game);
+  if (game.status !== "running") return game.status;
   game.px += game.vx;
   game.vy += GAME.gravity;
   game.py += game.vy;

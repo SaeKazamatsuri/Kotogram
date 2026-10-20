@@ -1,0 +1,85 @@
+{
+  "id": "prototype-repeat-sequence",
+  "goal": 2600,
+  "scrollSpeed": 3,
+  "requiredCoins": 3,
+  "learningObjectives": [
+    "条件付きの命令を順番に実行する",
+    "同じ手順を3回くりかえしてコードを短くする"
+  ],
+  "objects": [
+    {
+      "id": "trap-1",
+      "type": "switch",
+      "position": 350,
+      "targetDoorId": "door-1",
+      "trap": true
+    },
+    {
+      "id": "coin-1",
+      "type": "coin",
+      "position": 510
+    },
+    {
+      "id": "safe-1",
+      "type": "switch",
+      "position": 650,
+      "targetDoorId": "door-1"
+    },
+    {
+      "id": "door-1",
+      "type": "door",
+      "position": 850
+    },
+    {
+      "id": "trap-2",
+      "type": "switch",
+      "position": 1040,
+      "targetDoorId": "door-2",
+      "trap": true
+    },
+    {
+      "id": "coin-2",
+      "type": "coin",
+      "position": 1200
+    },
+    {
+      "id": "safe-2",
+      "type": "switch",
+      "position": 1340,
+      "targetDoorId": "door-2"
+    },
+    {
+      "id": "door-2",
+      "type": "door",
+      "position": 1540
+    },
+    {
+      "id": "trap-3",
+      "type": "switch",
+      "position": 1730,
+      "targetDoorId": "door-3",
+      "trap": true
+    },
+    {
+      "id": "coin-3",
+      "type": "coin",
+      "position": 1890
+    },
+    {
+      "id": "safe-3",
+      "type": "switch",
+      "position": 2030,
+      "targetDoorId": "door-3"
+    },
+    {
+      "id": "door-3",
+      "type": "door",
+      "position": 2230
+    }
+  ],
+  "meta": {
+    "title": "3回のおつかい",
+    "hint": "コインを とってから 正しいスイッチを おそう。ちがうスイッチを おすと やりなおし。"
+  }
+}
