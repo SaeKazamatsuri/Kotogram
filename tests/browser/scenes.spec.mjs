@@ -135,3 +135,25 @@ test("次の人へ初期化した後に前利用者の遅い送信結果が名�
   await page.waitForTimeout(250);
   expect(await page.evaluate(() => localStorage.getItem("kotogram.nickname"))).toBeNull();
 });
+
+test("ぼうけんマップに進行状態と7つのステージが表示される", async ({ page }, testInfo) => {
+  await page.goto("/stages");
+  const map = page.getByRole("region", { name: "ステージマップ" });
+  await expect(map).toBeVisible();
+  await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(7);
+  await expect(page.locator(".map-stop.is-current")).toHaveCount(1);
+  await expect(page.locator(".map-stop.is-locked")).toHaveCount(6);
+  await expect(page.getByRole("link", { name: /ステージ 1 ジャンプで かべを こえる/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ステージ 2/ })).toHaveCount(0);
+  const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  expect(pageWidth).toBeLessThanOrEqual(testInfo.project.use.viewport.width + 3);
+  await mkdir("test-artifacts", { recursive: true });
+  await map.screenshot({ path: `test-artifacts/world-map-${testInfo.project.name}.png`, animations: "disabled" });
+});
+
+test("マップの入口からプレイ画面に進める", async ({ page }) => {
+  await page.goto("/stages");
+  await page.getByRole("link", { name: /ステージ 1 ジャンプで かべを こえる/ }).click();
+  await expect(page).toHaveURL(new RegExp("/play/stage-1$"));
+  await expect(page.locator("canvas")).toBeVisible();
+});
