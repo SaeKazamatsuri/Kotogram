@@ -113,7 +113,7 @@ export function tokenizeLine(source: string, line: number, vocabulary: Vocabular
   const normalized = source.normalize("NFC").replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0));
   const columns: number[] = [];
   for (let column = 0; column < normalized.length; column++) {
-    if (!/[ 	\u3000]/u.test(normalized[column]!)) columns.push(column + 1);
+    if (!/[ \t\u3000]/u.test(normalized[column]!)) columns.push(column + 1);
   }
   const input = normalizeLine(source);
   const lexicon = createLexicon(vocabulary);
