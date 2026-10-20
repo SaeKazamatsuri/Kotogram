@@ -46,6 +46,7 @@ const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "くりかえし", kind: "repeat" },
   { raw: "くりかえ", kind: "repeat" },
   { raw: "あったら", kind: "then" },
+  { raw: "する", kind: "particle" },
   { raw: "おわり", kind: "end" },
   { raw: "かい", kind: "count" },
   { raw: "もし", kind: "if" },
@@ -103,8 +104,11 @@ export function tokenizeLine(source: string, line: number, vocabulary: Vocabular
       offset += match.raw.length;
       continue;
     }
-    tokens.push({ kind: "unknown", value: input[offset], raw: input[offset], line, column: offset + 1 });
-    offset++;
+    let end = offset + 1;
+    while (end < input.length && !/^\d/u.test(input.slice(end)) && !lexicon.some((word) => input.startsWith(word.raw, end))) end++;
+    const raw = input.slice(offset, end);
+    tokens.push({ kind: "unknown", value: raw, raw, line, column: offset + 1 });
+    offset = end;
   }
   return tokens;
 }
@@ -128,6 +132,7 @@ function positiveCount(token: Token, diagnostics: Diagnostic[]): number | null {
 function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[] | null {
   const meaningful = tokens.filter((token) => token.kind !== "particle" && token.kind !== "then" && token.kind !== "if");
   if (meaningful.length >= 2 && meaningful[0].value === "ahead" && meaningful[1].kind === "condition") meaningful.shift();
+  else if (meaningful.length === 2 && meaningful[0].kind === "condition" && meaningful[1].value === "ahead") meaningful.pop();
   const conditions: Condition[] = [];
   let expectCondition = true;
   for (const token of meaningful) {
@@ -149,12 +154,14 @@ function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[
 }
 
 function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement | ActionStatement | null {
-  const actionToken = tokens.at(-1);
+  const longForm = tokens.slice(-2).map((token) => token.raw).join("") === "をする";
+  const actionIndex = longForm ? tokens.length - 3 : tokens.length - 1;
+  const actionToken = tokens[actionIndex];
   if (!actionToken || actionToken.kind !== "action") {
     diagnostics.push(error("action", "さいごに うごきを かいてね（れい：とぶ）", tokens.at(-1) ?? { line: 1, column: 1 }));
     return null;
   }
-  const prefix = tokens.slice(0, -1);
+  const prefix = tokens.slice(0, actionIndex);
   let repeat = 1;
   let specified = false;
   const numberPosition = prefix.findIndex((token) => token.kind === "number");
@@ -199,7 +206,10 @@ export function parseSource(source: string | string[], vocabulary: Vocabulary = 
       const first = tokens[0];
       const unknown = tokens.find((token) => token.kind === "unknown");
       if (unknown) {
-        diagnostics.push(error("unknown", "『" + unknown.raw + "』は つかえない ことばだよ", unknown));
+        const message = unknown.raw === "よける"
+          ? "『よける』は めいれいに つかえないよ。かべや あなには『じゃんぷ』、おばけには『しゃがむ』を つかってね"
+          : "『" + unknown.raw + "』は つかえない ことばだよ";
+        diagnostics.push(error("unknown", message, unknown));
         continue;
       }
       if (first.kind === "end") {
@@ -252,21 +262,10 @@ export function parseSource(source: string | string[], vocabulary: Vocabulary = 
   return { body: statements(0), diagnostics, tokens: tokenLines };
 }
 
-/**
- * Compile a mixed program into two independent execution tracks:
- * 1. All top-level conditionals are always-on watchers.
- * 2. Unconditional actions and multi-command repeats form a bounded
- *    procedural bytecode stream. Rules inside those repeats wait for the
- *    next eligible obstacle, then advance to the next statement.
- *
- * A lone rule inside a top-level repeat remains an equivalent bounded
- * watcher: 3かいくりかえす / かべとぶ / おわり === かべ3かいとぶ.
- */
 export function compileProgram(parsed: ParseResult): CompileResult {
   const diagnostics = [...parsed.diagnostics];
   const watchers: ExecutableRule[] = [];
   const steps: GameInstruction[] = [];
-  // Backward-compatible output for simple programs; GameProgram is canonical.
   const rules: ExecutableRule[] = [];
 
   const watcher = (node: RuleStatement, limit?: number) => {
@@ -294,7 +293,6 @@ export function compileProgram(parsed: ParseResult): CompileResult {
         count: node.maxFires ?? 1,
       });
     } else if (node.kind === "if") {
-      // In a procedure, "もし" waits for the next qualifying obstacle.
       steps.push({ op: "wait", conds: [...node.conditions], count: 1 });
       for (const child of node.body) procedural(child);
     } else {
@@ -314,7 +312,6 @@ export function compileProgram(parsed: ParseResult): CompileResult {
       procedural(node);
       if (node.repeat === 1) rules.push({ action: node.action });
     } else if (node.kind === "if") {
-      // A top-level if is an always-on rule, matching its one-line shorthand.
       if (node.body.length === 1 && node.body[0].kind === "action" && node.body[0].repeat === 1) {
         watcher({
           kind: "rule",

@@ -7,7 +7,7 @@ const { test, expect } = require("@playwright/test");
 test("ステージ画面の描画が見え、画面の横はみ出しがない", async ({ page }, testInfo) => {
   await page.goto("/");
   await page.getByRole("link", { name: "遊ぶ" }).click();
-  await page.getByRole("link", { name: /ジャンプで かべを こえる/ }).click();
+  await page.getByRole("link", { name: /かべで ジャンプ/ }).click();
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
   const image = await canvas.evaluate((element) => {
@@ -62,12 +62,26 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
     await route.continue();
   });
   await page.goto("/stages");
-  await expect(page.getByRole("alert")).toContainText("ステージを 読みこめませんでした");
+  await expect(page.getByRole("alert")).toContainText("ステージを読みこめませんでした");
   await expect(page.getByRole("link", { name: /ステージ 1/ })).toHaveCount(0);
   await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
-  await expect(page.getByRole("link", { name: /ジャンプで かべを こえる/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /かべで ジャンプ/ })).toBeVisible();
   await expect(page.getByRole("listitem")).toHaveCount(7);
   expect(failedOnce).toBe(true);
+});
+
+
+test("エディターの例文と未対応の言葉を正しく案内する", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  const example = "かべがまえにあったらじゃんぷをする";
+  await expect(editor).toHaveAttribute("placeholder", example);
+  await editor.fill("かべとぶ\\nあなとぶ\\nおばけよける".replaceAll("\\n", "\n"));
+  await expect(page.getByRole("alert")).toContainText("『よける』");
+  await expect(page.getByRole("alert")).not.toContainText("『よ』");
+  await editor.fill(example);
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "動かす" })).toBeEnabled();
 });
 
 test("ゲーム中にコードを編集しても開始時のプログラムで採点・登録する", async ({ page }) => {
@@ -82,8 +96,23 @@ test("ゲーム中にコードを編集しても開始時のプログラムで�
   await expect(page.getByRole("dialog", { name: "ステージクリア" }).getByText(/4字/).first()).toBeVisible();
   let submittedSource = null;
   await page.route("**/api/results", async (route) => {
-    submittedSource = JSON.parse(route.request().postData() ?? "{}").source;
-    await route.continue();
+    const origin = route.request().headers().origin ?? "*";
+    const headers = {
+      "access-control-allow-origin": origin,
+      "access-control-allow-methods": "POST, OPTIONS",
+      "access-control-allow-headers": "Content-Type",
+    };
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    const body = JSON.parse(route.request().postData() ?? "{}");
+    submittedSource = body.source;
+    await route.fulfill({
+      status: 200,
+      headers: { ...headers, "content-type": "application/json" },
+      body: JSON.stringify({ ok: true, nickname: "ゲスト1", runId: body.runId, duplicate: false }),
+    });
   });
   await page.getByRole("button", { name: "きろくを 送る" }).click();
   await expect(page.getByText(/で とうろくできたよ！/)).toBeVisible();
@@ -124,7 +153,7 @@ test("次の人へ初期化した後に前利用者の遅い送信結果が名�
   await expect(page.getByRole("heading", { name: "ステージクリア！" })).toBeVisible({ timeout: 30000 });
   await page.getByRole("button", { name: "きろくを 送る" }).click();
   await requestSeen;
-  await page.getByRole("link", { name: "ステージへ" }).click();
+  await page.getByRole("dialog", { name: "ステージクリア" }).getByRole("button", { name: "マップへ" }).click();
   await page.evaluate(() => localStorage.setItem("kotogram.nickname", "前の人"));
   await page.getByRole("button", { name: /次の人へ/ }).click();
   await expect.poll(() => page.evaluate(() => localStorage.getItem("kotogram.nickname"))).toBeNull();
@@ -143,7 +172,7 @@ test("ぼうけんマップに進行状態と7つのステージが表示され�
   await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(7);
   await expect(page.locator(".map-stop.is-current")).toHaveCount(1);
   await expect(page.locator(".map-stop.is-locked")).toHaveCount(6);
-  await expect(page.getByRole("link", { name: /ステージ 1 ジャンプで かべを こえる/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /ステージ 2/ })).toHaveCount(0);
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(pageWidth).toBeLessThanOrEqual(testInfo.project.use.viewport.width + 3);
@@ -153,7 +182,7 @@ test("ぼうけんマップに進行状態と7つのステージが表示され�
 
 test("マップの入口からプレイ画面に進める", async ({ page }) => {
   await page.goto("/stages");
-  await page.getByRole("link", { name: /ステージ 1 ジャンプで かべを こえる/ }).click();
+  await page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ }).click();
   await expect(page).toHaveURL(new RegExp("/play/stage-1$"));
   await expect(page.locator("canvas")).toBeVisible();
 });
@@ -169,7 +198,7 @@ test("ステージクリア後にマップへ戻ると旗と次のステージ�
   await expect(page.locator(".map-stop.is-cleared")).toHaveCount(1);
   await expect(page.locator(".map-stop.is-celebrating")).toHaveCount(1);
   await expect(page.locator(".map-stop.is-current").getByText("ステージ 2")).toBeVisible();
-  await expect(page.getByRole("link", { name: /ステージ 2 かべと あなを よける/ })).toBeVisible();
+  await expect(page.getByRole("link", { name: /ステージ 2 かべと あなで ジャンプ/ })).toBeVisible();
 });
 
 test("タイトルの冒険シーンはマップとつながり、画面幅からはみ出さない", async ({ page }, testInfo) => {
@@ -231,6 +260,8 @@ test("リザルト画面で次へ・マップへ・コードを直すが常に�
   await page.getByRole("button", { name: "動かす" }).click();
   const dialog = page.getByRole("dialog", { name: "ステージクリア" });
   await expect(dialog).toBeVisible({ timeout: 30000 });
+  await expect(dialog.locator(".celebration-confetti")).toHaveCount(96);
+  await expect(dialog.getByText("やったね！")).toBeVisible();
   for (const name of ["次へ", "マップへ", "コードを直す"]) {
     const action = dialog.getByRole("button", { name });
     await expect(action).toBeVisible();

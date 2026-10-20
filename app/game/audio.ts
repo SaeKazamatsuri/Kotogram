@@ -1,11 +1,16 @@
-export type BgmName = "title_adventure" | "title_loop" | "game_loop" | "result_loop";
+import { generateCelebrationWav, type CelebrationCue } from "./celebration-music";
+
+export type BgmName = "title_adventure" | "title_loop" | "game_loop" | "result_loop" | "clear_loop";
 export type SoundName =
   | "avoid" | "confirm" | "crouch" | "gameover" | "high_score"
   | "hit" | "jump" | "land" | "score" | "score_bonus"
-  | "select" | "start" | "warning";
+  | "select" | "start" | "warning" | "clear_fanfare";
 
 const STORAGE_KEY = "kotogram.audio.muted";
 const EFFECT_VOLUME = 0.42;
+const FANFARE_VOLUME = 0.75;
+const CLEAR_BGM_VOLUME = 0.24;
+const generatedUrls = new Map<CelebrationCue, string>();
 const BGM_VOLUME = 0.25;
 const voices = new Map<SoundName, HTMLAudioElement[]>();
 const lastEffect = new Map<SoundName, number>();
@@ -34,6 +39,14 @@ export function getAudioMuted(): boolean {
 }
 
 function fileUrl(folder: "bgm" | "se", name: string): string {
+  if ((folder === "bgm" && name === "clear_loop") || (folder === "se" && name === "clear_fanfare")) {
+    const cue = name as CelebrationCue;
+    const existing = generatedUrls.get(cue);
+    if (existing) return existing;
+    const uri = URL.createObjectURL(new Blob([generateCelebrationWav(cue)], { type: "audio/wav" }));
+    generatedUrls.set(cue, uri);
+    return uri;
+  }
   if (folder === "bgm" && name === "title_adventure") return "/audio/bgm/title_adventure.wav";
   if (!extension) {
     extension = document.createElement("audio").canPlayType('audio/ogg; codecs="vorbis"') ? "ogg" : "mp3";
@@ -51,7 +64,7 @@ function syncMusic(): void {
   const next = new Audio(fileUrl("bgm", track));
   next.preload = "auto";
   next.loop = true;
-  next.volume = BGM_VOLUME;
+  next.volume = track === "clear_loop" ? CLEAR_BGM_VOLUME : BGM_VOLUME;
   music = next;
   currentTrack = track;
   void next.play().catch(() => {
@@ -101,7 +114,7 @@ export function playSe(name: SoundName): void {
     if (pool.length < 4) {
       voice = new Audio(fileUrl("se", name));
       voice.preload = "auto";
-      voice.volume = EFFECT_VOLUME;
+      voice.volume = name === "clear_fanfare" ? FANFARE_VOLUME : EFFECT_VOLUME;
       pool.push(voice);
       voices.set(name, pool);
     } else {

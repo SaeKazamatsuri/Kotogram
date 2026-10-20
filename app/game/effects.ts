@@ -36,29 +36,14 @@ export function drawSpeedTrail(ctx: CanvasRenderingContext2D, game: GameState, v
   ctx.restore();
 }
 
-export function drawResultEffects(ctx: CanvasRenderingContext2D, game: GameState, visualTick: number): void {
-  if (game.status !== "cleared" && game.status !== "failed") return;
+export function drawResultEffects(ctx: CanvasRenderingContext2D, game: GameState): void {
+  if (game.status !== "failed") return;
   ctx.save();
-  if (game.status === "cleared") {
-    for (let i = 0; i < 28; i++) {
-      const phase = decorativePhase(i, visualTick);
-      const x = (i * 83 + 12) % GAME.width;
-      const y = 16 + ((i * 47 + Math.sin(phase) * 12) % (GAME.groundY - 34));
-      ctx.globalAlpha = 0.7;
-      ctx.fillStyle = ["#f6d779", "#70c7aa", "#f29e8d", "#b5b3e6"][i % 4];
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.rotate(phase);
-      ctx.fillRect(-3, -5, 6, 10);
-      ctx.restore();
-    }
-  } else {
-    const shade = ctx.createLinearGradient(0, 0, 0, GAME.height);
-    shade.addColorStop(0, "rgba(72, 36, 69, 0.35)");
-    shade.addColorStop(0.5, "rgba(72, 36, 69, 0)");
-    shade.addColorStop(1, "rgba(72, 36, 69, 0.12)");
-    ctx.fillStyle = shade;
-    ctx.fillRect(0, 0, GAME.width, GAME.height);
-  }
+  const shade = ctx.createLinearGradient(0, 0, 0, GAME.height);
+  shade.addColorStop(0, "rgba(72, 36, 69, 0.35)");
+  shade.addColorStop(0.5, "rgba(72, 36, 69, 0)");
+  shade.addColorStop(1, "rgba(72, 36, 69, 0.12)");
+  ctx.fillStyle = shade;
+  ctx.fillRect(0, 0, GAME.width, GAME.height);
   ctx.restore();
 }

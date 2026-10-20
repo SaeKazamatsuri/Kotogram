@@ -78,7 +78,12 @@ jobs:
           NUXT_PUBLIC_RANKING_API_BASE=http://127.0.0.1:8787 npm run dev -- --host 127.0.0.1 --port 3000 > /tmp/kotogram-app.log 2>&1 &
           APP_PID=$!
           trap 'kill $APP_PID $WORKER_PID 2>/dev/null || true' EXIT
-          if ! npm run test:browser && npm run test:visual; then
+          if ! npm run test:browser; then
+            cat /tmp/kotogram-app.log
+            cat /tmp/kotogram-worker.log
+            exit 1
+          fi
+          if ! npm run test:visual; then
             cat /tmp/kotogram-app.log
             cat /tmp/kotogram-worker.log
             exit 1
