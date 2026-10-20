@@ -12,6 +12,7 @@ import stage4 from "../public/stages/stage-4.json" with { type: "json" };
 import stage5 from "../public/stages/stage-5.json" with { type: "json" };
 import stage6 from "../public/stages/stage-6.json" with { type: "json" };
 import stage7 from "../public/stages/stage-7.json" with { type: "json" };
+import stage8 from "../public/stages/stage-8.json" with { type: "json" };
 import manifest from "../public/stages/manifest.json" with { type: "json" };
 
 const safeName = /^[^\p{Cc}\p{Cf}<>]*$/u;
@@ -23,6 +24,7 @@ const replayStages = new Map([
   ["stage-5", stage5],
   ["stage-6", stage6],
   ["stage-7", stage7],
+  ["stage-8", stage8],
 ]);
 export const replayStageIds = [...replayStages.keys()];
 const currentStageVersions = new Map(manifest.stages.map((entry) => [entry.id, entry.version ?? manifest.version]));

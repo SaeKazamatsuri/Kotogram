@@ -37,6 +37,7 @@ const knownReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-5": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 746, characters: 14, product: 10444 },
   "stage-6": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 512, characters: 9, product: 4608 },
   "stage-7": { stageVersion: "2025-10-26", scoringVersion: SCORING_VERSION, timeTicks: 679, characters: 10, product: 6790 },
+  "stage-8": { stageVersion: "2026-10-20-r1", scoringVersion: SCORING_VERSION, timeTicks: 846, characters: 22, product: 18612 },
 };
 
 const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {

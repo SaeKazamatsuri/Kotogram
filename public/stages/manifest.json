@@ -38,6 +38,12 @@
       "id": "stage-7",
       "title": "スイッチを おす",
       "file": "/stages/stage-7.json"
+    },
+    {
+      "id": "stage-8",
+      "title": "3回のおつかい",
+      "file": "/stages/stage-8.json",
+      "version": "2026-10-20-r1"
     }
   ]
 }
