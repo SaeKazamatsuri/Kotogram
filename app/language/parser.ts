@@ -159,6 +159,11 @@ function positiveCount(token: Token, diagnostics: Diagnostic[]): number | null {
 }
 
 function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[] | null {
+  const misplaced = tokens.find((token, index) => token.kind === "then" && tokens[index + 1]?.kind === "particle");
+  if (misplaced) {
+    diagnostics.push(error("syntax", "じょうけんの あとに ことばが つづいているよ", misplaced));
+    return null;
+  }
   const meaningful = tokens.filter((token) => token.kind !== "particle" && token.kind !== "then" && token.kind !== "if");
   if (meaningful.length >= 2 && meaningful[0].value === "ahead" && meaningful[1].kind === "condition") meaningful.shift();
   else if (meaningful.length === 2 && meaningful[0].kind === "condition" && meaningful[1].value === "ahead") meaningful.pop();
