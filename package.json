@@ -26,7 +26,8 @@
     "test:visual": "node .browser-tools/node_modules/@playwright/test/cli.js test --config playwright.config.mjs",
     "preflight:production": "node scripts/preflight-production.mjs",
     "preflight:frontend": "node scripts/preflight-frontend.mjs",
-    "smoke:production": "node scripts/smoke-production.mjs"
+    "smoke:production": "node scripts/smoke-production.mjs",
+    "analyze:pace": "node --experimental-strip-types scripts/analyze-pace.mjs"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",
