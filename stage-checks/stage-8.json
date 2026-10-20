@@ -3,44 +3,58 @@
   "maxTicks": 20000,
   "cases": [
     {
-      "name": "beginner-expanded-sequence",
+      "name": "beginner-explicit-decision",
       "role": "beginner",
-      "source": "1かいくりかえす\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "source": "1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 846
     },
     {
-      "name": "short-ordered-repeat",
+      "name": "short-explicit-decision",
       "role": "short",
-      "source": "3かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "source": "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 846
     },
     {
-      "name": "fast-ordered-repeat",
+      "name": "fast-explicit-decision",
       "role": "fast",
-      "source": "はしる\n3かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "source": "はしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 651
     },
     {
-      "name": "watchers-trigger-wrong-switch",
+      "name": "old-implicit-bypass-no-longer-clears",
+      "role": "negative",
+      "source": "3かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "expect": "failed",
+      "failureReason": "skip"
+    },
+    {
+      "name": "watchers-press-dangerous-switch",
       "role": "negative",
       "source": "こいんとる\nすいっちおす",
       "expect": "failed",
       "failureReason": "trap"
     },
     {
-      "name": "reverse-order-presses-trap",
+      "name": "switches-all-ignored",
       "role": "negative",
-      "source": "3かいくりかえす\nすいっちおす\nこいんとる\nおわり",
+      "source": "すいっちみおくる\nこいんとる",
+      "expect": "failed",
+      "failureReason": "door"
+    },
+    {
+      "name": "wrong-first-decision",
+      "role": "negative",
+      "source": "3かいくりかえす\nすいっちおす\nすいっちみおくる\nこいんとる\nおわり",
       "expect": "failed",
       "failureReason": "trap"
     },
     {
       "name": "only-two-deliveries",
       "role": "negative",
-      "source": "2かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "source": "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "failed",
       "failureReason": "door"
     }
