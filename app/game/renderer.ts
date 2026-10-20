@@ -131,6 +131,6 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   }
 
   drawFinish(ctx, game);
-  drawResultEffects(ctx, game, visualTick);
+  drawResultEffects(ctx, game);
 }
 
