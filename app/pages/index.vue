@@ -262,7 +262,7 @@ onMounted(() => {
     background: linear-gradient(180deg, #101a33f5 0%, #14223dd9 35%, #14223d24 67%, transparent 100%);
   }
   .title-adventure__kicker { margin-bottom: 18px; }
-  .title-adventure__heading { margin-bottom: 25px; font-size: clamp(46px, 12vw, 76px); }
+  .title-adventure__heading { margin-bottom: 25px; font-size: clamp(39px, 10.7vw, 67px); }
   .title-adventure__start { min-width: 215px; }
   .title-world__moon { width: 86px; right: 13%; top: 43%; }
   .title-world__avatar { right: 22%; bottom: 11%; transform: scale(.75); transform-origin: bottom right; animation: none; }
