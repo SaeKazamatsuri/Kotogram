@@ -3,9 +3,9 @@ import { drawHoles, drawWorldObjects, drawFinish } from "./obstacles.ts";
 import { drawAmbientEffects, drawSpeedTrail, drawResultEffects } from "./effects.ts";
 import { drawAnimatedCharacter } from "./character.ts";
 import { getPlayerPose, type PlayerPose } from "./visuals.ts";
-import { layerX, type ScenePalette } from "./scenery.ts";
+import { layerX, PARALLAX_DEPTH, type ScenePalette } from "./scenery.ts";
 
-export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false, failureProgress = 1): void {
+export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false, failureProgress = 1, reduceMotion = false): void {
   ctx.clearRect(0, 0, GAME.width, GAME.height);
 
   const background = ctx.createLinearGradient(0, 0, 0, GAME.height);
@@ -23,15 +23,15 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   ctx.arc(GAME.width - 123, 88, 34, 0, Math.PI * 2);
   ctx.fill();
 
-  for (let i = 0; i < 12; i++) {
-    const x = layerX(i, game.px, 63, 0.06, GAME.width);
+  for (let i = 0; i < palette.starCount; i++) {
+    const x = layerX(i, game.px, 63, PARALLAX_DEPTH.stars, GAME.width);
     const y = 24 + (i * 47) % 125;
     ctx.fillStyle = palette.stars;
     ctx.fillRect(x, y, 3 + i % 2, 3 + i % 2);
   }
 
   for (let i = 0; i < 6; i++) {
-    const x = layerX(i, game.px + visualTick * 0.25, 172, 0.11, GAME.width) - 50;
+    const x = layerX(i, game.px + (reduceMotion ? 0 : visualTick * 0.25), 172, PARALLAX_DEPTH.clouds, GAME.width) - 50;
     const y = 62 + (i % 3) * 36;
     ctx.fillStyle = palette.cloud;
     ctx.beginPath();
@@ -41,13 +41,13 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.fill();
   }
 
-  drawAmbientEffects(ctx, game, visualTick);
+  if (!reduceMotion) drawAmbientEffects(ctx, game, visualTick);
 
   ctx.fillStyle = palette.farHill;
   ctx.beginPath();
   ctx.moveTo(0, GAME.groundY);
   for (let x = 0; x <= GAME.width + 24; x += 16) {
-    ctx.lineTo(x, GAME.groundY - 70 + Math.sin((x + game.px * 0.12) / 86) * 21 + Math.cos((x + game.px * 0.08) / 41) * 9);
+    ctx.lineTo(x, GAME.groundY - 70 + Math.sin((x + game.px * PARALLAX_DEPTH.farHill) / 86) * 21 + Math.cos((x + game.px * 0.08) / 41) * 9);
   }
   ctx.lineTo(GAME.width, GAME.groundY);
   ctx.fill();
@@ -56,13 +56,13 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   ctx.beginPath();
   ctx.moveTo(0, GAME.groundY);
   for (let x = 0; x <= GAME.width + 16; x += 12) {
-    ctx.lineTo(x, GAME.groundY - 33 + Math.sin((x + game.px * 0.24) / 77) * 14);
+    ctx.lineTo(x, GAME.groundY - 33 + Math.sin((x + game.px * PARALLAX_DEPTH.nearHill) / 77) * 14);
   }
   ctx.lineTo(GAME.width, GAME.groundY);
   ctx.fill();
 
   for (let i = 0; i < 8; i++) {
-    const x = layerX(i, game.px, 126, 0.28, GAME.width);
+    const x = layerX(i, game.px, 126, PARALLAX_DEPTH.trees, GAME.width);
     const height = 27 + (i % 4) * 13;
     const base = GAME.groundY - 6;
     ctx.fillStyle = palette.trunk;
@@ -74,15 +74,23 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.lineTo(x + 17, base - height + 19);
     ctx.closePath();
     ctx.fill();
+    ctx.strokeStyle = palette.treeLight;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(x, base - height - 7);
+    ctx.lineTo(x - 10, base - height + 13);
+    ctx.stroke();
   }
 
   ctx.fillStyle = palette.ground;
   ctx.fillRect(0, GAME.groundY, GAME.width, GAME.groundHeight);
   ctx.fillStyle = palette.grass;
   ctx.fillRect(0, GAME.groundY, GAME.width, 12);
+  ctx.fillStyle = palette.groundRim;
+  ctx.fillRect(0, GAME.groundY + 11, GAME.width, 3);
   ctx.fillStyle = palette.groundTile;
   for (let i = 0; i < 17; i++) {
-    const x = layerX(i, game.px, 52, 1, GAME.width) - 14;
+    const x = layerX(i, game.px, 52, PARALLAX_DEPTH.ground, GAME.width) - 14;
     ctx.fillRect(x, GAME.groundY + 23, 31, 5);
     ctx.fillRect(x + 20, GAME.groundY + 50, 25, 5);
   }
@@ -104,7 +112,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     ctx.fillText("2つ!", x + 2, GAME.groundY - GAME.ghostHeight - GAME.ghostClearance - 12);
   }
 
-  drawSpeedTrail(ctx, game, visualTick, idle);
+  if (!reduceMotion) drawSpeedTrail(ctx, game, visualTick, idle);
   const pose: PlayerPose = getPlayerPose(game);
   drawAnimatedCharacter(ctx, game, visualTick, idle, failureProgress);
 
