@@ -118,6 +118,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         doors.set(obj.id, obj.position);
       }
       if (obj.type === "switch") {
+        if (obj.trap !== undefined && typeof obj.trap !== "boolean") issues.push({ path: path + ".trap", message: "trap must be boolean" });
         if (typeof obj.id !== "string" || !obj.id.trim()) issues.push({ path: path + ".id", message: "switch ID required" });
         if (typeof obj.targetDoorId !== "string" || !obj.targetDoorId.trim()) issues.push({ path: path + ".targetDoorId", message: "target door required" });
         if (isNonnegativeFinite(obj.position) && typeof obj.targetDoorId === "string") {

@@ -63,3 +63,40 @@ test("まえとぶの成功例と失敗例を明示する", () => {
   assert.equal(play(easy, "まえとぶ").status, "cleared");
   assert.equal(play(load("speed-risk"), "まえとぶ").status, "failed");
 });
+
+const repeatSource = "3かいくりかえす\nこいんとる\nすいっちおす\nおわり";
+const repeatedSingleSource = Array(3).fill("1かいくりかえす\nこいんとる\nすいっちおす\nおわり").join("\n");
+
+test("experimental sequence stage requires ordered repetitions rather than always-on watchers", () => {
+  const stage = load("repeat-sequence");
+  assert.deepEqual(validateStage(stage.id, stage, true), []);
+  const loop = analyzeProgram(repeatSource);
+  assert.deepEqual(loop.diagnostics, []);
+  assert.deepEqual(loop.program.steps.map((step) => step.op), ["repeat-start", "wait", "wait", "repeat-end"]);
+  const executed = runToCompletion(createGame(stage, loop.program));
+  assert.equal(executed.status, "cleared");
+  assert.equal(executed.cursor, loop.program.steps.length);
+  assert.equal(executed.sequenceConsumed.size, 6);
+  assert.equal(executed.coins.filter((coin) => coin.collected).length, 3);
+  assert.equal(executed.switches.filter((item) => item.activated).length, 3);
+  assert.equal(executed.switches.filter((item) => item.trap && item.activated).length, 0);
+  const expanded = play(stage, repeatedSingleSource);
+  assert.equal(expanded.status, "cleared");
+  assert.equal(expanded.elapsedTicks, executed.elapsedTicks);
+  assert.ok(repeatSource.length < repeatedSingleSource.length);
+});
+
+test("the same prototype rejects indiscriminate watcher rules and incorrect order", () => {
+  const stage = load("repeat-sequence");
+  for (const source of [
+    "こいんとる\nすいっちおす",
+    "3かいくりかえす\nすいっちおす\nこいんとる\nおわり",
+  ]) {
+    const result = play(stage, source);
+    assert.equal(result.status, "failed", source);
+    assert.equal(result.failureReason, "trap", source);
+  }
+  const insufficient = play(stage, "2かいくりかえす\nこいんとる\nすいっちおす\nおわり");
+  assert.equal(insufficient.status, "failed");
+  assert.equal(insufficient.failureReason, "door");
+});
