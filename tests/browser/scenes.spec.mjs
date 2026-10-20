@@ -96,8 +96,23 @@ test("ゲーム中にコードを編集しても開始時のプログラムで�
   await expect(page.getByRole("dialog", { name: "ステージクリア" }).getByText(/4字/).first()).toBeVisible();
   let submittedSource = null;
   await page.route("**/api/results", async (route) => {
-    submittedSource = JSON.parse(route.request().postData() ?? "{}").source;
-    await route.continue();
+    const origin = route.request().headers().origin ?? "*";
+    const headers = {
+      "access-control-allow-origin": origin,
+      "access-control-allow-methods": "POST, OPTIONS",
+      "access-control-allow-headers": "Content-Type",
+    };
+    if (route.request().method() === "OPTIONS") {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    const body = JSON.parse(route.request().postData() ?? "{}");
+    submittedSource = body.source;
+    await route.fulfill({
+      status: 200,
+      headers: { ...headers, "content-type": "application/json" },
+      body: JSON.stringify({ ok: true, nickname: "ゲスト1", runId: body.runId, duplicate: false }),
+    });
   });
   await page.getByRole("button", { name: "きろくを 送る" }).click();
   await expect(page.getByText(/で とうろくできたよ！/)).toBeVisible();
