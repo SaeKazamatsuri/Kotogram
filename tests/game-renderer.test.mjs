@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { createGame } from "../app/game/core.ts";
+import { analyzeProgram } from "../app/language/parser.ts";
 import { renderGameFrame } from "../app/game/renderer.ts";
 import { resolveScenePalette } from "../app/game/scenery.ts";
 
@@ -29,4 +31,22 @@ test("描画処理はGameStateを書き換えない", () => {
   assert.ok(calls.some(([method]) => method === "fillRect"));
   assert.ok(calls.some(([method]) => method === "fillText"));
   assert.equal(JSON.stringify(game, (_key, value) => value instanceof Set ? [...value] : value), before);
+});
+
+test("ステージ8の実行画面にはくりかえしの進行状況を描く", () => {
+  const stage = JSON.parse(readFileSync(new URL("../public/stages/stage-8.json", import.meta.url), "utf8"));
+  const parsed = analyzeProgram("3かいくりかえす\nこいんとる\nすいっちおす\nおわり");
+  assert.deepEqual(parsed.diagnostics, []);
+  const game = createGame(stage, parsed.program);
+  const calls = [];
+  const ctx = new Proxy({}, {
+    get(target, key) {
+      if (key === "createLinearGradient") return () => ({ addColorStop() {} });
+      return target[key] ?? ((...args) => calls.push([key, ...args]));
+    },
+    set(target, key, value) { target[key] = value; return true; },
+  });
+  renderGameFrame(ctx, game, resolveScenePalette("sunset"));
+  assert.ok(calls.some(([method, label]) => method === "fillText" && label === "くりかえし 0 / 3"));
+  assert.ok(calls.some(([method, label]) => method === "fillText" && label === "こいん 0 / 3"));
 });
