@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { formatBestScore } from "~/scoring/display";
+import { classifyStrategy } from "~/scoring/score";
 import type { BestRuns, ScoredRun } from "~/scoring/score";
 import type { MasteryResult } from "~/stage/mastery";
 import RankingPanel from "./RankingPanel.vue";
@@ -78,6 +79,11 @@ function bestScore(kind: "time" | "chars" | "overall") {
             <p v-if="item.value > 1000" class="text-xs font-black text-[#14684e]">1000点こえ！</p>
           </div>
         </div>
+      </div>
+      <div v-if="scores" class="mb-4 rounded-xl border border-[#bfd2dc] bg-[#eef5f7] px-3 py-2 text-sm font-black text-[#243b52]">
+        <template v-if="classifyStrategy(scores) === 'speed'">はやさを いかした攻略！</template>
+        <template v-else-if="classifyStrategy(scores) === 'compact'">みじかいコードの攻略！</template>
+        <template v-else>バランスのよい攻略！</template>
       </div>
       <div v-if="bests?.time || bests?.chars || bests?.overall" class="mb-4 rounded-xl border border-[#bccbd9] bg-[#f0f5f8] p-3 text-sm text-[#172439]">
         <h3 class="mb-2 flex items-center gap-2 font-black"><Icon name="lucide:medal" class="game-icon text-[#14684e]" aria-hidden="true"/> 自分の ベスト</h3>
