@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { validateStageCases } from "../app/stage/validator.ts";
+import { validateStageCases, usesSecretAction } from "../app/stage/validator.ts";
 import { getScoreReference } from "../app/scoring/score.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
 import { createGame, runToCompletion } from "../app/game/core.ts";
@@ -28,8 +28,10 @@ const stages = manifest.stages.map((entry) => {
   const beginner = byRole("beginner");
   const short = byRole("short");
   const fast = byRole("fast");
+  const learning = byRole("learning") ?? beginner;
   const reference = getScoreReference(entry.id, entry.version ?? manifest.version);
-  if (!reference || !beginner || !short || !fast) throw new Error(entry.id + " missing required baseline");
+  if (!reference || !beginner || !learning || !short || !fast) throw new Error(entry.id + " missing required baseline");
+  if (usesSecretAction(learning.source)) throw new Error(entry.id + " learning path uses secret actions");
   const compare = (item) => item && ({
     name: item.name,
     ticks: item.elapsedTicks,
@@ -38,9 +40,20 @@ const stages = manifest.stages.map((entry) => {
     seconds: item.seconds,
   });
   const pace = {
-    walk: replay(stage, "あるく\n" + beginner.source),
-    run: replay(stage, "はしる\n" + beginner.source),
-    sprint: replay(stage, "めっちゃはしる\n" + beginner.source),
+    walk: replay(stage, "あるく\n" + learning.source),
+    run: replay(stage, "はしる\n" + learning.source),
+    sprint: replay(stage, "めっちゃはしる\n" + learning.source),
+  };
+  const secretClears = entries.filter((item) => usesSecretAction(item.source));
+  const secretAdvantage = {
+    faster: secretClears.some((item) => item.elapsedTicks < learning.elapsedTicks),
+    fewerCharacters: secretClears.some((item) => item.characters < learning.characters),
+    betterOverall: secretClears.some((item) => item.product < learning.product),
+  };
+  const knownBest = {
+    time: [...entries].sort((a, b) => a.elapsedTicks - b.elapsedTicks || a.characters - b.characters)[0],
+    characters: [...entries].sort((a, b) => a.characters - b.characters || a.elapsedTicks - b.elapsedTicks)[0],
+    overall: [...entries].sort((a, b) => a.product - b.product || a.elapsedTicks - b.elapsedTicks)[0],
   };
   return {
     id: entry.id,
@@ -50,15 +63,19 @@ const stages = manifest.stages.map((entry) => {
     objectives: stage.learningObjectives ?? [],
     solutions: {
       beginner: compare(beginner),
+      learning: compare(learning),
       short: compare(short),
       fast: compare(fast),
       bestKnown: validation.bestKnown,
+      knownBestByCategory: Object.fromEntries(Object.entries(knownBest).map(([category, item]) => [category, { ...compare(item), source: item.source }])),
     },
     reference: { ticks: reference.timeTicks, characters: reference.characters },
     pace,
+    secretAdvantage,
     flags: {
       beginnerSameAsShort: beginner.source === short.source,
-      beginnerUsesSecret: /すごいじゃんぷ|めっちゃはしる|すごくはしる|すごいとぶ/u.test(beginner.source),
+      beginnerUsesSecret: usesSecretAction(beginner.source),
+      learningUsesSecret: usesSecretAction(learning.source),
       fastUsesSecretSprint: /めっちゃはしる|すごくはしる/u.test(fast.source),
       shorterAlternativeRegistered: short.characters < beginner.characters,
       fasterAlternativeRegistered: fast.elapsedTicks < beginner.elapsedTicks,
@@ -74,14 +91,18 @@ const summary = {
   worldCounts: [1, 2, 3].map((world) => stages.filter((stage) => stage.world === world).length),
   duplicatedBeginnerAndShort: stages.filter((stage) => stage.flags.beginnerSameAsShort).map((stage) => stage.id),
   beginnerWithSecret: stages.filter((stage) => stage.flags.beginnerUsesSecret).map((stage) => stage.id),
+  learningWithSecret: stages.filter((stage) => stage.flags.learningUsesSecret).map((stage) => stage.id),
+  noMeasuredSecretAdvantage: stages.filter((stage) => !Object.values(stage.secretAdvantage).some(Boolean)).map((stage) => stage.id),
+  secretImprovesOverall: stages.filter((stage) => stage.secretAdvantage.betterOverall).map((stage) => stage.id),
   fastWithSecretSprint: stages.filter((stage) => stage.flags.fastUsesSecretSprint).map((stage) => stage.id),
   stagesWithoutShorterRegisteredAlternative: stages.filter((stage) => !stage.flags.shorterAlternativeRegistered).map((stage) => stage.id),
   stagesWithoutFasterRegisteredAlternative: stages.filter((stage) => !stage.flags.fasterAlternativeRegistered).map((stage) => stage.id),
   naiveSprintFailures: stages.filter((stage) => stage.flags.naiveSprintFails).map((stage) => stage.id),
   naiveRunFailures: stages.filter((stage) => stage.flags.naiveRunFails).map((stage) => stage.id),
+  naiveRunSuccesses: stages.filter((stage) => !stage.flags.naiveRunFails).map((stage) => stage.id),
   worldStats: [1, 2, 3].map((world) => {
     const subset = stages.filter((stage) => stage.world === world);
-    return { world, stageCount: subset.length, averageBeginnerTicks: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.ticks, 0) / subset.length), averageBeginnerCharacters: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.characters, 0) / subset.length), naiveSprintFailureCount: subset.filter((stage) => stage.flags.naiveSprintFails).length };
+    return { world, stageCount: subset.length, averageBeginnerTicks: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.ticks, 0) / subset.length), averageBeginnerCharacters: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.learning.characters, 0) / subset.length), naiveSprintFailureCount: subset.filter((stage) => stage.flags.naiveSprintFails).length, naiveRunFailureCount: subset.filter((stage) => stage.flags.naiveRunFails).length, secretImprovesOverallCount: subset.filter((stage) => stage.secretAdvantage.betterOverall).length };
   }),
 };
 
