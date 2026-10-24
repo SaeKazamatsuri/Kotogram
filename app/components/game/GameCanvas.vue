@@ -33,7 +33,7 @@ let previewDrag: { pointerId: number; clientX: number; position: number } | null
 let lastBgmRate = 1;
 const STEP_MS = 1000 / GAME.tickRate;
 
-function draw(visualTick = game.elapsedTicks, failureProgress = 1) {
+function draw(visualTick = props.running ? game.elapsedTicks : Math.floor(lastIdleDraw / STEP_MS), failureProgress = 1) {
   const ctx = canvas.value?.getContext("2d");
   if (!ctx) return;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

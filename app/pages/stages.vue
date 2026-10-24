@@ -162,7 +162,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="scene-enter mx-auto max-w-[1520px] pb-8">
+  <div class="stage-select scene-enter mx-auto w-full max-w-[1520px]">
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
       <NuxtLink to="/" class="game-button game-button--night text-sm">
         <Icon name="lucide:arrow-left" class="game-icon" aria-hidden="true" /> タイトルへ
@@ -301,7 +301,7 @@ onMounted(() => {
         </div>
       </div>
     </template>
-    <div class="mt-5 flex justify-start">
+    <div class="stage-reset mt-5 flex justify-start">
       <button type="button" class="game-button game-button--night text-sm" @click="onReset">
         <Icon name="lucide:refresh-cw" class="game-icon" aria-hidden="true" /> 次の人へ
       </button>
@@ -310,13 +310,16 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.world-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.stage-select { display: flex; flex: none; flex-direction: column; height: calc(100dvh - 2 * clamp(14px, 2.2vw, 32px)); min-height: 0; max-height: calc(100dvh - 2 * clamp(14px, 2.2vw, 32px)); overflow: hidden; }
+.stage-select > .mb-5, .stage-select > .mb-4 { flex-shrink: 0; }
+.stage-reset { flex-shrink: 0; }
+.world-picker { flex-shrink: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
 .world-picker__button { display: flex; flex-direction: column; gap: 3px; align-items: center; justify-content: center; min-height: 70px; padding: 8px; border: 2px solid #8295ab; border-radius: 15px; background: #293c57; color: #eaf2f4; font-weight: 900; }
 .world-picker__button.is-selected { background: #fff2d0; border-color: #f8c76f; color: #263a50; box-shadow: 0 4px 0 #b88353; }
 .world-picker__button:focus-visible { outline: 3px solid #ffe39c; outline-offset: 3px; }
 .world-picker__title { font-size: clamp(13px, 1.7vw, 20px); }
 .world-picker__progress { font-size: 12px; }
-.world-description { margin: 0 0 12px; color: #fff5db; font-size: 14px; font-weight: 800; }
+.world-description { flex-shrink: 0; margin: 0 0 12px; color: #fff5db; font-size: 14px; font-weight: 800; }
 .map-land--world-1 { background: radial-gradient(ellipse at 20% 14%, #ffe0a6 0%, transparent 24%), linear-gradient(110deg, #ffdea5, #e8aa88 50%, #c97598); }
 .map-land--world-1::before { background: radial-gradient(ellipse at 18% 104%, #cb916b 0 20%, transparent 20.5%), radial-gradient(ellipse at 54% 103%, #bc7a72 0 26%, transparent 26.5%), radial-gradient(ellipse at 90% 102%, #a9607c 0 24%, transparent 24.5%); }
 .map-land--world-1 .map-mountain { background: linear-gradient(110deg, #cc8d88 0 50%, #985e79 50%); }
@@ -333,7 +336,10 @@ onMounted(() => {
 .map-land--world-2 .map-trail__road { stroke: #f8dfc6; }
 .map-viewport {
   position: relative;
-  overflow: auto hidden;
+  flex: 1 1 0;
+  height: 0;
+  min-height: 0;
+  overflow: auto;
   border: 4px solid #718fa0;
   border-radius: 28px;
   background: #9ad6c7;
@@ -357,6 +363,9 @@ onMounted(() => {
     linear-gradient(110deg, #b6e9d9 0%, #b5e6d3 25%, #88c7b3 50%, #8abec6 75%, #7facc4 100%);
 }
 .map-land--expanded { height: 760px; }
+@media (min-width: 640px) {
+  .map-land, .map-land--expanded { height: 100%; min-height: 340px; }
+}
 .map-land::before {
   position: absolute;
   z-index: 0;
@@ -538,7 +547,7 @@ onMounted(() => {
   pointer-events: none;
   animation: map-hop 2s ease-in-out infinite;
 }
-.map-controls { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 15px; }
+.map-controls { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 15px; }
 .map-legend { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; color: #f7f5e8; font-size: 14px; font-weight: 800; }
 .map-legend span { display: inline-flex; align-items: center; gap: 4px; }
 .map-legend svg { width: 18px; height: 18px; }
@@ -551,7 +560,7 @@ onMounted(() => {
 @keyframes map-breathe { 50% { box-shadow: 0 0 0 13px #fff4ca57, 0 7px 0 #37515b, 0 0 38px #fff4b8; } }
 @keyframes map-hop { 50% { transform: translateY(-9px) rotate(-6deg); } }
 @media (max-width: 639px) {
-  .map-viewport { overflow: hidden auto; max-height: min(69vh, 700px); border-radius: 22px; }
+  .map-viewport { overflow: hidden auto; max-height: none; border-radius: 22px; }
   .map-land { width: 100%; min-width: 300px; height: var(--map-height, 1400px); background: linear-gradient(180deg, #b6e9d9 0%, #9ccfba 37%, #8ac1b1 60%, #81aebe 100%); }
   .map-land--expanded { height: var(--map-height, 1400px); }
   .map-land::before { background: radial-gradient(ellipse at 35% 18%, #83c39b 0 13%, transparent 14%), radial-gradient(ellipse at 70% 53%, #57a48f 0 20%, transparent 21%), radial-gradient(ellipse at 30% 86%, #528f99 0 18%, transparent 19%); }
@@ -579,6 +588,17 @@ onMounted(() => {
   .map-hero { left: -5px; top: -44px; transform: scale(.8); }
   .map-arrows { display: none; }
   .map-legend { justify-content: center; width: 100%; font-size: 12px; }
+}
+@media (max-height: 680px) {
+  .stage-select > .mb-5 { margin-bottom: 6px; }
+  .stage-select > .mb-4 { margin-bottom: 6px; }
+  .stage-select .game-kicker { display: none; }
+  .world-picker { margin-bottom: 5px; }
+  .world-picker__button { min-height: 54px; }
+  .world-description { margin-bottom: 5px; }
+  .map-controls { margin-top: 6px; }
+  .stage-reset { margin-top: 6px; }
+  .stage-reset .game-button { min-height: 40px; padding-block: 6px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .map-hero, .map-stop.is-current .map-stop__circle, .map-stop.is-celebrating .map-stop__circle, .map-stop.is-celebrating::before { animation: none; }

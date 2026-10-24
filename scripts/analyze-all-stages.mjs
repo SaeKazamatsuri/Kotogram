@@ -1,9 +1,17 @@
 import { readFileSync } from "node:fs";
 import { validateStageCases } from "../app/stage/validator.ts";
 import { getScoreReference } from "../app/scoring/score.ts";
+import { analyzeProgram } from "../app/language/parser.ts";
+import { createGame, runToCompletion } from "../app/game/core.ts";
 
 const load = (path) => JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
 const manifest = load("public/stages/manifest.json");
+function replay(stage, source) {
+  const analysis = analyzeProgram(source);
+  if (analysis.diagnostics.length) return { status: "invalid", ticks: null, reason: "parser" };
+  const result = runToCompletion(createGame(stage, analysis.program), 20000);
+  return { status: result.status, ticks: result.elapsedTicks, reason: result.failureReason ?? null };
+}
 
 const stages = manifest.stages.map((entry) => {
   const stage = load("public/stages/" + entry.id + ".json");
@@ -29,6 +37,11 @@ const stages = manifest.stages.map((entry) => {
     product: item.product,
     seconds: item.seconds,
   });
+  const pace = {
+    walk: replay(stage, "あるく\n" + beginner.source),
+    run: replay(stage, "はしる\n" + beginner.source),
+    sprint: replay(stage, "めっちゃはしる\n" + beginner.source),
+  };
   return {
     id: entry.id,
     stageVersion: entry.version ?? manifest.version,
@@ -42,6 +55,7 @@ const stages = manifest.stages.map((entry) => {
       bestKnown: validation.bestKnown,
     },
     reference: { ticks: reference.timeTicks, characters: reference.characters },
+    pace,
     flags: {
       beginnerSameAsShort: beginner.source === short.source,
       beginnerUsesSecret: /すごいじゃんぷ|めっちゃはしる|すごくはしる|すごいとぶ/u.test(beginner.source),
@@ -49,6 +63,8 @@ const stages = manifest.stages.map((entry) => {
       shorterAlternativeRegistered: short.characters < beginner.characters,
       fasterAlternativeRegistered: fast.elapsedTicks < beginner.elapsedTicks,
       hasRepeat: /くりかえす|くりかえし/u.test(beginner.source),
+      naiveSprintFails: pace.sprint.status !== "cleared",
+      naiveRunFails: pace.run.status !== "cleared",
     },
   };
 });
@@ -61,6 +77,12 @@ const summary = {
   fastWithSecretSprint: stages.filter((stage) => stage.flags.fastUsesSecretSprint).map((stage) => stage.id),
   stagesWithoutShorterRegisteredAlternative: stages.filter((stage) => !stage.flags.shorterAlternativeRegistered).map((stage) => stage.id),
   stagesWithoutFasterRegisteredAlternative: stages.filter((stage) => !stage.flags.fasterAlternativeRegistered).map((stage) => stage.id),
+  naiveSprintFailures: stages.filter((stage) => stage.flags.naiveSprintFails).map((stage) => stage.id),
+  naiveRunFailures: stages.filter((stage) => stage.flags.naiveRunFails).map((stage) => stage.id),
+  worldStats: [1, 2, 3].map((world) => {
+    const subset = stages.filter((stage) => stage.world === world);
+    return { world, stageCount: subset.length, averageBeginnerTicks: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.ticks, 0) / subset.length), averageBeginnerCharacters: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.characters, 0) / subset.length), naiveSprintFailureCount: subset.filter((stage) => stage.flags.naiveSprintFails).length };
+  }),
 };
 
 console.log(JSON.stringify({

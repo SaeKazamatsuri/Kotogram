@@ -20,6 +20,10 @@ test("new stages have reproducible clears and per-stage score baselines", () => 
     assert.equal(report.pass, true, `${index}: ${JSON.stringify(report.cases.filter((entry) => !entry.pass).map((entry) => ({ name: entry.name, errors: entry.errors, diagnostics: entry.diagnostics })))} ${JSON.stringify(report.issues)}`);
     const baseline = getScoreReference(`stage-${index}`, "2026-10-20-r1");
     const beginner = report.cases.find((entry) => entry.role === "beginner");
+    const shorter = report.cases.find((entry) => entry.role === "short");
+    assert.equal(shorter?.outcome, "cleared", `stage-${index}: short program must clear`);
+    assert.ok(shorter.characters < beginner.characters,
+      `stage-${index}: short program must use fewer characters than beginner`);
     assert.equal(baseline.timeTicks, beginner.elapsedTicks);
     assert.equal(baseline.characters, countSourceCharacters(beginner.source));
   }

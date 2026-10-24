@@ -33,10 +33,12 @@ button:disabled { cursor: not-allowed; }
   background: radial-gradient(ellipse at 20% -8%, #354b69 0%, transparent 49%), linear-gradient(155deg, #192844 0%, #131c31 70%);
 }
 .game-scene { width: min(1500px, 100%); margin: 0 auto; padding: clamp(14px, 2.2vw, 32px); }
-html:has(.game-shell--playing), body:has(.game-shell--playing) { height: 100dvh; overflow: hidden; }
-body:has(.game-shell--playing) { min-height: 0; }
-.game-shell--playing { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
-.game-shell--playing .game-scene { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+html:has(.game-shell--playing), body:has(.game-shell--playing),
+html:has(.game-shell--stages), body:has(.game-shell--stages) { height: 100dvh; overflow: hidden; }
+body:has(.game-shell--playing), body:has(.game-shell--stages) { min-height: 0; }
+.game-shell--playing, .game-shell--stages { height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; }
+.game-shell--playing .game-scene, .game-shell--stages .game-scene { display: flex; flex-direction: column; height: 100%; min-height: 0; overflow: hidden; }
+.game-shell--stages .game-scene { position: fixed; inset: 0; width: min(1500px, 100%); height: 100dvh; max-height: 100dvh; }
 * { scrollbar-width: thin; scrollbar-color: #799eac #17243b; }
 *::-webkit-scrollbar { width: 10px; height: 10px; }
 *::-webkit-scrollbar-track { background: #17243b; border-radius: 10px; }

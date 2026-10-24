@@ -31,7 +31,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="game-shell" :class="{ 'game-shell--playing': route.path.startsWith('/play/') }">
+  <div class="game-shell" :class="{ 'game-shell--playing': route.path.startsWith('/play/'), 'game-shell--stages': route.path === '/stages' }">
     <main id="main-content" class="game-scene">
       <slot />
     </main>

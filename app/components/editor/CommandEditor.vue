@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { analyzeProgram, CONTROL_WORDS, type Vocabulary } from "~/language/parser";
+import { analyzeProgram, type Vocabulary } from "~/language/parser";
 import { countSourceCharacters } from "~/scoring/score";
 import LineGutter from "./LineGutter.vue";
 import KanaKeyboard from "./KanaKeyboard.vue";
@@ -21,16 +21,11 @@ const actionNames: Record<string, string> = {
 const conditionNames: Record<string, string> = {
   wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ",
 };
-const grammarNames: Record<string, string> = {
-  repeat: "くりかえし", end: "終わり", if: "もし", then: "条件のつなぎ", or: "または", count: "回数", particle: "つなぎの言葉",
-};
-const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key !== "powerJump" && key !== "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
-const specialEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key === "powerJump" || key === "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
-const conditionEntries = computed(() => Object.entries(props.dictionary?.conditions ?? {}).map(([key, words]) => ({ name: conditionNames[key] ?? key, words })));
-const grammarEntries = Object.entries(CONTROL_WORDS.reduce<Record<string, string[]>>((groups, word) => {
-  (groups[word.kind] ??= []).push(word.raw);
-  return groups;
-}, {})).map(([kind, words]) => ({ name: grammarNames[kind] ?? kind, words }));
+const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {})
+  .filter(([key]) => key !== "powerJump" && key !== "sprint")
+  .map(([key, words]) => ({ name: actionNames[key] ?? key, word: words[0] ?? "" })));
+const conditionEntries = computed(() => Object.entries(props.dictionary?.conditions ?? {})
+  .map(([key, words]) => ({ name: conditionNames[key] ?? key, word: words[0] ?? "" })));
 const history = new EditorHistory();
 const historyRevision = ref(0);
 
@@ -177,28 +172,16 @@ defineExpose({ getText });
         <section>
           <h3 class="mb-2 text-sm font-black">何を見つける？</h3>
           <ul class="space-y-1 text-sm">
-            <li v-for="entry in conditionEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
+            <li v-for="entry in conditionEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.word }}</li>
           </ul>
         </section>
         <section>
           <h3 class="mb-2 text-sm font-black">どう動く？</h3>
           <ul class="space-y-1 text-sm">
-            <li v-for="entry in actionEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
+            <li v-for="entry in actionEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.word }}</li>
           </ul>
         </section>
       </div>
-      <details class="mt-3 border-t border-[#b4c4c3] pt-2">
-        <summary class="cursor-pointer text-sm font-black">文の組み立て・つなぎ言葉</summary>
-        <ul class="mt-2 grid gap-1 text-sm sm:grid-cols-2">
-          <li v-for="entry in grammarEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
-        </ul>
-      </details>
-      <details v-if="specialEntries.length" class="mt-2 border-t border-[#b4c4c3] pt-2">
-        <summary class="cursor-pointer text-sm font-black">ひみつの動き</summary>
-        <ul class="mt-2 space-y-1 text-sm">
-          <li v-for="entry in specialEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
-        </ul>
-      </details>
     </div>
     <div class="flex min-h-[130px] min-w-0 flex-1 overflow-hidden bg-[#fffaf1]">
       <LineGutter
@@ -219,7 +202,7 @@ defineExpose({ getText });
         @input="onInput"
         @compositionstart="composing = true"
         @compositionend="onCompositionEnd"
-        placeholder="かべがまえにあったらじゃんぷをする"
+        placeholder="かべをまえにみつけたらじゃんぷする"
         @scroll="onScroll"
       />
     </div>
