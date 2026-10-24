@@ -23,7 +23,7 @@ const conditionNames: Record<string, string> = {
   wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ",
 };
 const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {})
-  .filter(([key]) => key !== "powerJump" && key !== "sprint")
+  .filter(([key]) => key !== "powerJump" && key !== "sprint" && key !== "run")
   .map(([key, words]) => ({ name: actionNames[key] ?? key, word: words[0] ?? "" })));
 const conditionEntries = computed(() => Object.entries(props.dictionary?.conditions ?? {})
   .map(([key, words]) => ({ name: conditionNames[key] ?? key, word: words[0] ?? "" })));
