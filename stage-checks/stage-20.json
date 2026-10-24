@@ -11,7 +11,7 @@
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべとぶ\nおばけしゃがむ\n1かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
+      "source": "かべとぶ\nてきかがむ\n1かいくりかえ\nぼたんみおくる\nぼたんおす\nおわり",
       "expect": "cleared"
     },
     {
