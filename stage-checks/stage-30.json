@@ -6,19 +6,22 @@
       "name": "beginner",
       "role": "beginner",
       "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 1412
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべ1かいすごいとぶ\nあなとぶ\nてきかがむ\n3かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 1412
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 807
     },
     {
       "name": "missing-actions",
@@ -42,7 +45,15 @@
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 1412
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 807
     }
   ]
 }
