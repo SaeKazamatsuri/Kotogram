@@ -44,13 +44,6 @@
       "source": "はしる\nかべとあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
       "expectedTicks": 642
-    },
-    {
-      "name": "overall-known-best",
-      "role": "overall",
-      "source": "はしる\nかべとあなとぶ\nおばけしゃがむ",
-      "expect": "cleared",
-      "expectedTicks": 642
     }
   ]
 }
