@@ -5,7 +5,7 @@ export const STAGE_WORLDS = [
 ] as const;
 
 export function worldIndexForStage(stageId: string | undefined): number {
-  const number = Number(stageId?.match(/^stage-(\\d+)$/)?.[1]);
+  const number = Number(stageId?.match(/^stage-([0-9]+)$/)?.[1]);
   if (!Number.isInteger(number) || number < 1) return 0;
   return Math.min(STAGE_WORLDS.length - 1, Math.floor((number - 1) / 10));
 }
