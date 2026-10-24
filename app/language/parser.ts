@@ -277,7 +277,7 @@ function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement 
   }
   const conditions = parseConditions(prefix, diagnostics);
   if (!conditions) return null;
-  if (actionToken.value === "skip" && (conditions.length !== 1 || !(conditions[0] === "switch" || conditions[0].startsWith("switch:")))) {
+  if (actionToken.value === "skip" && (conditions.length === 0 || !conditions.every((condition) => condition === "switch" || condition.startsWith("switch:")))) {
     diagnostics.push(error("unsupported", "みおくる のは『すいっち』だけだよ", actionToken));
     return null;
   }
