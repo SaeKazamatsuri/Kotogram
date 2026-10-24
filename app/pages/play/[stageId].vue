@@ -8,7 +8,7 @@ import StageFailModal from "~/components/game/StageFailModal.vue";
 import { calculateScores, countSourceCharacters, getScoreReference, LANGUAGE_VERSION, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
-import { playSe, setBgm, unlockAudio } from "~/game/audio";
+import { playSe, setBgm, stageBgmName, unlockAudio } from "~/game/audio";
 import type { GameProgram } from "~/game/core";
 import type { SourceMap } from "~/language/parser";
 import type { SustainedHighlight } from "~/game/action-highlights";
@@ -100,13 +100,13 @@ function resolveHint(reason: FailReason): string {
 function closeFail() {
   failed.value = false;
   failInfo.value = null;
-  setBgm("title_loop");
+  setBgm(stageBgmName(stageId.value, "edit"));
   focusSmallScreenPanel(editorPanel.value);
 }
 
 function closeClear() {
   cleared.value = false;
-  setBgm("title_loop");
+  setBgm(stageBgmName(stageId.value, "edit"));
   focusSmallScreenPanel(editorPanel.value);
 }
 
@@ -134,7 +134,7 @@ async function loadCurrentStage() {
   savedName.value = "";
   saveError.value = "";
   pendingRunId = "";
-  setBgm("title_loop");
+  setBgm(stageBgmName(stageId.value, "edit"));
   try {
     const manifest = await getManifest();
     if (request !== loadRequest) return;
@@ -176,7 +176,7 @@ function onRun() {
     return;
   }
   unlockAudio();
-  setBgm("game_loop");
+  setBgm(stageBgmName(stageId.value, "run"));
   playSe("start");
   sessionGeneration++;
   runningSource.value = editorRef.value?.getText() ?? editorLines.value.join("\n");
