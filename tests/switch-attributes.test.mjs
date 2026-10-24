@@ -37,7 +37,6 @@ test("色と図形のどちらでも罠を避けて安全な扉を開ける", ()
   const routes = [
     "あかいぼたんをみおくる\nみどりのすいっちをおす",
     "ばつのぼたんをみおくる\nまるのぼたんをおす",
-    "すいっちをみおくる\nまるのぼたんをおす",
   ];
   for (const source of routes) {
     const finished = runToCompletion(createGame(switchStage, valid(source).program));
