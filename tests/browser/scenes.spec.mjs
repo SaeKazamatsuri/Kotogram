@@ -74,7 +74,7 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
 test("エディターの例文と未対応の言葉を正しく案内する", async ({ page }) => {
   await page.goto("/play/stage-1");
   const editor = page.getByRole("textbox", { name: "コードを書く" });
-  const example = "かべがまえにあったらじゃんぷをする";
+  const example = "かべをまえにみつけたらじゃんぷする";
   await expect(editor).toHaveAttribute("placeholder", example);
   await editor.fill("かべとぶ\\nあなとぶ\\nおばけよける".replaceAll("\\n", "\n"));
   await expect(page.getByRole("alert")).toContainText("『よける』");
@@ -412,8 +412,9 @@ test("編集中は辞書を表示でき、キャンバスをドラッグして�
   const guide = page.getByRole("region", { name: "使える言葉の辞書" });
   await expect(guide).toContainText("じゃんぷ");
   await expect(guide).toContainText("かべ");
-  await guide.getByText("ひみつの動き").click();
-  await expect(guide).toContainText("めっちゃはしる");
+  await expect(guide).not.toContainText("めっちゃはしる");
+  await expect(guide).not.toContainText("すごいじゃんぷ");
+  await expect(guide).not.toContainText("はねる");
 
   const canvas = page.locator(".game-playview canvas");
   await expect(canvas).toBeVisible();
@@ -428,4 +429,38 @@ test("編集中は辞書を表示でき、キャンバスをドラッグして�
   const after = await canvas.evaluate((element) => element.toDataURL());
   expect(after).not.toEqual(before);
   await expect(page.getByText("ドラッグで先を見る")).toBeVisible();
+});
+
+test("参照情報は専用URLだけで開き、全語彙と開発情報を確認できる", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  await expect(page.locator('a[href="/reference"]')).toHaveCount(0);
+  await page.goto("/reference");
+  await expect(page.getByRole("heading", { name: "ことグラム 参照情報" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "パーサーの言葉辞書（全表記）" })).toBeVisible();
+  await expect(page.getByText("めっちゃはしる", { exact: false })).toBeVisible();
+  await expect(page.getByText("はねる", { exact: false })).toBeVisible();
+  await expect(page.getByText("stage-30", { exact: false })).toBeVisible();
+  await expect(page.locator('meta[name="robots"]')).toHaveAttribute("content", "noindex, nofollow, noarchive");
+});
+
+test("マップの両端は看板が切れず、画面全体は縦にスクロールしない", async ({ page }) => {
+  await page.goto("/stages");
+  const stops = page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem");
+  await expect(stops).toHaveCount(10);
+  for (const name of ["こもれびの森", "夕やけの谷", "星あかりの国"]) {
+    await page.getByRole("button", { name: new RegExp(name) }).click();
+    const map = await page.locator(".map-land").boundingBox();
+    for (const stop of [stops.first(), stops.last()]) {
+      const sign = await stop.locator(".map-stop__sign").boundingBox();
+      expect(sign.x).toBeGreaterThanOrEqual(map.x + 2);
+      expect(sign.x + sign.width).toBeLessThanOrEqual(map.x + map.width - 2);
+    }
+    const overflow = await page.evaluate(() => ({
+      height: document.documentElement.scrollHeight,
+      viewport: window.innerHeight,
+      body: document.body.scrollHeight,
+    }));
+    expect(overflow.height).toBeLessThanOrEqual(overflow.viewport + 3);
+    expect(overflow.body).toBeLessThanOrEqual(overflow.viewport + 3);
+  }
 });
