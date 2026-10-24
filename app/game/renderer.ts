@@ -65,21 +65,70 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
     const x = layerX(i, game.px, 126, PARALLAX_DEPTH.trees, GAME.width);
     const height = 27 + (i % 4) * 13;
     const base = GAME.groundY - 6;
-    ctx.fillStyle = palette.trunk;
-    ctx.fillRect(x - 3, base - height + 14, 7, height);
-    ctx.fillStyle = palette.trees;
-    ctx.beginPath();
-    ctx.moveTo(x, base - height - 14);
-    ctx.lineTo(x - 17, base - height + 19);
-    ctx.lineTo(x + 17, base - height + 19);
-    ctx.closePath();
-    ctx.fill();
-    ctx.strokeStyle = palette.treeLight;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x, base - height - 7);
-    ctx.lineTo(x - 10, base - height + 13);
-    ctx.stroke();
+
+    if (palette.biome === "canyon") {
+      ctx.fillStyle = palette.trunk;
+      ctx.beginPath();
+      ctx.moveTo(x - 26, base);
+      ctx.lineTo(x - 22, base - height + 16);
+      ctx.lineTo(x - 17, base - height + 16);
+      ctx.lineTo(x - 14, base - height - 1);
+      ctx.lineTo(x + 12, base - height - 1);
+      ctx.lineTo(x + 17, base - height + 16);
+      ctx.lineTo(x + 22, base - height + 16);
+      ctx.lineTo(x + 26, base);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = palette.treeLight;
+      ctx.fillRect(x - 15, base - height + 14, 26, 3);
+      ctx.fillRect(x - 20, base - 15, 40, 3);
+      if (i % 2 === 0) {
+        ctx.fillStyle = palette.trees;
+        ctx.fillRect(x + 31, base - 30, 7, 30);
+        ctx.fillRect(x + 23, base - 19, 11, 6);
+        ctx.fillRect(x + 21, base - 26, 6, 13);
+        ctx.fillRect(x + 36, base - 24, 10, 6);
+        ctx.fillRect(x + 43, base - 31, 6, 13);
+      }
+    } else if (palette.biome === "starlight") {
+      ctx.save();
+      ctx.shadowColor = palette.treeLight;
+      ctx.shadowBlur = 9;
+      ctx.fillStyle = palette.trees;
+      ctx.beginPath();
+      ctx.moveTo(x - 18, base);
+      ctx.lineTo(x - 10, base - height * .62);
+      ctx.lineTo(x, base - height - 28);
+      ctx.lineTo(x + 15, base - height * .50);
+      ctx.lineTo(x + 19, base);
+      ctx.closePath();
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = palette.treeLight;
+      ctx.beginPath();
+      ctx.moveTo(x, base - height - 23);
+      ctx.lineTo(x + 7, base - height * .5);
+      ctx.lineTo(x, base - 7);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    } else {
+      ctx.fillStyle = palette.trunk;
+      ctx.fillRect(x - 3, base - height + 14, 7, height);
+      ctx.fillStyle = palette.trees;
+      ctx.beginPath();
+      ctx.moveTo(x, base - height - 14);
+      ctx.lineTo(x - 17, base - height + 19);
+      ctx.lineTo(x + 17, base - height + 19);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = palette.treeLight;
+      for (const [offsetX, offsetY, radius] of [[-12, 3, 12], [9, -5, 15], [0, -18, 11]]) {
+        ctx.beginPath();
+        ctx.arc(x + offsetX, base - height + offsetY, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
   }
 
   ctx.fillStyle = palette.ground;
