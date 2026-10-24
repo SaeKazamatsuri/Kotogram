@@ -10,7 +10,7 @@ test("ステージ画面の描画が見え、画面の横はみ出しがない",
   await page.getByRole("link", { name: /かべで ジャンプ/ }).click();
   const canvas = page.locator("canvas");
   await expect(canvas).toBeVisible();
-  const image = await canvas.evaluate((element) => {
+  const sampleColors = () => canvas.evaluate((element) => {
     const ctx = element.getContext("2d");
     if (!ctx) return null;
     const { width, height } = element;
@@ -24,6 +24,8 @@ test("ステージ画面の描画が見え、画面の横はみ出しがない",
     }
     return { width, height, colorCount: colors.size };
   });
+  await expect.poll(async () => (await sampleColors())?.colorCount ?? 0).toBeGreaterThan(6);
+  const image = await sampleColors();
   expect(image).not.toBeNull();
   expect(image.width).toBeGreaterThan(0);
   expect(image.height).toBeGreaterThan(0);
