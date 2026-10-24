@@ -5,6 +5,7 @@ import type { FailPayload } from "~/types/game";
 import { GAME, createReadyGame, startGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
 import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
 import { resolveScenePalette } from "~/game/scenery";
+import { worldPaletteForStage } from "~/stage/world-map";
 import { renderGameFrame } from "~/game/renderer";
 import { failureAnimationDuration } from "~/game/character";
 import { gameAudioEvents, snapshotGameAudio } from "~/game/audio-events";
@@ -37,7 +38,7 @@ function draw(visualTick = game.elapsedTicks, failureProgress = 1) {
   if (!ctx) return;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const view = !props.running && previewX > 0 ? { ...game, px: previewX } : game;
-  renderGameFrame(ctx, view, resolveScenePalette(props.stage.meta?.bg), visualTick, !props.running, failureProgress, reducedMotion);
+  renderGameFrame(ctx, view, resolveScenePalette(props.stage.id ? worldPaletteForStage(props.stage.id) : props.stage.meta?.bg), visualTick, !props.running, failureProgress, reducedMotion);
 }
 
 function stop() {
