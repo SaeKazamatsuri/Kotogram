@@ -27,9 +27,10 @@ const grammarNames: Record<string, string> = {
 const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key !== "powerJump" && key !== "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
 const specialEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key === "powerJump" || key === "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
 const conditionEntries = computed(() => Object.entries(props.dictionary?.conditions ?? {}).map(([key, words]) => ({ name: conditionNames[key] ?? key, words })));
-const grammarEntries = Object.entries(Object.groupBy(CONTROL_WORDS, (word) => word.kind)).map(([kind, words]) => ({
-  name: grammarNames[kind] ?? kind, words: (words ?? []).map((word) => word.raw),
-}));
+const grammarEntries = Object.entries(CONTROL_WORDS.reduce<Record<string, string[]>>((groups, word) => {
+  (groups[word.kind] ??= []).push(word.raw);
+  return groups;
+}, {})).map(([kind, words]) => ({ name: grammarNames[kind] ?? kind, words }));
 const history = new EditorHistory();
 const historyRevision = ref(0);
 
