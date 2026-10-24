@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { analyzeProgram, type Vocabulary } from "~/language/parser";
+import type { SustainedHighlight } from "~/game/action-highlights";
 import { countSourceCharacters } from "~/scoring/score";
 import LineGutter from "./LineGutter.vue";
 import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
 
-const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
+const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
 const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
@@ -203,6 +204,7 @@ defineExpose({ getText });
       <LineGutter
         :states="lineStates"
         :active-lines="activeLines"
+        :sustained-lines="sustainedLines"
         :waiting-line="waitingLine"
         :repeat-line="repeatLine"
         :repeat-progress="repeatProgress"
@@ -216,7 +218,7 @@ defineExpose({ getText });
         <div v-if="running" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
           <div :style="{ paddingTop: taPaddingTop + 'px', transform: 'translateY(-' + taScrollTop + 'px)' }">
             <div v-for="(_, index) in lineArray" :key="index" :style="{ height: taLineHeight + 'px' }"
-              :class="activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : ''" />
+              :class="activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : ''" />
           </div>
         </div>
       <textarea
