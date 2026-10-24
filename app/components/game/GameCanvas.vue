@@ -40,7 +40,12 @@ function emitTrace() {
   const active = [...highlightedUntil].filter(([, until]) => until >= game.elapsedTicks).map(([line]) => line).sort((a, b) => a - b);
   const step = game.steps[game.cursor];
   const waiting = step?.op === "wait" || step?.op === "action" ? props.sourceMap?.steps[game.cursor] ?? null : null;
-  const repeat = game.loops.length ? props.sourceMap?.steps[game.loops.at(-1)!.start] ?? null : null;
+  const boundedWatcher = game.program.findIndex((rule, index) =>
+    rule.maxFires !== undefined && game.fired[index]!.size < rule.maxFires
+      && props.sourceMap?.watcherLoops[index] != null);
+  const repeat = game.loops.length
+    ? props.sourceMap?.steps[game.loops.at(-1)!.start] ?? null
+    : boundedWatcher >= 0 ? props.sourceMap?.watcherLoops[boundedWatcher] ?? null : null;
   const payload = { active, waiting, repeat };
   const signature = JSON.stringify(payload);
   if (signature !== lastTrace) { lastTrace = signature; emit("trace", payload); }
