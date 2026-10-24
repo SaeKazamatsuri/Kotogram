@@ -1,3 +1,5 @@
+import { canPlayStage, type ProgressionStage } from "./progression.ts";
+
 export const STAGE_WORLDS = [
   { title: "こもれびの森", start: 1, end: 10, subtitle: "はじめての ことばのぼうけん" },
   { title: "夕やけの谷", start: 11, end: 20, subtitle: "はやさと ちえの ぼうけん" },
@@ -14,7 +16,7 @@ export function worldPaletteForStage(stageId: string | undefined): "day" | "suns
   return (["day", "sunset", "twilight"] as const)[worldIndexForStage(stageId)]!;
 }
 
-import { canPlayStage, type ProgressionStage } from "./progression.ts";
+
 
 export type WorldMapPosition = {
   x: number;
