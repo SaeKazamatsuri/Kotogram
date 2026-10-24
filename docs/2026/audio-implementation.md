@@ -5,8 +5,10 @@
 ## BGM
 
 - `title_adventure`: タイトル専用に新しく作曲した17.14秒のオリジナルループ（C–G–Am–F–C–Em–F–G、112 BPM）。32 kHzのPCM WAVを`public/audio/bgm/title_adventure.wav` に収録し、`scripts/generate_title_adventure.mjs` で同一音源を再生成できる
-- `title_loop`: ステージ選択、コード編集
-- `game_loop`: プログラムの実行中
+- `title_loop`: ステージ選択と、ステージ別音源が読み込めない場合の編集BGM
+- `game_loop`: ステージ別音源が読み込めない場合の実行BGM
+- `stage-1-edit`〜`stage-30-edit`: 30ステージそれぞれのコード編集専用BGM（ゆったりした編曲）
+- `stage-1-run`〜`stage-30-run`: 同じステージの旋律を使ったゲーム実行専用BGM（速めの編曲）
 - `result_loop`: 失敗画面
 - `clear_loop`: ステージクリア専用のオリジナル勝利BGM。128 BPM・7.5秒の4小節ループ。`app/game/celebration-music.ts` がブラウザ上でWAVを生成して再生する
 
@@ -38,3 +40,28 @@ uv run --with numpy==2.3.5 --with scipy==1.17.0 --with soundfile==0.13.1 python 
 - 音源生成はGitHub Actionsの `build-audio` でMP3、OGG、タイトルWAVを再書き出してコミットする。音源のコミットとテスト通過後にマージできる。
 - 1.0／1.3／1.75倍の再生、操作SEの聞こえ方、BGMの重なり、ミュート復帰および会場音量は実機で試聴し、必要があればアレンジを再調整する。
 - 別々の世界へ完全に異なる楽曲を割り当てる案は、ダウンロード量・BGM速度連動・曲間遷移を含め別工程で評価する。
+
+## 30ステージごとの専用BGM
+
+`scripts/generate_stage_music.py` で、各ステージの和音進行と8小節の主旋律を固定シードから作る。30ステージはそれぞれ異なる音楽データを持つ。同じステージの `edit` と `run` は主旋律を共有するが、テンポ・音色・ドラムと伴奏密度を変えている。森・谷・星の国では使用する和声進行と基準テンポも異なる。
+
+- 編集中：落ち着いた鍵盤、弦と木管、軽いリズム。作業に集中できる音量。
+- 実行中：同じ動機を速いテンポとベース・打楽器で演奏。1.0／1.3／1.75倍のプレイヤー速度との連動を維持。
+- クリア・失敗：従来のファンファーレ／リザルトBGMに切り替える。モーダルを閉じると編集BGMへ戻る。
+- 音楽素材は `public/audio/bgm/stages/stage-<番号>-<edit|run>.<ogg|mp3>` の120ファイル。ステージに入ったとき必要な1曲だけを読み込み、ほかのステージの曲をまとめて転送しない。
+- 再生できないステージ別ファイルは、従来の編集BGM／実行BGMへフォールバックする。
+- 音楽制作はスコア・ゲーム物理に影響させず、ステージの公開バージョンも変更しない。
+
+### 再生成
+
+全ステージ曲の生成は次のコマンド。
+
+```powershell
+uv run --with numpy==2.3.5 --with scipy==1.17.0 --with soundfile==0.13.1 python scripts/generate_stage_music.py
+```
+
+ステージ単位の音楽プレビュー生成は `python scripts/generate_stage_music.py --stage 1` のように行う。GitHub Actions の音源ワークフローは全30ステージの編集・実行用120ファイルを生成してコミットする。
+
+### 音声品質ゲート
+
+各曲はピーク上限−3.5 dBFS、目標RMS−20.5 dBFSでノーマライズする。CIで全60曲・OGG/MP3両形式が生成され、60のOGGが互いに異なり、実行時BGMのみ速度連動することを確認する。実機では特に曲間切り替えの唐突さ、ループ継ぎ目、SEの聞こえ方、会場での音量を確認する。
