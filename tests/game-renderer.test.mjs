@@ -50,3 +50,23 @@ test("ステージ8の実行画面にはくりかえしの進行状況を描く"
   assert.ok(calls.some(([method, label]) => method === "fillText" && label === "くりかえし 0 / 3"));
   assert.ok(calls.some(([method, label]) => method === "fillText" && label === "こいん 0 / 3"));
 });
+
+test("idle preview clouds keep stable coordinates across clock changes", () => {
+  const game = createGame({ goal: 2300, objects: [{ type: "wall", position: 600 }] });
+  function clouds(view, tick, idle) {
+    const ellipses = [];
+    const ctx = new Proxy({}, {
+      get(target, key) {
+        if (key === "createLinearGradient") return () => ({ addColorStop() {} });
+        if (key === "ellipse") return (...args) => ellipses.push(args);
+        return target[key] ?? (() => {});
+      },
+      set(target, key, value) { target[key] = value; return true; },
+    });
+    renderGameFrame(ctx, view, resolveScenePalette("day"), tick, idle);
+    return ellipses.slice(0, 18);
+  }
+  assert.deepEqual(clouds(game, 20, true), clouds(game, 5000, true));
+  assert.notDeepEqual(clouds(game, 20, false), clouds(game, 5000, false));
+  assert.notDeepEqual(clouds(game, 20, true), clouds({ ...game, px: game.px + 300 }, 20, true));
+});
