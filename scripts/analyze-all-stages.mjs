@@ -6,6 +6,11 @@ import { createGame, runToCompletion } from "../app/game/core.ts";
 
 const load = (path) => JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
 const manifest = load("public/stages/manifest.json");
+function withInitialPace(source, pace) {
+  const lines = source.split("\n");
+  while (["あるく", "はしる", "めっちゃはしる", "すごくはしる"].includes(lines[0])) lines.shift();
+  return pace + "\n" + lines.join("\n");
+}
 function replay(stage, source) {
   const analysis = analyzeProgram(source);
   if (analysis.diagnostics.length) return { status: "invalid", ticks: null, reason: "parser" };
@@ -40,9 +45,9 @@ const stages = manifest.stages.map((entry) => {
     seconds: item.seconds,
   });
   const pace = {
-    walk: replay(stage, "あるく\n" + learning.source),
-    run: replay(stage, "はしる\n" + learning.source),
-    sprint: replay(stage, "めっちゃはしる\n" + learning.source),
+    walk: replay(stage, withInitialPace(learning.source, "あるく")),
+    run: replay(stage, withInitialPace(learning.source, "はしる")),
+    sprint: replay(stage, withInitialPace(learning.source, "めっちゃはしる")),
   };
   const secretClears = entries.filter((item) => usesSecretAction(item.source));
   const secretAdvantage = {
