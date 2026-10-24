@@ -40,7 +40,7 @@
     },
     {
       "name": "ordinary-actions-without-secret-command",
-      "role": "regression",
+      "role": "learning",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared"
     }
