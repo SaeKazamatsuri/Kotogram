@@ -31,7 +31,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   }
 
   for (let i = 0; i < 6; i++) {
-    const x = layerX(i, game.px + (reduceMotion ? 0 : visualTick * 0.25), 172, PARALLAX_DEPTH.clouds, GAME.width) - 50;
+    const x = layerX(i, game.px + (reduceMotion || idle ? 0 : visualTick * 0.25), 172, PARALLAX_DEPTH.clouds, GAME.width) - 50;
     const y = 62 + (i % 3) * 36;
     ctx.fillStyle = palette.cloud;
     ctx.beginPath();
