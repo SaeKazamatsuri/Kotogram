@@ -51,6 +51,13 @@
       "source": "はしる\nかべとぶ\nおばけしゃがむ",
       "expect": "cleared",
       "expectedTicks": 620
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "はしる\nかべとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 620
     }
   ]
 }
