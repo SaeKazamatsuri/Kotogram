@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { analyzeProgram, type Vocabulary } from "~/language/parser";
+import { analyzeProgram, CONTROL_WORDS, type Vocabulary } from "~/language/parser";
 import { countSourceCharacters } from "~/scoring/score";
 import LineGutter from "./LineGutter.vue";
 import KanaKeyboard from "./KanaKeyboard.vue";
@@ -13,6 +13,24 @@ const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const composing = ref(false);
 const keyboardVisible = ref(false);
+const dictionaryOpen = ref(false);
+const actionNames: Record<string, string> = {
+  jump: "ジャンプ", powerJump: "すごいジャンプ", crouch: "しゃがむ", collect: "取る",
+  run: "走る", sprint: "めっちゃ走る", walk: "歩く", press: "押す", skip: "見送る",
+};
+const conditionNames: Record<string, string> = {
+  wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ",
+};
+const grammarNames: Record<string, string> = {
+  repeat: "くりかえし", end: "終わり", if: "もし", then: "条件のつなぎ", or: "または", count: "回数", particle: "つなぎの言葉",
+};
+const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key !== "powerJump" && key !== "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
+const specialEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key === "powerJump" || key === "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
+const conditionEntries = computed(() => Object.entries(props.dictionary?.conditions ?? {}).map(([key, words]) => ({ name: conditionNames[key] ?? key, words })));
+const grammarEntries = Object.entries(CONTROL_WORDS.reduce<Record<string, string[]>>((groups, word) => {
+  (groups[word.kind] ??= []).push(word.raw);
+  return groups;
+}, {})).map(([kind, words]) => ({ name: grammarNames[kind] ?? kind, words }));
 const history = new EditorHistory();
 const historyRevision = ref(0);
 
@@ -151,7 +169,36 @@ defineExpose({ getText });
     <div class="flex flex-wrap items-center gap-2 bg-[#e3eaf1] px-3 py-2 text-[#23344e]">
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!canUndo || composing" @click="undo" aria-label="もどす"><Icon name="lucide:undo-2" class="game-icon" aria-hidden="true"/> もどす</button>
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/> やり直す</button>
+      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" :aria-expanded="dictionaryOpen" @click="dictionaryOpen = !dictionaryOpen"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/> 使える言葉</button>
       <button type="button" class="ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/> 全部消す</button>
+    </div>
+    <div v-if="dictionaryOpen" class="max-h-56 shrink-0 overflow-y-auto border-b-2 border-[#95a8bd] bg-[#f5f7ee] px-4 py-3 text-[#1d3045]" role="region" aria-label="使える言葉の辞書">
+      <div class="grid gap-3 sm:grid-cols-2">
+        <section>
+          <h3 class="mb-2 text-sm font-black">何を見つける？</h3>
+          <ul class="space-y-1 text-sm">
+            <li v-for="entry in conditionEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
+          </ul>
+        </section>
+        <section>
+          <h3 class="mb-2 text-sm font-black">どう動く？</h3>
+          <ul class="space-y-1 text-sm">
+            <li v-for="entry in actionEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
+          </ul>
+        </section>
+      </div>
+      <details class="mt-3 border-t border-[#b4c4c3] pt-2">
+        <summary class="cursor-pointer text-sm font-black">文の組み立て・つなぎ言葉</summary>
+        <ul class="mt-2 grid gap-1 text-sm sm:grid-cols-2">
+          <li v-for="entry in grammarEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
+        </ul>
+      </details>
+      <details v-if="specialEntries.length" class="mt-2 border-t border-[#b4c4c3] pt-2">
+        <summary class="cursor-pointer text-sm font-black">ひみつの動き</summary>
+        <ul class="mt-2 space-y-1 text-sm">
+          <li v-for="entry in specialEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.words.join("・") }}</li>
+        </ul>
+      </details>
     </div>
     <div class="flex min-h-[130px] min-w-0 flex-1 overflow-hidden bg-[#fffaf1]">
       <LineGutter

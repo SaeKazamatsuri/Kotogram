@@ -283,6 +283,7 @@ watch(stageId, () => {
         </section>
         <section ref="gamePanel" class="game-playview relative flex min-h-0 min-w-0 flex-col overflow-y-auto" aria-label="ゲーム画面">
           <span v-if="running" role="status" class="absolute right-5 top-5 z-10 rounded-full border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]">動いているよ</span>
+          <span v-if="!running" class="pointer-events-none absolute right-5 top-5 z-10 rounded-full border border-[#f8dca5] bg-[#172439] px-3 py-1 text-xs font-black text-[#fff0cf]">ドラッグで先を見る</span>
           <div class="flex min-h-0 flex-1 items-center p-3 sm:p-5">
             <GameCanvas
               :key="stageId"

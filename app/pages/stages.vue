@@ -2,7 +2,7 @@
 import { computed, nextTick, onMounted, ref, watch } from "vue";
 import GameCharacterSprite from "~/components/game/CharacterSprite.vue";
 import { canPlayStage } from "~/stage/progression";
-import { currentWorldStageId, worldMapPosition } from "~/stage/world-map";
+import { STAGE_WORLDS, currentWorldStageId, worldIndexForStage, worldMapPosition } from "~/stage/world-map";
 import { playSe, unlockAudio } from "~/game/audio";
 
 type Item = { id: string; title: string; file: string };
@@ -15,6 +15,10 @@ const error = ref<string | null>(null);
 const stages = ref<Item[]>([]);
 const stats = ref<Record<string, { seconds: number; chars: number }>>({});
 const mapViewport = ref<HTMLElement | null>(null);
+const selectedWorld = ref(0);
+const worldStages = computed(() => stages.value.slice(selectedWorld.value * 10, selectedWorld.value * 10 + 10));
+const selectedWorldInfo = computed(() => STAGE_WORLDS[selectedWorld.value]!);
+const worldClearCount = (index: number) => stages.value.slice(index * 10, index * 10 + 10).filter((stage) => isComplete(stage.id)).length;
 const mapDragging = ref(false);
 type MapDragState = { pointerId: number; startX: number; startY: number; scrollLeft: number; scrollTop: number; moved: boolean };
 let mapDragState: MapDragState | null = null;
@@ -23,7 +27,7 @@ const recentlyClearedId = ref<string | null>(null);
 const clearedCount = computed(() => stages.value.filter((stage) => isComplete(stage.id)).length);
 const currentStageId = computed(() => currentWorldStageId(stages.value, isComplete));
 const allCleared = computed(() => stages.value.length > 0 && clearedCount.value === stages.value.length);
-const mapPositions = computed(() => stages.value.map((_, index) => worldMapPosition(index, stages.value.length)));
+const mapPositions = computed(() => worldStages.value.map((_, index) => worldMapPosition(index, worldStages.value.length)));
 const trailWide = computed(() => mapPositions.value.map((stop, index) => `${index === 0 ? "M" : "L"} ${stop.x} ${stop.y}`).join(" "));
 const trailTall = computed(() => mapPositions.value.map((stop, index) => `${index === 0 ? "M" : "L"} ${stop.mobileX} ${stop.mobileY}`).join(" "));
 
@@ -115,7 +119,7 @@ function onMapClickCapture(event: MouseEvent) {
 async function centerCurrentStage() {
   await nextTick();
   const viewport = mapViewport.value;
-  const current = viewport?.querySelector<HTMLElement>(".map-stop.is-current");
+  const current = viewport?.querySelector<HTMLElement>(".map-stop.is-current") ?? viewport?.querySelector<HTMLElement>(".map-stop");
   if (!viewport || !current) return;
   const mobile = window.matchMedia("(max-width: 639px)").matches;
   viewport.scrollTo({
@@ -131,6 +135,7 @@ async function loadStages() {
   try {
     const manifest = await getManifest();
     stages.value = manifest.stages;
+    selectedWorld.value = worldIndexForStage(currentWorldStageId(stages.value, isComplete) ?? undefined);
   } catch {
     stages.value = [];
     error.value = "ステージを読みこめませんでした";
@@ -139,7 +144,7 @@ async function loadStages() {
   }
 }
 
-watch([loading, currentStageId], () => {
+watch([loading, currentStageId, selectedWorld], () => {
   if (!loading.value && currentStageId.value && import.meta.client) void centerCurrentStage();
 });
 
@@ -183,6 +188,13 @@ onMounted(() => {
       <button type="button" class="game-button game-button--night" @click="loadStages">もう一度 読みこむ</button>
     </div>
     <template v-else>
+      <nav class="world-picker" aria-label="冒険する世界">
+        <button v-for="(world, index) in STAGE_WORLDS" :key="world.start" type="button" class="world-picker__button" :class="{ 'is-selected': selectedWorld === index }" :aria-pressed="selectedWorld === index" @click="selectedWorld = index">
+          <span class="world-picker__title">{{ world.title }}</span>
+          <span class="world-picker__progress">ステージ {{ world.start }}〜{{ world.end }} ・ {{ worldClearCount(index) }} / 10</span>
+        </button>
+      </nav>
+      <div class="world-description" aria-live="polite">{{ selectedWorldInfo.subtitle }}</div>
       <div
         ref="mapViewport"
         class="map-viewport scrollbar-hidden"
@@ -197,7 +209,7 @@ onMounted(() => {
         @click.capture="onMapClickCapture"
         @dragstart.prevent
       >
-        <div class="map-land" :class="{ 'map-land--expanded': stages.length > 7 }" :style="{ '--map-width': Math.max(1640, stages.length * 190) + 'px', '--map-height': Math.max(1400, stages.length * 160) + 'px' }">
+        <div class="map-land" :class="['map-land--world-' + selectedWorld, { 'map-land--expanded': worldStages.length > 7 }]" :style="{ '--map-width': Math.max(1640, worldStages.length * 190) + 'px', '--map-height': Math.max(1400, worldStages.length * 160) + 'px' }">
           <div class="map-sun" aria-hidden="true" />
           <div class="map-cloud map-cloud--one" aria-hidden="true" />
           <div class="map-cloud map-cloud--two" aria-hidden="true" />
@@ -220,7 +232,7 @@ onMounted(() => {
 
           <ol class="map-stops" aria-label="ステージ一覧">
             <li
-              v-for="(stage, index) in stages"
+              v-for="(stage, index) in worldStages"
               :key="stage.id"
               class="map-stop"
               :class="{
@@ -244,16 +256,16 @@ onMounted(() => {
                 v-if="stageUnlocked(stage.id)"
                 class="map-stop__link"
                 :to="`/play/${stage.id}`"
-                :aria-label="`ステージ ${index + 1} ${stage.title}${isComplete(stage.id) ? ' クリア' : ' あそぶ'}`"
+                :aria-label="`ステージ ${selectedWorld * 10 + index + 1} ${stage.title}${isComplete(stage.id) ? ' クリア' : ' あそぶ'}`"
                 @click="onChooseStage"
               >
                 <span class="map-stop__circle">
                   <Icon v-if="isComplete(stage.id)" name="lucide:check" class="map-stop__icon" aria-hidden="true" />
                   <Icon v-else-if="currentStageId === stage.id" name="lucide:play" class="map-stop__icon" aria-hidden="true" />
-                  <span v-else class="map-stop__number">{{ index + 1 }}</span>
+                  <span v-else class="map-stop__number">{{ selectedWorld * 10 + index + 1 }}</span>
                 </span>
                 <span class="map-stop__sign">
-                  <span class="map-stop__stage">ステージ {{ index + 1 }}</span>
+                  <span class="map-stop__stage">ステージ {{ selectedWorld * 10 + index + 1 }}</span>
                   <span class="map-stop__title">{{ stage.title }}</span>
                 </span>
               </NuxtLink>
@@ -261,11 +273,11 @@ onMounted(() => {
                 v-else
                 class="map-stop__link map-stop__link--locked"
                 aria-disabled="true"
-                :aria-label="`ステージ ${index + 1} ${stage.title} まだあそべません`"
+                :aria-label="`ステージ ${selectedWorld * 10 + index + 1} ${stage.title} まだあそべません`"
               >
                 <span class="map-stop__circle"><Icon name="lucide:lock-keyhole" class="map-stop__icon" aria-hidden="true" /></span>
                 <span class="map-stop__sign">
-                  <span class="map-stop__stage">ステージ {{ index + 1 }}</span>
+                  <span class="map-stop__stage">ステージ {{ selectedWorld * 10 + index + 1 }}</span>
                   <span class="map-stop__title">{{ stage.title }}</span>
                 </span>
               </div>
@@ -298,6 +310,27 @@ onMounted(() => {
 </template>
 
 <style scoped>
+.world-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
+.world-picker__button { display: flex; flex-direction: column; gap: 3px; align-items: center; justify-content: center; min-height: 70px; padding: 8px; border: 2px solid #8295ab; border-radius: 15px; background: #293c57; color: #eaf2f4; font-weight: 900; }
+.world-picker__button.is-selected { background: #fff2d0; border-color: #f8c76f; color: #263a50; box-shadow: 0 4px 0 #b88353; }
+.world-picker__button:focus-visible { outline: 3px solid #ffe39c; outline-offset: 3px; }
+.world-picker__title { font-size: clamp(13px, 1.7vw, 20px); }
+.world-picker__progress { font-size: 12px; }
+.world-description { margin: 0 0 12px; color: #fff5db; font-size: 14px; font-weight: 800; }
+.map-land--world-1 { background: radial-gradient(ellipse at 20% 14%, #ffe0a6 0%, transparent 24%), linear-gradient(110deg, #ffdea5, #e8aa88 50%, #c97598); }
+.map-land--world-1::before { background: radial-gradient(ellipse at 18% 104%, #cb916b 0 20%, transparent 20.5%), radial-gradient(ellipse at 54% 103%, #bc7a72 0 26%, transparent 26.5%), radial-gradient(ellipse at 90% 102%, #a9607c 0 24%, transparent 24.5%); }
+.map-land--world-1 .map-mountain { background: linear-gradient(110deg, #cc8d88 0 50%, #985e79 50%); }
+.map-land--world-1 .map-hill { background: #b47e79; }
+.map-land--world-1 .map-hill--far { background: #d49b7e; }
+.map-land--world-1 .map-tree::before { background: linear-gradient(100deg, #54948a 50%, #376d7a 50%); clip-path: polygon(35% 0, 65% 0, 65% 55%, 80% 55%, 80% 28%, 100% 28%, 100% 70%, 65% 70%, 65% 100%, 35% 100%, 35% 73%, 0 73%, 0 37%, 20% 37%, 20% 55%, 35% 55%); }
+.map-land--world-2 { background: radial-gradient(ellipse at 72% 9%, #a3a0d7 0%, transparent 20%), linear-gradient(120deg, #263c68, #584a83 52%, #966c9a); }
+.map-land--world-2::before { background: radial-gradient(ellipse at 20% 100%, #40587b 0 20%, transparent 20.5%), radial-gradient(ellipse at 58% 105%, #435477 0 24%, transparent 24.5%), radial-gradient(ellipse at 95% 104%, #59496e 0 21%, transparent 21.5%); }
+.map-land--world-2 .map-sun { background: #f6e8e3; box-shadow: 0 0 0 18px #d8cfef48, 0 0 0 40px #e4d6f233; }
+.map-land--world-2 .map-mountain { background: linear-gradient(120deg, #536487 0 49%, #3f4e76 49%); }
+.map-land--world-2 .map-hill { background: #415d78; }
+.map-land--world-2 .map-hill--far { background: #526881; }
+.map-land--world-2 .map-tree::before { background: linear-gradient(100deg, #8dbbdd 50%, #697fae 50%); clip-path: polygon(50% 0, 86% 37%, 75% 75%, 50% 100%, 25% 75%, 14% 37%); }
+.map-land--world-2 .map-trail__road { stroke: #f8dfc6; }
 .map-viewport {
   position: relative;
   overflow: auto hidden;

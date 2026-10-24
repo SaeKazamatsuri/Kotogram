@@ -66,7 +66,7 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
   await expect(page.getByRole("link", { name: /ステージ 1/ })).toHaveCount(0);
   await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
   await expect(page.getByRole("link", { name: /かべで ジャンプ/ })).toBeVisible();
-  await expect(page.getByRole("listitem")).toHaveCount(30);
+  await expect(page.getByRole("listitem")).toHaveCount(10);
   expect(failedOnce).toBe(true);
 });
 
@@ -165,13 +165,13 @@ test("次の人へ初期化した後に前利用者の遅い送信結果が名�
   expect(await page.evaluate(() => localStorage.getItem("kotogram.nickname"))).toBeNull();
 });
 
-test("ぼうけんマップに進行状態と30のステージが表示される", async ({ page }, testInfo) => {
+test("ぼうけんマップに10個ずつ3つの世界が表示される", async ({ page }, testInfo) => {
   await page.goto("/stages");
   const map = page.getByRole("region", { name: "ステージマップ" });
   await expect(map).toBeVisible();
-  await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(30);
+  await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(10);
   await expect(page.locator(".map-stop.is-current")).toHaveCount(1);
-  await expect(page.locator(".map-stop.is-locked")).toHaveCount(29);
+  await expect(page.locator(".map-stop.is-locked")).toHaveCount(9);
   await expect(page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ })).toBeVisible();
   await expect(page.getByRole("link", { name: /ステージ 2/ })).toHaveCount(0);
   const pageWidth = await page.evaluate(() => document.documentElement.scrollWidth);
@@ -385,4 +385,47 @@ test("マップをドラッグで横と縦に動かし、ステージの誤選�
     await stage.click();
     await expect(page).toHaveURL(/\/play\/stage-1$/);
   }
+});
+
+
+test("3つの世界を選ぶと対応する10ステージと世界観が切り替わる", async ({ page }) => {
+  await page.goto("/stages");
+  const stops = page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem");
+  await expect(stops).toHaveCount(10);
+  await expect(page.locator(".map-land--world-0")).toHaveCount(1);
+  await page.getByRole("button", { name: /夕やけの谷/ }).click();
+  await expect(page.locator(".map-land--world-1")).toHaveCount(1);
+  await expect(stops).toHaveCount(10);
+  await expect(stops.first()).toContainText("ステージ 11");
+  await expect(stops.last()).toContainText("ステージ 20");
+  await page.getByRole("button", { name: /星あかりの国/ }).click();
+  await expect(page.locator(".map-land--world-2")).toHaveCount(1);
+  await expect(stops.first()).toContainText("ステージ 21");
+  await expect(stops.last()).toContainText("ステージ 30");
+  await expect(page.locator(".map-stop.is-locked")).toHaveCount(10);
+});
+
+test("編集中は辞書を表示でき、キャンバスをドラッグして下見できる", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  await expect(page.getByRole("button", { name: "使える言葉" })).toBeVisible();
+  await page.getByRole("button", { name: "使える言葉" }).click();
+  const guide = page.getByRole("region", { name: "使える言葉の辞書" });
+  await expect(guide).toContainText("じゃんぷ");
+  await expect(guide).toContainText("かべ");
+  await guide.getByText("ひみつの動き").click();
+  await expect(guide).toContainText("めっちゃはしる");
+
+  const canvas = page.locator(".game-playview canvas");
+  await expect(canvas).toBeVisible();
+  const before = await canvas.evaluate((element) => element.toDataURL());
+  const box = await canvas.boundingBox();
+  const x = box.x + box.width * 0.65;
+  const y = box.y + box.height * 0.55;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x - box.width * 0.4, y, { steps: 8 });
+  await page.mouse.up();
+  const after = await canvas.evaluate((element) => element.toDataURL());
+  expect(after).not.toEqual(before);
+  await expect(page.getByText("ドラッグで先を見る")).toBeVisible();
 });

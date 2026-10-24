@@ -1,4 +1,4 @@
-import { generateCelebrationWav, type CelebrationCue } from "./celebration-music";
+import { generateCelebrationWav, type CelebrationCue } from "./celebration-music.ts";
 
 export type BgmName = "title_adventure" | "title_loop" | "game_loop" | "result_loop" | "clear_loop";
 export type SoundName =
@@ -17,6 +17,7 @@ const lastEffect = new Map<SoundName, number>();
 let track: BgmName = "title_adventure";
 let currentTrack: BgmName | null = null;
 let music: HTMLAudioElement | null = null;
+let gameBgmRate = 1;
 let unlocked = false;
 let muted = false;
 let settingsLoaded = false;
@@ -57,6 +58,7 @@ function fileUrl(folder: "bgm" | "se", name: string): string {
 function syncMusic(): void {
   if (!onClient() || !unlocked || getAudioMuted()) return;
   if (music && currentTrack === track) {
+    music.playbackRate = track === "game_loop" ? gameBgmRate : 1;
     if (music.paused) void music.play().catch(() => {});
     return;
   }
@@ -64,6 +66,7 @@ function syncMusic(): void {
   const next = new Audio(fileUrl("bgm", track));
   next.preload = "auto";
   next.loop = true;
+  next.playbackRate = track === "game_loop" ? gameBgmRate : 1;
   next.volume = track === "clear_loop" ? CLEAR_BGM_VOLUME : BGM_VOLUME;
   music = next;
   currentTrack = track;
@@ -80,7 +83,14 @@ export function unlockAudio(): void {
 
 export function setBgm(next: BgmName): void {
   track = next;
+  if (next !== "game_loop") gameBgmRate = 1;
   syncMusic();
+}
+
+export function setGameBgmRate(rate: number): void {
+  if (!Number.isFinite(rate)) return;
+  gameBgmRate = Math.min(2, Math.max(0.5, rate));
+  if (track === "game_loop" && music) music.playbackRate = gameBgmRate;
 }
 
 export function setAudioMuted(next: boolean): void {

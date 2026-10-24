@@ -5,10 +5,11 @@ import type { FailPayload } from "~/types/game";
 import { GAME, createReadyGame, startGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
 import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
 import { resolveScenePalette } from "~/game/scenery";
+import { worldPaletteForStage } from "~/stage/world-map";
 import { renderGameFrame } from "~/game/renderer";
 import { failureAnimationDuration } from "~/game/character";
 import { gameAudioEvents, snapshotGameAudio } from "~/game/audio-events";
-import { playSe } from "~/game/audio";
+import { playSe, setGameBgmRate } from "~/game/audio";
 
 const props = defineProps<{
   stage: StageData;
@@ -27,16 +28,23 @@ let frameClock = createFrameClock();
 let idleFrame = 0;
 let lastIdleDraw = 0;
 let failureStartedAt: number | null = null;
+let previewX = 0;
+let previewDrag: { pointerId: number; clientX: number; position: number } | null = null;
+let lastBgmRate = 1;
 const STEP_MS = 1000 / GAME.tickRate;
 
 function draw(visualTick = game.elapsedTicks, failureProgress = 1) {
   const ctx = canvas.value?.getContext("2d");
   if (!ctx) return;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  renderGameFrame(ctx, game, resolveScenePalette(props.stage.meta?.bg), visualTick, !props.running, failureProgress, reducedMotion);
+  const view = !props.running && previewX > 0 ? { ...game, px: previewX } : game;
+  renderGameFrame(ctx, view, resolveScenePalette(props.stage.id ? worldPaletteForStage(props.stage.id) : props.stage.meta?.bg), visualTick, !props.running, failureProgress, reducedMotion);
 }
 
 function stop() {
+  previewDrag = null;
+  lastBgmRate = 1;
+  setGameBgmRate(1);
   cancelAnimationFrame(idleFrame);
   idleFrame = 0;
   cancelAnimationFrame(frame);
@@ -83,6 +91,11 @@ function loop(timestamp: number) {
   for (let step = 0; step < advanced.steps && game.status === "running"; step++) {
     const before = snapshotGameAudio(game);
     stepGame(game);
+    const speed = game.baseSpeed > 0 ? game.vx / game.baseSpeed : 1;
+    if (speed !== lastBgmRate) {
+      lastBgmRate = speed;
+      setGameBgmRate(speed);
+    }
     for (const name of gameAudioEvents(before, game)) playSe(name);
   }
   draw(game.elapsedTicks, game.status === "failed" ? 0 : 1);
@@ -99,6 +112,7 @@ function loop(timestamp: number) {
 
 function start() {
   stop();
+  previewX = 0;
   game = createReadyGame(props.stage, props.program);
   startGame(game);
   draw();
@@ -113,6 +127,7 @@ watch(() => props.running, (running) => {
   }
 }, { immediate: true });
 watch(() => props.stage, () => {
+  previewX = 0;
   if (props.running) start();
   else {
     game = createReadyGame(props.stage, props.program);
@@ -127,6 +142,46 @@ watch(() => props.program, () => {
     draw();
   }
 }, { deep: true });
+
+function previewLimit(): number {
+  return Math.max(0, game.goalX - 100);
+}
+
+function previewMove(position: number) {
+  if (props.running) return;
+  previewX = Math.max(0, Math.min(previewLimit(), position));
+  draw();
+}
+
+function onPreviewPointerDown(event: PointerEvent) {
+  if (props.running || !event.isPrimary || event.button !== 0) return;
+  previewDrag = { pointerId: event.pointerId, clientX: event.clientX, position: previewX };
+  canvas.value?.setPointerCapture(event.pointerId);
+}
+
+function onPreviewPointerMove(event: PointerEvent) {
+  if (!previewDrag || event.pointerId !== previewDrag.pointerId || !canvas.value) return;
+  const width = canvas.value.getBoundingClientRect().width;
+  if (width <= 0) return;
+  previewMove(previewDrag.position - (event.clientX - previewDrag.clientX) * GAME.width / width);
+}
+
+function onPreviewPointerEnd(event: PointerEvent) {
+  if (!previewDrag || event.pointerId !== previewDrag.pointerId) return;
+  if (canvas.value?.hasPointerCapture(event.pointerId)) canvas.value.releasePointerCapture(event.pointerId);
+  previewDrag = null;
+}
+
+function onPreviewKeydown(event: KeyboardEvent) {
+  if (props.running) return;
+  if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
+    event.preventDefault();
+    previewMove(previewX + (event.key === "ArrowRight" ? 180 : -180));
+  } else if (event.key === "Home") {
+    event.preventDefault();
+    previewMove(0);
+  }
+}
 
 onMounted(() => {
   if (canvas.value) {
@@ -144,6 +199,6 @@ onBeforeUnmount(stop);
 
 <template>
   <div class="flex flex-col gap-3">
-    <canvas ref="canvas" class="w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" />
+    <canvas ref="canvas" class="w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" :class="{ 'cursor-grab touch-none active:cursor-grabbing': !running }" :tabindex="running ? -1 : 0" :aria-label="running ? 'ゲームを実行中' : 'ステージの下見。ドラッグ、または左右キーで先を見る'" @pointerdown="onPreviewPointerDown" @pointermove="onPreviewPointerMove" @pointerup="onPreviewPointerEnd" @pointercancel="onPreviewPointerEnd" @keydown="onPreviewKeydown" />
   </div>
 </template>

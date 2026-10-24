@@ -69,6 +69,8 @@ const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "へ", kind: "particle" },
   { raw: "も", kind: "particle" },
 ];
+export const CONTROL_WORDS = CONTROL.map(({ raw, kind }) => ({ raw, kind }));
+
 const MAX_SOURCE = 2000;
 const MAX_LINES = 100;
 const MAX_DEPTH = 8;
