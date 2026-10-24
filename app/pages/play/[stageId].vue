@@ -11,6 +11,7 @@ import { useParser } from "~/composables/useParser";
 import { playSe, setBgm, unlockAudio } from "~/game/audio";
 import type { GameProgram } from "~/game/core";
 import type { SourceMap } from "~/language/parser";
+import { stageMastery, type MasteryResult } from "~/stage/mastery";
 import type { StageData, StageListItem } from "~/composables/useStageLoader";
 import { canPlayStage, nextStageId } from "~/stage/progression";
 import {
@@ -47,6 +48,7 @@ const editorLines = ref<string[]>([]);
 const program = ref<GameProgram | undefined>(undefined);
 const sourceMap = ref<SourceMap | undefined>(undefined);
 const executionTrace = ref<{ active: number[]; waiting: number | null; repeat: number | null }>({ active: [], waiting: null, repeat: null });
+const mastery = ref<MasteryResult | null>(null);
 const running = ref(false);
 const cleared = ref(false);
 const failed = ref(false);
@@ -180,6 +182,7 @@ function onRun() {
   program.value = result.program;
   sourceMap.value = result.sourceMap;
   executionTrace.value = { active: [], waiting: null, repeat: null };
+  mastery.value = null;
   failed.value = false;
   failInfo.value = null;
   cleared.value = false;
@@ -198,6 +201,7 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   failed.value = false;
   failInfo.value = null;
   const rawText = runningSource.value;
+  mastery.value = stageMastery(stageId.value, rawText);
   const chars = countSourceCharacters(rawText);
   const reference = getScoreReference(stageId.value, stageVersion.value);
   const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks, rawText, stageVersion.value);
@@ -334,6 +338,7 @@ watch(stageId, () => {
       :chars="lastChars"
       :scores="scoreValues"
       :bests="bests"
+      :mastery="mastery"
       @close="closeClear"
       @next="goNext"
       @map="goMap"
