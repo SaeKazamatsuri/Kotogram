@@ -491,3 +491,28 @@ test("走り続けるコード行は発動後も弱く点灯し、終了時に�
   await expect(page.getByRole("dialog", { name: "ステージクリア" })).toBeVisible({ timeout: 12000 });
   await expect(page.locator('[data-execution="sustained"]')).toHaveCount(0);
 });
+
+test("条件行を見はり中として表示し、発動した動作行と区別する", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("もしかべがあったら\nじゃんぷ\nおわり");
+  await page.getByRole("button", { name: "動かす" }).click();
+  const watcher = page.locator('[data-execution="monitoring"]');
+  await expect(watcher).toHaveCount(1);
+  await expect(watcher).toContainText("見はり");
+  await expect(page.locator('[data-execution="fired"]').first()).toBeVisible({ timeout: 12000 });
+  await expect(watcher).toHaveCount(1);
+});
+
+test("失敗した後はさいごに発動した命令行を残し、編集すると消す", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("はしる");
+  await page.getByRole("button", { name: "動かす" }).click();
+  await expect(page.getByRole("dialog", { name: "ステージしっぱい" })).toBeVisible({ timeout: 12000 });
+  await page.getByRole("button", { name: "コードを直す" }).click();
+  await expect(page.locator('[data-execution="last-action"]')).toBeVisible();
+  await expect(page.getByRole("status", { name: "最後に動いたのは1行目" })).toBeVisible();
+  await editor.fill("かべとぶ");
+  await expect(page.locator('[data-execution="last-action"]')).toHaveCount(0);
+});
