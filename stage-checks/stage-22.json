@@ -6,19 +6,22 @@
       "name": "beginner",
       "role": "beginner",
       "source": "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 906
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "3かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 906
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 518
     },
     {
       "name": "missing-actions",
@@ -31,6 +34,13 @@
       "role": "regression",
       "source": "3かいくりかえす\nすいっちじゃんぷ\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared"
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "めっちゃはしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 518
     }
   ]
 }
