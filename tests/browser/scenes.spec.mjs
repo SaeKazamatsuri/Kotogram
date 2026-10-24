@@ -171,6 +171,7 @@ test("ぼうけんマップに10個ずつ3つの世界が表示される", async
   await page.goto("/stages");
   const map = page.getByRole("region", { name: "ステージマップ" });
   await expect(map).toBeVisible();
+  await expect.poll(async () => (await map.boundingBox())?.height ?? 0).toBeGreaterThan(200);
   await expect(page.getByRole("list", { name: "ステージ一覧" }).getByRole("listitem")).toHaveCount(10);
   await expect(page.locator(".map-stop.is-current")).toHaveCount(1);
   await expect(page.locator(".map-stop.is-locked")).toHaveCount(9);
