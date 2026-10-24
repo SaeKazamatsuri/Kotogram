@@ -7,7 +7,7 @@ import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
 
-const props = defineProps<{ dictionary?: Vocabulary; lines?: string[] }>();
+const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; waitingLine?: number | null; repeatLine?: number | null }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
 const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
@@ -51,6 +51,7 @@ function acceptInput(target: HTMLTextAreaElement) {
   updateMetrics();
 }
 function onInput(event: Event) {
+  if (props.running) return;
   if (!composing.value) acceptInput(event.target as HTMLTextAreaElement);
 }
 function onCompositionEnd(event: CompositionEvent) {
@@ -120,23 +121,23 @@ function applyState(state: TextSelection) {
   });
 }
 function undo() {
-  if (composing.value) return;
+  if (props.running || composing.value) return;
   const previous = history.undo();
   if (previous) { historyRevision.value++; applyState(previous); }
 }
 function redo() {
-  if (composing.value) return;
+  if (props.running || composing.value) return;
   const next = history.redo();
   if (next) { historyRevision.value++; applyState(next); }
 }
 function clearText() {
-  if (!text.value || composing.value) return;
+  if (props.running || !text.value || composing.value) return;
   if (!window.confirm("コードを 全部消す？")) return;
   record({ text: "", start: 0, end: 0 });
   applyState({ text: "", start: 0, end: 0 });
 }
 function onSoftKey(key: SoftKey) {
-  if (composing.value || !textarea.value) return;
+  if (props.running || composing.value || !textarea.value) return;
   const element = textarea.value;
   const result = editWithSoftKey({
     text: text.value,
@@ -159,13 +160,16 @@ defineExpose({ getText });
   <div class="flex h-full min-h-0 min-w-0 flex-col overflow-y-auto">
     <div class="flex min-h-14 items-center justify-between gap-3 border-b border-[#7083a0] bg-[#243551] px-5 py-3 text-[#fffaf1]">
       <h2 class="flex items-center gap-2 text-base font-black"><Icon name="lucide:code-2" class="game-icon text-[#aaf0d0]" aria-hidden="true"/> コードを書く</h2>
-      <span class="rounded-full bg-[#17263f] px-3 py-1 text-sm font-black text-white">{{ charCount }} 字</span>
+      <div class="flex items-center gap-2">
+        <span v-if="running" role="status" class="rounded-full bg-[#aaf0d0] px-3 py-1 text-sm font-black text-[#17342c]">▶ 動作中</span>
+        <span class="rounded-full bg-[#17263f] px-3 py-1 text-sm font-black text-white">{{ charCount }} 字</span>
+      </div>
     </div>
     <div class="flex flex-wrap items-center gap-2 bg-[#e3eaf1] px-3 py-2 text-[#23344e]">
-      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!canUndo || composing" @click="undo" aria-label="もどす"><Icon name="lucide:undo-2" class="game-icon" aria-hidden="true"/> もどす</button>
-      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/> やり直す</button>
+      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canUndo || composing" @click="undo" aria-label="もどす"><Icon name="lucide:undo-2" class="game-icon" aria-hidden="true"/> もどす</button>
+      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/> やり直す</button>
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" :aria-expanded="dictionaryOpen" @click="dictionaryOpen = !dictionaryOpen"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/> 使える言葉</button>
-      <button type="button" class="ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="!text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/> 全部消す</button>
+      <button type="button" class="ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/> 全部消す</button>
     </div>
     <div v-if="dictionaryOpen" class="max-h-56 shrink-0 overflow-y-auto border-b-2 border-[#95a8bd] bg-[#f5f7ee] px-4 py-3 text-[#1d3045]" role="region" aria-label="使える言葉の辞書">
       <div class="grid gap-3 sm:grid-cols-2">
@@ -186,16 +190,27 @@ defineExpose({ getText });
     <div class="flex min-h-[130px] min-w-0 flex-1 overflow-hidden bg-[#fffaf1]">
       <LineGutter
         :states="lineStates"
+        :active-lines="activeLines"
+        :waiting-line="waitingLine"
+        :repeat-line="repeatLine"
         :line-height="taLineHeight"
         :padding-top="taPaddingTop"
         :padding-bottom="taPaddingBottom"
         :scroll-top="taScrollTop"
         :viewport-height="taClientHeight"
       />
+      <div class="relative min-h-0 min-w-0 flex-1 overflow-hidden">
+        <div v-if="running" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+          <div :style="{ paddingTop: taPaddingTop + 'px', transform: 'translateY(-' + taScrollTop + 'px)' }">
+            <div v-for="(_, index) in lineArray" :key="index" :style="{ height: taLineHeight + 'px' }"
+              :class="activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : ''" />
+          </div>
+        </div>
       <textarea
         ref="textarea"
-        class="min-h-0 min-w-0 flex-1 resize-none bg-[#fffaf1] p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a] focus:bg-white"
+        class="relative h-full w-full min-h-0 min-w-0 resize-none p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a]" :class="running ? 'bg-transparent' : 'bg-[#fffaf1] focus:bg-white'"
         :value="text"
+        :readonly="running"
         aria-label="コードを書く"
         :spellcheck="false"
         autocomplete="off"
@@ -205,14 +220,15 @@ defineExpose({ getText });
         placeholder="かべをまえにみつけたらじゃんぷする"
         @scroll="onScroll"
       />
+      </div>
     </div>
     <p v-if="firstError" role="alert" class="border-t border-[#de9ea9] bg-[#fff1ef] px-4 py-3 text-sm font-black text-[#9f203c]">{{ firstError.line }} 行目：{{ firstError.message }}</p>
     <div class="flex flex-wrap items-center gap-3 border-t-2 border-[#7083a0] bg-[#243551] p-3">
-      <button type="button" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
-      <button type="button" class="game-button game-button--night text-sm" :aria-expanded="keyboardVisible" @click="keyboardVisible = !keyboardVisible"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力</button>
+      <button type="button" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
+      <button type="button" class="game-button game-button--night text-sm" :disabled="running" :aria-expanded="keyboardVisible" @click="keyboardVisible = !keyboardVisible"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力</button>
     </div>
     <div v-if="keyboardVisible" class="border-t border-[#7083a0] bg-[#243551] p-3">
-      <KanaKeyboard :disabled="composing" @press="onSoftKey" />
+      <KanaKeyboard :disabled="running || composing" @press="onSoftKey" />
     </div>
   </div>
 </template>
