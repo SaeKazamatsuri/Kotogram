@@ -31,6 +31,19 @@
       "role": "learning",
       "source": "はしる\nあなとぶ",
       "expect": "cleared"
+    },
+    {
+      "name": "repeat-two-wide-holes",
+      "role": "regression",
+      "source": "はしる\n2かいくりかえす\nあなとぶ\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "repeat-once-does-not-cross-second-hole",
+      "role": "negative",
+      "source": "はしる\n1かいくりかえす\nあなとぶ\nおわり",
+      "expect": "failed",
+      "failureReason": "hole"
     }
   ]
 }

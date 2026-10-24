@@ -467,3 +467,14 @@ test("マップの両端は看板が切れず、画面全体は縦にスクロ�
     expect(overflow.body).toBeLessThanOrEqual(overflow.viewport + 3);
   }
 });
+
+test("実行中に発火した日本語命令だけがハイライトされる", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("かべとぶ");
+  await page.getByRole("button", { name: "動かす" }).click();
+  await expect(editor).toHaveAttribute("readonly", "");
+  await expect(page.getByText("▶ 動作中")).toBeVisible();
+  await expect(page.locator('[data-execution="fired"]').first()).toBeVisible({ timeout: 10000 });
+  await expect(editor).toHaveValue("かべとぶ");
+});

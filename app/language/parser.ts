@@ -33,7 +33,8 @@ export type IfStatement = { kind: "if"; conditions: Condition[]; operator: "or";
 export type Statement = RuleStatement | ActionStatement | RepeatStatement | IfStatement;
 export type ParseResult = { body: Statement[]; diagnostics: Diagnostic[]; tokens: Token[][] };
 export type ExecutableRule = { cond?: Condition; conds?: Condition[]; action: Action; maxFires?: number };
-export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; diagnostics: Diagnostic[] };
+export type SourceMap = { watchers: number[]; watcherLoops: (number | null)[]; steps: number[] };
+export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; sourceMap: SourceMap; diagnostics: Diagnostic[] };
 
 const DEFAULT_CONDITIONS: Record<Condition, string[]> = conditionsDictionary;
 const DEFAULT_ACTIONS: Record<Action, string[]> = actionsDictionary;
@@ -42,6 +43,12 @@ const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "くりかえし", kind: "repeat" },
   { raw: "くりかえ", kind: "repeat" },
   { raw: "みつけたら", kind: "then" },
+  { raw: "みつかったら", kind: "then" },
+  { raw: "みつけるたびに", kind: "then" },
+  { raw: "ちかづいたら", kind: "then" },
+  { raw: "あらわれたら", kind: "then" },
+  { raw: "みえたとき", kind: "then" },
+  { raw: "ぶつかりそうなら", kind: "then" },
   { raw: "みつけると", kind: "then" },
   { raw: "みえたら", kind: "then" },
   { raw: "あったときは", kind: "then" },
@@ -59,7 +66,14 @@ const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "もし", kind: "if" },
   { raw: "する", kind: "particle" },
   { raw: "して", kind: "particle" },
+  { raw: "または", kind: "or" },
+  { raw: "あるいは", kind: "or" },
+  { raw: "や", kind: "or" },
   { raw: "と", kind: "or" },
+  { raw: "ください", kind: "particle" },
+  { raw: "ね", kind: "particle" },
+  { raw: "すぐ", kind: "particle" },
+  { raw: "ここで", kind: "particle" },
   { raw: "に", kind: "particle" },
   { raw: "が", kind: "particle" },
   { raw: "を", kind: "particle" },
@@ -190,6 +204,7 @@ function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[
 }
 
 function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement | ActionStatement | null {
+  while (tokens.at(-1)?.kind === "particle" && ["ね", "ください"].includes(tokens.at(-1)!.raw)) tokens = tokens.slice(0, -1);
   const longForm = ["をする", "をして"].includes(tokens.slice(-2).map((token) => token.raw).join(""));
   const actionIndex = longForm ? tokens.length - 3 : tokens.length - 1;
   const actionToken = tokens[actionIndex];
@@ -313,8 +328,10 @@ export function compileProgram(parsed: ParseResult): CompileResult {
   const watchers: ExecutableRule[] = [];
   const steps: GameInstruction[] = [];
   const rules: ExecutableRule[] = [];
+  const sourceMap: SourceMap = { watchers: [], watcherLoops: [], steps: [] };
+  const addStep = (instruction: GameInstruction, line: number) => { steps.push(instruction); sourceMap.steps.push(line); };
 
-  const watcher = (node: RuleStatement, limit?: number) => {
+  const watcher = (node: RuleStatement, limit?: number, repeatLine?: number) => {
     if (limit !== undefined && node.maxFires !== null) {
       diagnostics.push(error("unsupported", "かいすうを 2かしょに かかないでね", node.span.start));
       return;
@@ -325,28 +342,30 @@ export function compileProgram(parsed: ParseResult): CompileResult {
       maxFires: limit ?? node.maxFires ?? undefined,
     };
     watchers.push(rule);
+    sourceMap.watchers.push(node.span.start.line);
+    sourceMap.watcherLoops.push(repeatLine ?? null);
     rules.push(rule);
   };
 
   const procedural = (node: Statement): void => {
     if (node.kind === "action") {
-      steps.push({ op: "action", action: node.action, count: node.repeat });
+      addStep({ op: "action", action: node.action, count: node.repeat }, node.span.start.line);
     } else if (node.kind === "rule") {
-      steps.push({
+      addStep({
         op: "wait",
         conds: [...node.conditions],
         action: node.action,
         count: node.maxFires ?? 1,
-      });
+      }, node.span.start.line);
     } else if (node.kind === "if") {
-      steps.push({ op: "wait", conds: [...node.conditions], count: 1 });
+      addStep({ op: "wait", conds: [...node.conditions], count: 1 }, node.span.start.line);
       for (const child of node.body) procedural(child);
     } else {
       const begin = steps.length;
-      steps.push({ op: "repeat-start", count: node.repeat, end: -1 });
+      addStep({ op: "repeat-start", count: node.repeat, end: -1 }, node.span.start.line);
       for (const child of node.body) procedural(child);
       const end = steps.length;
-      steps.push({ op: "repeat-end", start: begin });
+      addStep({ op: "repeat-end", start: begin }, node.span.end.line);
       steps[begin] = { op: "repeat-start", count: node.repeat, end };
     }
   };
@@ -369,13 +388,13 @@ export function compileProgram(parsed: ParseResult): CompileResult {
           operator: "or",
           action: node.body[0].action,
           maxFires: null,
-          span: node.span,
+          span: node.body[0].span,
         });
       } else {
         diagnostics.push(error("unsupported", "もしの なかは うごきを 1つ かいてね", node.span.start));
       }
     } else if (node.body.length === 1 && node.body[0].kind === "rule" && node.body[0].maxFires === null) {
-      watcher(node.body[0], node.repeat);
+      watcher(node.body[0], node.repeat, node.span.start.line);
     } else {
       procedural(node);
     }
@@ -387,7 +406,7 @@ export function compileProgram(parsed: ParseResult): CompileResult {
   const program: GameProgram = diagnostics.length
     ? { watchers: [], steps: [] }
     : { watchers, steps };
-  return { rules: diagnostics.length ? [] : rules, program, diagnostics };
+  return { rules: diagnostics.length ? [] : rules, program, sourceMap: diagnostics.length ? { watchers: [], watcherLoops: [], steps: [] } : sourceMap, diagnostics };
 }
 
 export function analyzeProgram(source: string | string[], vocabulary: Vocabulary = {}) {

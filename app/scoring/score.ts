@@ -7,6 +7,14 @@ export const PREVIOUS_LANGUAGE_VERSION = "2026-language-v2";
 export const LEGACY_LANGUAGE_VERSION = "2026-language-v1";
 export const SEASON_ID = "2026-festival";
 
+export type StrategyKind = "speed" | "compact" | "balanced";
+
+export function classifyStrategy(scores: { time: number; chars: number; overall: number }): StrategyKind {
+  if (scores.time > scores.chars * 1.08) return "speed";
+  if (scores.chars > scores.time * 1.08) return "compact";
+  return "balanced";
+}
+
 export type ScoreKind = "time" | "chars" | "overall";
 export type ScoreReference = {
   stageId: string;
@@ -71,6 +79,7 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-18": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 9, product: 5868 },
   "stage-13": { ...knownReferences["stage-13"]!, stageVersion: "2026-10-25-r2" },
   "stage-25": { ...knownReferences["stage-25"]!, stageVersion: "2026-10-25-r2" },
   "stage-5": { ...revisedReferences["stage-5"]!, stageVersion: "2026-10-20-r2" },

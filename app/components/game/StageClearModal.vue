@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { formatBestScore } from "~/scoring/display";
+import { classifyStrategy } from "~/scoring/score";
 import type { BestRuns, ScoredRun } from "~/scoring/score";
+import type { MasteryResult } from "~/stage/mastery";
 import RankingPanel from "./RankingPanel.vue";
 
 const props = defineProps<{
@@ -10,6 +12,7 @@ const props = defineProps<{
   stageVersion: string;
   hasNext: boolean;
   chars: number;
+  mastery?: MasteryResult | null;
   scores?: { time: number; chars: number; overall: number } | null;
   bests?: BestRuns<ScoredRun>;
   apiBase?: string;
@@ -63,6 +66,11 @@ function bestScore(kind: "time" | "chars" | "overall") {
         <div class="rounded-xl bg-[#e8f0f5] p-4"><p class="text-sm font-black text-[#41556e]">タイム</p><p class="text-2xl font-black text-[#172439]">{{ seconds.toFixed(1) }}<span class="ml-1 text-sm">秒</span></p></div>
         <div class="rounded-xl bg-[#e8f0f5] p-4"><p class="text-sm font-black text-[#41556e]">文字数</p><p class="text-2xl font-black text-[#172439]">{{ chars }}<span class="ml-1 text-sm">字</span></p></div>
       </div>
+      <div v-if="mastery && (mastery.loopChallenge || mastery.secretFound)" class="mb-4 flex flex-wrap gap-2 text-sm font-black">
+        <span v-if="mastery.loopChallenge && mastery.repeatUsed" class="rounded-full bg-[#c9eedd] px-3 py-2 text-[#17503f]"><Icon name="lucide:repeat" class="game-icon" aria-hidden="true" /> くりかえしで クリア！</span>
+        <span v-else-if="mastery.loopChallenge" class="rounded-full bg-[#e7edf2] px-3 py-2 text-[#38556a]">次は くりかえしでも クリアしてみよう</span>
+        <span v-if="mastery.secretFound" class="rounded-full bg-[#fff0c6] px-3 py-2 text-[#67451c]"><Icon name="lucide:sparkles" class="game-icon" aria-hidden="true" /> ひみつの 近道を みつけた！</span>
+      </div>
       <div v-if="scores" class="mb-4 rounded-2xl bg-[#fff0c6] p-3">
         <div class="grid grid-cols-3 gap-2" aria-label="3つの点数">
           <div v-for="item in [{ label: 'タイム', value: scores.time }, { label: '文字数', value: scores.chars }, { label: '総合', value: scores.overall }]" :key="item.label" class="rounded-xl bg-white p-2 text-center sm:p-3">
@@ -71,6 +79,11 @@ function bestScore(kind: "time" | "chars" | "overall") {
             <p v-if="item.value > 1000" class="text-xs font-black text-[#14684e]">1000点こえ！</p>
           </div>
         </div>
+      </div>
+      <div v-if="scores" class="mb-4 rounded-xl border border-[#bfd2dc] bg-[#eef5f7] px-3 py-2 text-sm font-black text-[#243b52]">
+        <template v-if="classifyStrategy(scores) === 'speed'">はやさを いかしたクリア！</template>
+        <template v-else-if="classifyStrategy(scores) === 'compact'">みじかいコードで クリア！</template>
+        <template v-else>バランスよく クリア！</template>
       </div>
       <div v-if="bests?.time || bests?.chars || bests?.overall" class="mb-4 rounded-xl border border-[#bccbd9] bg-[#f0f5f8] p-3 text-sm text-[#172439]">
         <h3 class="mb-2 flex items-center gap-2 font-black"><Icon name="lucide:medal" class="game-icon text-[#14684e]" aria-hidden="true"/> 自分の ベスト</h3>
