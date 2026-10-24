@@ -6,6 +6,7 @@ on:
       - .github/workflows/build-audio.yml
       - scripts/audio-source.py.gz.b64
       - scripts/generate_audio.py
+      - scripts/generate_stage_music.py
       - scripts/generate_title_adventure.mjs
   workflow_dispatch:
 
@@ -51,16 +52,22 @@ jobs:
         run: python scripts/generate_audio.py
       - name: Render the high-resolution title theme
         run: node scripts/generate_title_adventure.mjs
+      - name: Render all sixty stage soundtracks
+        run: python scripts/generate_stage_music.py
       - name: Verify each exported file
         run: |
           test "$(find public/audio/bgm -name '*.ogg' | wc -l)" -eq 3
           test "$(ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of default=noprint_wrappers=1:nokey=1 public/audio/bgm/title_adventure.wav)" -eq 32000
-          test "$(find public/audio/bgm -name '*.mp3' | wc -l)" -eq 3
+          test "$(find public/audio/bgm -maxdepth 1 -name '*.mp3' | wc -l)" -eq 3
+          test "$(find public/audio/bgm/stages -name '*.ogg' | wc -l)" -eq 60
+          test "$(find public/audio/bgm/stages -name '*.mp3' | wc -l)" -eq 60
           test "$(find public/audio/se -name '*.ogg' | wc -l)" -eq 13
           test "$(find public/audio/se -name '*.mp3' | wc -l)" -eq 13
-          for file in public/audio/{bgm,se}/*; do ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$file" >/dev/null; done
+          for file in public/audio/{bgm,se}/* public/audio/bgm/stages/*; do
+            if [ -f "$file" ]; then ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$file" >/dev/null; fi
+          done
       - name: Verify title WAV matches generator
-        run: node --test tests/title-adventure-audio.test.mjs
+        run: node --test tests/title-adventure-audio.test.mjs tests/stage-bgm.test.mjs
       - name: Commit playable assets to this branch
         run: |
           git config user.name 'github-actions[bot]'
