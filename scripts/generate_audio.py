@@ -53,6 +53,18 @@ def voice(note, duration, patch, velocity=1.0):
     elif patch == "airy":
         x = .8 * np.sin(phase) + .18 * np.sin(2 * phase) + .13 * np.sin(phase * 1.003)
         e = envelope(n, .045, .15) * (.75 + .25 * np.exp(-t * 2.3))
+    elif patch == "keys":
+        x = .74 * np.sin(phase) + .23 * np.sin(2.001 * phase) + .09 * np.sin(3.003 * phase)
+        e = envelope(n, .005, .14) * (.28 + .72 * np.exp(-t * 4.1))
+    elif patch == "marimba":
+        x = .86 * np.sin(phase) + .26 * np.sin(3.99 * phase) + .055 * np.sin(9.01 * phase)
+        e = envelope(n, .003, .11) * (.09 + .91 * np.exp(-t * 7.2))
+    elif patch == "flute":
+        x = .87 * np.sin(phase) + .12 * np.sin(2 * phase) + .034 * np.sin(3 * phase)
+        e = envelope(n, .028, .13) * (.92 + .08 * np.sin(2 * np.pi * 4.6 * t))
+    elif patch == "strings":
+        x = .57 * np.sin(phase) + .20 * np.sin(2 * phase) + .14 * np.sin(phase * 1.0035) + .06 * np.sin(3 * phase)
+        e = envelope(n, .095, .22) * (.85 + .15 * np.sin(2 * np.pi * .38 * t))
     else:
         raise ValueError(patch)
     return (x * e * velocity).astype(np.float32)
@@ -116,6 +128,17 @@ def mix_bgm(name, bpm, chords, melody, kind):
         pad_gain = {"title": .100, "game": .052, "result": .13}[kind]
         for k, note in enumerate(notes):
             add(buf, voice(note, 4 * beat + .22, "pad" if kind != "result" else "airy", .9), base, pan=[-.34, 0, .34][k], gain=pad_gain)
+        for k, note in enumerate(notes):
+            if kind != "result":
+                add(buf, voice(note - 12, 4 * beat, "strings", .74), base, pan=[-.48, .05, .46][k], gain=.025 if kind == "game" else .036)
+        if kind != "result":
+            for pulse in (0, 2):
+                at = base + pulse * beat
+                for k, note in enumerate(notes):
+                    add(buf, voice(note, beat * .83, "keys", .80), at + .008 * k, pan=[-.24, 0, .24][k], gain=.048 if kind == "game" else .038)
+        else:
+            for k, note in enumerate(notes):
+                add(buf, voice(note, beat * 2.8, "strings", .7), base + beat * .5, pan=[-.40, .08, .40][k], gain=.042)
         for slot in range(8):
             pos = base + beat * .5 * slot
             if kind == "result":
@@ -133,7 +156,7 @@ def mix_bgm(name, bpm, chords, melody, kind):
             for step in range(16):
                 note = arp_notes[(step + bar) % 4]
                 pan = (-.34 if step % 2 == 0 else .34)
-                add(buf, voice(note, beat * .22, "chip", .83), base + step * beat / 4, pan=pan, gain=.092)
+                add(buf, voice(note, beat * .35, "marimba" if bar % 4 < 2 else "pluck", .76), base + step * beat / 4, pan=pan, gain=.064)
         elif kind == "title":
             arp_notes = [notes[0] + 12, notes[1] + 12, notes[2] + 12, notes[1] + 12]
             for step in range(8):
@@ -150,13 +173,18 @@ def mix_bgm(name, bpm, chords, melody, kind):
             next_note = next((j for j in range(step + 1, 8) if melody[bar][j] is not None), 8)
             steps = next_note - step
             duration = beat * .5 * min(steps * .86, 2.0)
-            voice_patch = "lead" if kind == "game" else "bell" if kind == "result" else "pluck"
+            voice_patch = ("flute" if bar % 4 == 2 else "lead") if kind == "game" else "bell" if kind == "result" else "pluck"
             level = {"title": .18, "game": .13, "result": .16}[kind]
             sound = voice(note, duration, voice_patch, 1.0)
             at = base + step * beat / 2
             add(buf, sound, at, pan=.08, gain=level)
             if kind != "game":
                 add(buf, sound, at + beat * .68, pan=-.34, gain=level * .14)
+        if kind == "game" and bar % 4 in (1, 3):
+            for step, note_index in ((1, 1), (5, 2)):
+                add(buf, voice(notes[note_index] + 12, beat * 1.04, "flute", .75), base + step * beat * .5, pan=-.42, gain=.041)
+        if kind == "title" and bar % 4 == 3:
+            add(buf, voice(notes[1] + 12, beat * 1.6, "flute", .68), base + beat * 2, pan=.38, gain=.055)
         if kind == "game":
             for step in range(8):
                 add(buf, drum("hat", .085, .68 if step % 2 else 1), base + step * beat * .5, pan=(-.15 if step % 2 else .15), gain=.085)
@@ -173,7 +201,17 @@ def mix_bgm(name, bpm, chords, melody, kind):
         else:
             for step in (1, 3, 5, 7):
                 add(buf, drum("shaker", .11, .45), base + step * beat * .5, pan=-.24 if step % 4 == 1 else .24, gain=.045)
-    return buf
+    return add_room(buf, .25 if kind == "result" else .19)
+
+
+def add_room(buf, wet):
+    dry = buf.astype(np.float64)
+    reflection = np.zeros_like(dry)
+    for delay, amount in ((.067, .20), (.119, .17), (.181, .13), (.283, .09), (.397, .06)):
+        delayed = np.roll(dry, round(delay * SR), axis=0)
+        reflection[:, 0] += delayed[:, 1] * amount
+        reflection[:, 1] += delayed[:, 0] * amount
+    return (dry + reflection * wet).astype(np.float32)
 
 
 def sweep(duration, start_hz, end_hz, overtone=.20, noise_amt=0, wobble=0):
