@@ -217,7 +217,7 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
     let failureReason: string | undefined;
     if (diagnostics.length) errors.push("program has syntax/semantic errors");
     if (entry.role === "learning" && usesSecretAction(entry.source)) errors.push("learning route must not require secret actions");
-    else {
+    if (errors.length === 0) {
       const run = runToCompletion(createGame(source, analysis.program), maxTicks);
       if (run.status === "ready") throw new Error("Headless validation cannot finish in ready state");
       outcome = run.status === "running" ? "timeout" : run.status;
