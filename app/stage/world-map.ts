@@ -3,7 +3,7 @@ import { canPlayStage, type ProgressionStage } from "./progression.ts";
 export const STAGE_WORLDS = [
   { title: "こもれびの森", start: 1, end: 10, subtitle: "はじめての ことばのぼうけん" },
   { title: "夕やけの谷", start: 11, end: 20, subtitle: "はやさと ちえの ぼうけん" },
-  { title: "星あかりの城", start: 21, end: 30, subtitle: "ぜんぶの ちからを あわせよう" },
+  { title: "星あかりの国", start: 21, end: 30, subtitle: "ぜんぶの ちからを あわせよう" },
 ] as const;
 
 export function worldIndexForStage(stageId: string | undefined): number {
