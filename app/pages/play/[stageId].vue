@@ -296,6 +296,7 @@ watch(stageId, () => {
             ref="editorRef"
             v-model:lines="editorLines"
             :dictionary="dict || undefined"
+            :stage="stage"
             :running="running"
             :active-lines="executionTrace.active"
             :sustained-lines="executionTrace.sustained"
