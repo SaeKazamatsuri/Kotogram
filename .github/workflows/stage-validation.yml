@@ -17,6 +17,8 @@ jobs:
         run: npm test
       - name: Validate stage snapshots
         run: npm run validate:stages
+      - name: Compare registered solutions across all thirty stages
+        run: npm run analyze:stages > /tmp/kotogram-stage-report.json
       - name: Explore bounded stage candidates
         run: npm run explore:stages -- --max-candidates=128 --max-ms=5000
 
