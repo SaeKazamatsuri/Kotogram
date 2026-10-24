@@ -6,6 +6,7 @@ import { renderGameFrame } from "../app/game/renderer.ts";
 
 test("stage moods have legible differentiated palettes and safe defaults", () => {
   assert.notDeepEqual(resolveScenePalette("twilight"), resolveScenePalette("day"));
+  assert.deepEqual(["forest", "canyon", "starlight"], ["day", "sunset", "twilight"].map((tone) => resolveScenePalette(tone).biome));
   assert.notDeepEqual(resolveScenePalette("sunset"), resolveScenePalette("day"));
   assert.deepEqual(resolveScenePalette("unexpected"), resolveScenePalette("day"));
 });
@@ -48,5 +49,30 @@ test("動きを減らす場合は装飾粒子を省き公式のゲーム状態�
     return events;
   };
   assert.ok(run(false).filter(([method]) => method === "arc").length > run(true).filter(([method]) => method === "arc").length);
+  assert.equal(JSON.stringify(game, (_key, value) => value instanceof Set ? [...value] : value), before);
+});
+
+test("3つの世界は単なる色替えではなく背景の描画命令が異なる", () => {
+  const game = createGame({ goal: 800 });
+  const before = JSON.stringify(game, (_key, value) => value instanceof Set ? [...value] : value);
+  const draw = (tone) => {
+    const calls = [];
+    const ctx = new Proxy({}, {
+      get(target, key) {
+        if (key === "createLinearGradient") return () => ({ addColorStop() {} });
+        return target[key] ?? ((...args) => calls.push([key, ...args]));
+      },
+      set(target, key, value) { target[key] = value; return true; },
+    });
+    renderGameFrame(ctx, game, resolveScenePalette(tone), 100, false, 1, true);
+    return calls;
+  };
+  const forest = draw("day");
+  const canyon = draw("sunset");
+  const starlight = draw("twilight");
+  assert.ok(forest.filter(([method]) => method === "arc").length > canyon.filter(([method]) => method === "arc").length);
+  assert.ok(starlight.filter(([method]) => method === "save").length > canyon.filter(([method]) => method === "save").length);
+  assert.notDeepEqual(forest, canyon);
+  assert.notDeepEqual(canyon, starlight);
   assert.equal(JSON.stringify(game, (_key, value) => value instanceof Set ? [...value] : value), before);
 });
