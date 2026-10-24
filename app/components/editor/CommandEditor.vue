@@ -98,6 +98,18 @@ function updateMetrics() {
 function onScroll() {
   if (textarea.value) taScrollTop.value = textarea.value.scrollTop;
 }
+watch(() => props.activeLines?.join(","), () => {
+  if (!props.running || !textarea.value || !props.activeLines?.length) return;
+  const line = props.activeLines[props.activeLines.length - 1]!;
+  const top = taPaddingTop.value + (line - 1) * taLineHeight.value;
+  const bottom = top + taLineHeight.value;
+  const viewTop = textarea.value.scrollTop;
+  const viewBottom = viewTop + textarea.value.clientHeight;
+  if (top < viewTop || bottom > viewBottom) {
+    textarea.value.scrollTop = Math.max(0, top - textarea.value.clientHeight / 3);
+    onScroll();
+  }
+});
 let observer: ResizeObserver | null = null;
 onMounted(() => {
   updateMetrics();
