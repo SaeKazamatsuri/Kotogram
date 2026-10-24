@@ -19,7 +19,7 @@ defineProps<{
       paddingBottom: paddingBottom + 'px',
       transform: `translateY(-${scrollTop}px)`,
     }">
-      <div v-for="(state, index) in states" :key="index" class="flex items-center justify-between px-2 font-mono text-[12px] font-bold" :class="activeLines?.includes(index + 1) ? 'bg-[#aaf0d0] text-[#123a31]' : waitingLine === index + 1 ? 'bg-[#e3d9ff] text-[#34265f]' : 'text-[#5d667a]'" :style="{ height: lineHeight + 'px' }">
+      <div v-for="(state, index) in states" :key="index" class="flex items-center justify-between px-2 font-mono text-[12px] font-bold" :data-execution="activeLines?.includes(index + 1) ? 'fired' : waitingLine === index + 1 ? 'waiting' : repeatLine === index + 1 ? 'repeat' : null" :class="activeLines?.includes(index + 1) ? 'bg-[#aaf0d0] text-[#123a31]' : waitingLine === index + 1 ? 'bg-[#e3d9ff] text-[#34265f]' : 'text-[#5d667a]'" :style="{ height: lineHeight + 'px' }">
         <span>{{ index + 1 }}</span>
         <span v-if="activeLines?.includes(index + 1)" aria-label="実行中">▶</span>
         <span v-else-if="repeatLine === index + 1" aria-label="繰り返し中">↻</span>
