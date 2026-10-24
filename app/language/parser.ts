@@ -33,7 +33,8 @@ export type IfStatement = { kind: "if"; conditions: Condition[]; operator: "or";
 export type Statement = RuleStatement | ActionStatement | RepeatStatement | IfStatement;
 export type ParseResult = { body: Statement[]; diagnostics: Diagnostic[]; tokens: Token[][] };
 export type ExecutableRule = { cond?: Condition; conds?: Condition[]; action: Action; maxFires?: number };
-export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; diagnostics: Diagnostic[] };
+export type SourceMap = { watchers: number[]; steps: number[] };
+export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; sourceMap: SourceMap; diagnostics: Diagnostic[] };
 
 const DEFAULT_CONDITIONS: Record<Condition, string[]> = conditionsDictionary;
 const DEFAULT_ACTIONS: Record<Action, string[]> = actionsDictionary;
@@ -313,6 +314,8 @@ export function compileProgram(parsed: ParseResult): CompileResult {
   const watchers: ExecutableRule[] = [];
   const steps: GameInstruction[] = [];
   const rules: ExecutableRule[] = [];
+  const sourceMap: SourceMap = { watchers: [], steps: [] };
+  const addStep = (instruction: GameInstruction, line: number) => { steps.push(instruction); sourceMap.steps.push(line); };
 
   const watcher = (node: RuleStatement, limit?: number) => {
     if (limit !== undefined && node.maxFires !== null) {
@@ -325,28 +328,29 @@ export function compileProgram(parsed: ParseResult): CompileResult {
       maxFires: limit ?? node.maxFires ?? undefined,
     };
     watchers.push(rule);
+    sourceMap.watchers.push(node.span.start.line);
     rules.push(rule);
   };
 
   const procedural = (node: Statement): void => {
     if (node.kind === "action") {
-      steps.push({ op: "action", action: node.action, count: node.repeat });
+      addStep({ op: "action", action: node.action, count: node.repeat }, node.span.start.line);
     } else if (node.kind === "rule") {
-      steps.push({
+      addStep({
         op: "wait",
         conds: [...node.conditions],
         action: node.action,
         count: node.maxFires ?? 1,
-      });
+      }, node.span.start.line);
     } else if (node.kind === "if") {
-      steps.push({ op: "wait", conds: [...node.conditions], count: 1 });
+      addStep({ op: "wait", conds: [...node.conditions], count: 1 }, node.span.start.line);
       for (const child of node.body) procedural(child);
     } else {
       const begin = steps.length;
-      steps.push({ op: "repeat-start", count: node.repeat, end: -1 });
+      addStep({ op: "repeat-start", count: node.repeat, end: -1 }, node.span.start.line);
       for (const child of node.body) procedural(child);
       const end = steps.length;
-      steps.push({ op: "repeat-end", start: begin });
+      addStep({ op: "repeat-end", start: begin }, node.span.end.line);
       steps[begin] = { op: "repeat-start", count: node.repeat, end };
     }
   };
@@ -387,7 +391,7 @@ export function compileProgram(parsed: ParseResult): CompileResult {
   const program: GameProgram = diagnostics.length
     ? { watchers: [], steps: [] }
     : { watchers, steps };
-  return { rules: diagnostics.length ? [] : rules, program, diagnostics };
+  return { rules: diagnostics.length ? [] : rules, program, sourceMap: diagnostics.length ? { watchers: [], steps: [] } : sourceMap, diagnostics };
 }
 
 export function analyzeProgram(source: string | string[], vocabulary: Vocabulary = {}) {
