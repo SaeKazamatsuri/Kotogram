@@ -219,7 +219,7 @@ onMounted(() => {
           <div class="map-hill map-hill--far" aria-hidden="true" />
           <div class="map-hill map-hill--near" aria-hidden="true" />
           <div v-for="(tree, index) in trees" :key="index" class="map-tree" :style="{ left: tree.x + '%', top: tree.y + '%' }" aria-hidden="true" />
-          <div class="map-castle" aria-hidden="true"><Icon name="lucide:castle" /></div>
+          <div class="map-castle" aria-hidden="true"><Icon :name="selectedWorld === 0 ? 'lucide:trees' : selectedWorld === 1 ? 'lucide:mountain' : 'lucide:castle'" /></div>
 
           <svg class="map-trail map-trail--wide" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
             <path class="map-trail__edge" :d="trailWide" />
@@ -334,6 +334,78 @@ onMounted(() => {
 .map-land--world-2 .map-hill--far { background: #526881; }
 .map-land--world-2 .map-tree::before { background: linear-gradient(100deg, #8dbbdd 50%, #697fae 50%); clip-path: polygon(50% 0, 86% 37%, 75% 75%, 50% 100%, 25% 75%, 14% 37%); }
 .map-land--world-2 .map-trail__road { stroke: #f8dfc6; }
+
+.map-land--world-0 .map-mountain {
+  clip-path: polygon(0 100%, 0 69%, 12% 68%, 12% 50%, 22% 50%, 22% 28%, 34% 48%, 34% 62%, 47% 36%, 58% 60%, 58% 47%, 72% 30%, 82% 56%, 100% 72%, 100% 100%);
+  background: linear-gradient(115deg, #74ab8d, #43876c);
+  opacity: .55;
+}
+.map-land--world-0 .map-trail__road { stroke: #f5dc9b; stroke-dasharray: 28 5; }
+.map-land--world-0 .map-stop:not(.is-locked) .map-stop__sign {
+  border-color: #785741;
+  background: repeating-linear-gradient(0deg, #fff1cd 0 13px, #f7e4b6 13px 15px);
+  box-shadow: 0 5px 0 #4c3c2e9c, inset 0 3px 0 #fff9e8;
+}
+.map-land--world-0 .map-stop:not(.is-locked):not(.is-cleared):not(.is-current) .map-stop__circle {
+  border-color: #fff5d4;
+  background: radial-gradient(circle at 34% 25%, #ffebb0, #f3b868 76%);
+}
+.map-land--world-1 .map-mountain {
+  clip-path: polygon(0 100%, 0 80%, 11% 80%, 11% 54%, 21% 54%, 21% 35%, 65% 35%, 65% 50%, 86% 50%, 86% 80%, 100% 80%, 100% 100%);
+  background: linear-gradient(95deg, #d08a71 0 38%, #aa5c69 38% 62%, #8a536c 62%);
+  opacity: .75;
+}
+.map-land--world-1 .map-tree::after {
+  top: 15%; left: 44%; width: 13%; height: 85%; border-radius: 10px;
+  background: #397d72;
+}
+.map-land--world-1 .map-hill--near { background: repeating-linear-gradient(178deg, #99596c 0 26px, #b67570 27px 32px, #a66c6c 33px 63px); }
+.map-land--world-1 .map-trail__edge { stroke: #874d59; }
+.map-land--world-1 .map-trail__road { stroke: #f4cc9b; stroke-dasharray: 20 5; }
+.map-land--world-1 .map-stop:not(.is-locked) .map-stop__sign {
+  border-color: #865c61;
+  background: repeating-linear-gradient(-7deg, #ffe8cf 0 16px, #eec3b0 17px 19px, #ffe8cf 20px 33px);
+  box-shadow: 0 6px 0 #703c52a8, inset 0 3px 0 #fff6e7;
+}
+.map-land--world-1 .map-stop:not(.is-locked):not(.is-cleared):not(.is-current) .map-stop__circle {
+  border-color: #ffe7be;
+  background: radial-gradient(circle at 28% 20%, #ffe2b3, #db907e 80%);
+}
+.map-land--world-2 {
+  background:
+    radial-gradient(circle at 16% 15%, #ffffffa0 0 2px, transparent 3px),
+    radial-gradient(circle at 35% 8%, #ffffffaa 0 3px, transparent 4px),
+    radial-gradient(circle at 61% 21%, #fff4d6a6 0 2px, transparent 3px),
+    radial-gradient(circle at 83% 11%, #eae3ffac 0 3px, transparent 4px),
+    linear-gradient(120deg, #263c68, #584a83 52%, #966c9a);
+}
+.map-land--world-2 .map-mountain {
+  clip-path: polygon(0 100%, 17% 55%, 32% 72%, 54% 5%, 76% 64%, 86% 42%, 100% 100%);
+  background: linear-gradient(105deg, #5f8da6 0 48%, #49517e 48% 75%, #7182ab 75%);
+  opacity: .75;
+}
+.map-land--world-2 .map-cloud { opacity: .25; }
+.map-land--world-2 .map-trail__edge { stroke: #4c6388; }
+.map-land--world-2 .map-trail__road { stroke: #e4e9ff; stroke-dasharray: 14 4; filter: drop-shadow(0 0 5px #8fe8ff); }
+.map-land--world-2 .map-stop:not(.is-locked) .map-stop__sign {
+  border-color: #617aa1;
+  background: linear-gradient(137deg, #faf5ff 0%, #dce7fb 48%, #f7f0ff 100%);
+  box-shadow: 0 6px 0 #344566ab, inset 0 3px 0 #ffffff;
+}
+.map-land--world-2 .map-stop:not(.is-locked):not(.is-cleared):not(.is-current) .map-stop__circle {
+  border-color: #f0ecff;
+  background: radial-gradient(circle at 30% 24%, #faf5ff, #abc8e7 55%, #9296cf);
+}
+.map-land--world-2 .map-stop:not(.is-locked) .map-stop__stage { color: #44577b; }
+.map-land--world-0 .map-castle { color: #eaffd5; }
+.map-land--world-1 .map-castle { color: #ffe4bb; }
+.map-land--world-2 .map-castle { color: #f8ecff; filter: drop-shadow(0 0 12px #a1d8ff) drop-shadow(5px 7px 0 #213d5370); }
+.map-stop:nth-child(5n) .map-stop__sign { position: relative; }
+.map-stop:nth-child(5n) .map-stop__sign::after {
+  content: "✦"; position: absolute; top: -21px; right: 5px;
+  color: #fff3c0; font-size: 22px; text-shadow: 0 2px 0 #34495f, 0 0 8px #fff9d0;
+}
+
 .map-viewport {
   position: relative;
   flex: 1 1 0;
@@ -564,6 +636,12 @@ onMounted(() => {
   .map-land { width: 100%; min-width: 300px; height: var(--map-height, 1400px); background: linear-gradient(180deg, #b6e9d9 0%, #9ccfba 37%, #8ac1b1 60%, #81aebe 100%); }
   .map-land--expanded { height: var(--map-height, 1400px); }
   .map-land::before { background: radial-gradient(ellipse at 35% 18%, #83c39b 0 13%, transparent 14%), radial-gradient(ellipse at 70% 53%, #57a48f 0 20%, transparent 21%), radial-gradient(ellipse at 30% 86%, #528f99 0 18%, transparent 19%); }
+
+  .map-land--world-1 { background: linear-gradient(180deg, #ffe0aa, #e5ae8d 46%, #b66e83); }
+  .map-land--world-1::before { background: radial-gradient(ellipse at 15% 30%, #cb916b 0 18%, transparent 19%), radial-gradient(ellipse at 85% 67%, #bd7479 0 20%, transparent 21%); }
+  .map-land--world-2 { background: radial-gradient(circle at 24% 11%, #ffffffac 0 2px, transparent 3px), radial-gradient(circle at 72% 55%, #fff2ef 0 2px, transparent 3px), linear-gradient(180deg, #283c68, #685781 52%, #87699a); }
+  .map-land--world-2::before { background: radial-gradient(ellipse at 14% 25%, #496387 0 16%, transparent 17%), radial-gradient(ellipse at 90% 66%, #495a81 0 20%, transparent 21%); }
+
   .map-sun { left: 8%; top: 2%; width: 52px; }
   .map-cloud--one { left: 18%; top: 31%; transform: scale(.55); }
   .map-cloud--two { left: 32%; top: 70%; transform: scale(.55); }
