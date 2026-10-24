@@ -4,6 +4,8 @@ import { readFileSync } from "node:fs";
 import { getScoreReference, ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID } from "../app/scoring/score.ts";
 import { validateScope, validateRunPayload, verifyRunResult } from "../worker/validation.mjs";
 import { validateStageCases, usesSecretAction } from "../app/stage/validator.ts";
+import { analyzeProgram } from "../app/language/parser.ts";
+import { createGame, runToCompletion } from "../app/game/core.ts";
 
 const read = (file) => JSON.parse(readFileSync(new URL("../" + file, import.meta.url), "utf8"));
 const manifest = read("public/stages/manifest.json");
@@ -52,5 +54,22 @@ test("previous leaderboard scopes remain visible while new versions are used for
     const measured = validation.cases.find((item) => item.role === "beginner");
     assert.ok(measured?.pass, id);
     assert.equal(verifyRunResult({ stageId: id, source: baseline.source, elapsedTicks: measured.elapsedTicks }), revised.timeTicks);
+  }
+});
+
+test("broad ahead rules create a verified walking versus running trade-off in three stages", () => {
+  for (const number of [5, 13, 25]) {
+    const stage = read("public/stages/stage-" + number + ".json");
+    const base = "まえとぶ\nおばけしゃがむ\nこいんとる";
+    const run = (source) => {
+      const parsed = analyzeProgram(source);
+      assert.deepEqual(parsed.diagnostics, [], source);
+      return runToCompletion(createGame(stage, parsed.program), 20000);
+    };
+    const walking = run("あるく\n" + base);
+    const running = run("はしる\n" + base);
+    assert.equal(walking.status, "cleared", "stage-" + number);
+    assert.equal(running.status, "failed", "stage-" + number);
+    assert.equal(running.failureReason, "hole", "stage-" + number);
   }
 });
