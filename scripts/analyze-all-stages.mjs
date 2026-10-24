@@ -61,6 +61,11 @@ const stages = manifest.stages.map((entry) => {
     fewerCharacters: secretClears.some((item) => item.characters < learning.characters),
     betterOverall: secretClears.some((item) => item.product < learning.product),
   };
+  const paretoFrontier = entries.filter((candidate) =>
+    !entries.some((other) => other !== candidate
+      && other.elapsedTicks <= candidate.elapsedTicks
+      && other.characters <= candidate.characters
+      && (other.elapsedTicks < candidate.elapsedTicks || other.characters < candidate.characters)));
   const knownBest = {
     time: [...entries].sort((a, b) => a.elapsedTicks - b.elapsedTicks || a.characters - b.characters)[0],
     characters: [...entries].sort((a, b) => a.characters - b.characters || a.elapsedTicks - b.elapsedTicks)[0],
@@ -78,6 +83,7 @@ const stages = manifest.stages.map((entry) => {
       short: compare(short),
       fast: compare(fast),
       bestKnown: validation.bestKnown,
+      paretoFrontier: paretoFrontier.map((item) => ({ ...compare(item), role: item.role })),
       knownBestByCategory: Object.fromEntries(Object.entries(knownBest).map(([category, item]) => [category, { ...compare(item), source: item.source }])),
     },
     reference: { ticks: reference.timeTicks, characters: reference.characters },
@@ -116,6 +122,7 @@ const summary = {
   naiveRunSuccesses: stages.filter((stage) => !stage.flags.naiveRunFails).map((stage) => stage.id),
   broadRunRiskStages: stages.filter((stage) => stage.flags.broadRunRisk).map((stage) => stage.id),
   broadSprintRiskStages: stages.filter((stage) => stage.flags.broadSprintRisk).map((stage) => stage.id),
+  stagesWithDistinctParetoChoices: stages.filter((stage) => stage.solutions.paretoFrontier.length > 1).map((stage) => stage.id),
   worldStats: [1, 2, 3].map((world) => {
     const subset = stages.filter((stage) => stage.world === world);
     return { world, stageCount: subset.length, averageBeginnerTicks: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.ticks, 0) / subset.length), averageBeginnerCharacters: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.learning.characters, 0) / subset.length), naiveSprintFailureCount: subset.filter((stage) => stage.flags.naiveSprintFails).length, naiveRunFailureCount: subset.filter((stage) => stage.flags.naiveRunFails).length, secretImprovesOverallCount: subset.filter((stage) => stage.secretAdvantage.betterOverall).length, broadRunRiskCount: subset.filter((stage) => stage.flags.broadRunRisk).length };
