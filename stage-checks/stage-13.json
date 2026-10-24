@@ -25,6 +25,31 @@
       "role": "negative",
       "source": "あるく",
       "expect": "failed"
+    },
+    {
+      "name": "wide-sensor-walk-clears",
+      "role": "regression",
+      "source": "まえとぶ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "wide-sensor-unsafe-run-hits-nearby-hole",
+      "role": "negative",
+      "source": "はしる\nまえとぶ\nおばけしゃがむ",
+      "expect": "failed",
+      "failureReason": "hole"
+    },
+    {
+      "name": "wide-sensor-slow-down-before-hole-clears",
+      "role": "regression",
+      "source": "はしる\nあなあるく\nまえとぶ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "precise-run-remains-valid",
+      "role": "regression",
+      "source": "はしる\nかべとぶ\nあなとぶ\nおばけしゃがむ",
+      "expect": "cleared"
     }
   ]
 }
