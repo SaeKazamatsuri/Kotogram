@@ -78,6 +78,20 @@
       "source": "はしる\nかべとあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
       "expectedTicks": 574
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "まえとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 746
+    },
+    {
+      "name": "blind-sprint-hits-hole",
+      "role": "negative",
+      "source": "めっちゃはしる\nまえとぶ\nおばけしゃがむ\nこいんとる",
+      "expect": "failed",
+      "failureReason": "hole"
     }
   ]
 }

@@ -37,6 +37,13 @@
       "source": "はしる",
       "expect": "failed",
       "failureReason": "wall"
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "かべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 712
     }
   ]
 }

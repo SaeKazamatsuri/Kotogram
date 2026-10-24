@@ -46,6 +46,13 @@
       "expect": "failed",
       "failureReason": "wall",
       "expectedTicks": 544
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "すいっちおす\nかべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 679
     }
   ]
 }

@@ -6,19 +6,22 @@
       "name": "beginner",
       "role": "beginner",
       "source": "かべ1かいすごいじゃんぷ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 292
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべ1かいすごいとぶ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 292
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 167
     },
     {
       "name": "missing-actions",
@@ -36,7 +39,15 @@
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
       "source": "かべとぶ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 292
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "かべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 292
     }
   ]
 }

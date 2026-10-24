@@ -3,7 +3,7 @@ import { analyzeProgram } from "../language/parser.ts";
 import { countSourceCharacters } from "../scoring/score.ts";
 
 export type ValidationIssue = { path: string; message: string };
-export type CaseRole = "beginner" | "learning" | "short" | "fast" | "negative" | "regression";
+export type CaseRole = "beginner" | "learning" | "short" | "fast" | "overall" | "negative" | "regression";
 export type ExpectedOutcome = "cleared" | "failed" | "timeout";
 export type StageCase = {
   name: string;
@@ -173,7 +173,7 @@ export function validateChecks(stageId: string, value: unknown): ValidationIssue
     return issues;
   }
   const names = new Set<string>();
-  const roles = new Set(["beginner", "learning", "short", "fast", "negative", "regression"]);
+  const roles = new Set(["beginner", "learning", "short", "fast", "overall", "negative", "regression"]);
   for (const [i, entry] of value.cases.entries()) {
     const path = `checks.cases[${i}]`;
     if (!isObject(entry)) { issues.push({ path, message: "test object required" }); continue; }

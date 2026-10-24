@@ -57,6 +57,13 @@
       "source": "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "failed",
       "failureReason": "door"
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "はしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 651
     }
   ]
 }

@@ -6,25 +6,35 @@
       "name": "beginner",
       "role": "beginner",
       "source": "かべとぶ\nあなとぶ\nこいんとる",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 852
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべとあなとぶ\nこいんとる",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 852
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nこいんとる",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 487
     },
     {
       "name": "missing-actions",
       "role": "negative",
       "source": "あるく",
       "expect": "failed"
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nこいんとる",
+      "expect": "cleared",
+      "expectedTicks": 487
     }
   ]
 }
