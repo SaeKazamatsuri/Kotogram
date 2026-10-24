@@ -1,6 +1,18 @@
 import { generateCelebrationWav, type CelebrationCue } from "./celebration-music.ts";
 
-export type BgmName = "title_adventure" | "title_loop" | "game_loop" | "result_loop" | "clear_loop";
+export type StageBgmMode = "edit" | "run";
+export type StageBgmName = `stage-${number}-${StageBgmMode}`;
+export type BgmName = "title_adventure" | "title_loop" | "game_loop" | "result_loop" | "clear_loop" | StageBgmName;
+
+export function stageBgmName(stageId: string, mode: StageBgmMode): BgmName {
+  const match = /^stage-([1-9][0-9]?)$/.exec(stageId);
+  const number = Number(match?.[1]);
+  return match && number >= 1 && number <= 30 ? `stage-${number}-${mode}` : mode === "edit" ? "title_loop" : "game_loop";
+}
+
+function isRunningBgm(name: BgmName): boolean {
+  return name === "game_loop" || /^stage-([1-9]|[12][0-9]|30)-run$/.test(name);
+}
 export type SoundName =
   | "avoid" | "confirm" | "crouch" | "gameover" | "high_score"
   | "hit" | "jump" | "land" | "score" | "score_bonus"
@@ -52,13 +64,16 @@ function fileUrl(folder: "bgm" | "se", name: string): string {
   if (!extension) {
     extension = document.createElement("audio").canPlayType('audio/ogg; codecs="vorbis"') ? "ogg" : "mp3";
   }
+  if (folder === "bgm" && /^stage-([1-9]|[12][0-9]|30)-(edit|run)$/.test(name)) {
+    return `/audio/bgm/stages/${name}.${extension}`;
+  }
   return `/audio/${folder}/${name}.${extension}`;
 }
 
 function syncMusic(): void {
   if (!onClient() || !unlocked || getAudioMuted()) return;
   if (music && currentTrack === track) {
-    music.playbackRate = track === "game_loop" ? gameBgmRate : 1;
+    music.playbackRate = isRunningBgm(track) ? gameBgmRate : 1;
     if (music.paused) void music.play().catch(() => {});
     return;
   }
@@ -66,8 +81,12 @@ function syncMusic(): void {
   const next = new Audio(fileUrl("bgm", track));
   next.preload = "auto";
   next.loop = true;
-  next.playbackRate = track === "game_loop" ? gameBgmRate : 1;
+  next.playbackRate = isRunningBgm(track) ? gameBgmRate : 1;
   next.volume = track === "clear_loop" ? CLEAR_BGM_VOLUME : BGM_VOLUME;
+  next.onerror = () => {
+    if (music !== next || !track.startsWith("stage-")) return;
+    setBgm(isRunningBgm(track) ? "game_loop" : "title_loop");
+  };
   music = next;
   currentTrack = track;
   void next.play().catch(() => {
@@ -83,14 +102,14 @@ export function unlockAudio(): void {
 
 export function setBgm(next: BgmName): void {
   track = next;
-  if (next !== "game_loop") gameBgmRate = 1;
+  if (!isRunningBgm(next)) gameBgmRate = 1;
   syncMusic();
 }
 
 export function setGameBgmRate(rate: number): void {
   if (!Number.isFinite(rate)) return;
   gameBgmRate = Math.min(2, Math.max(0.5, rate));
-  if (track === "game_loop" && music) music.playbackRate = gameBgmRate;
+  if (isRunningBgm(track) && music) music.playbackRate = gameBgmRate;
 }
 
 export function setAudioMuted(next: boolean): void {
