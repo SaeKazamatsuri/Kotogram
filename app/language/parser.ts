@@ -33,7 +33,7 @@ export type IfStatement = { kind: "if"; conditions: Condition[]; operator: "or";
 export type Statement = RuleStatement | ActionStatement | RepeatStatement | IfStatement;
 export type ParseResult = { body: Statement[]; diagnostics: Diagnostic[]; tokens: Token[][] };
 export type ExecutableRule = { cond?: Condition; conds?: Condition[]; action: Action; maxFires?: number };
-export type SourceMap = { watchers: number[]; steps: number[] };
+export type SourceMap = { watchers: number[]; watcherLoops: (number | null)[]; steps: number[] };
 export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; sourceMap: SourceMap; diagnostics: Diagnostic[] };
 
 const DEFAULT_CONDITIONS: Record<Condition, string[]> = conditionsDictionary;
@@ -328,10 +328,10 @@ export function compileProgram(parsed: ParseResult): CompileResult {
   const watchers: ExecutableRule[] = [];
   const steps: GameInstruction[] = [];
   const rules: ExecutableRule[] = [];
-  const sourceMap: SourceMap = { watchers: [], steps: [] };
+  const sourceMap: SourceMap = { watchers: [], watcherLoops: [], steps: [] };
   const addStep = (instruction: GameInstruction, line: number) => { steps.push(instruction); sourceMap.steps.push(line); };
 
-  const watcher = (node: RuleStatement, limit?: number) => {
+  const watcher = (node: RuleStatement, limit?: number, repeatLine?: number) => {
     if (limit !== undefined && node.maxFires !== null) {
       diagnostics.push(error("unsupported", "かいすうを 2かしょに かかないでね", node.span.start));
       return;
@@ -343,6 +343,7 @@ export function compileProgram(parsed: ParseResult): CompileResult {
     };
     watchers.push(rule);
     sourceMap.watchers.push(node.span.start.line);
+    sourceMap.watcherLoops.push(repeatLine ?? null);
     rules.push(rule);
   };
 
@@ -387,13 +388,13 @@ export function compileProgram(parsed: ParseResult): CompileResult {
           operator: "or",
           action: node.body[0].action,
           maxFires: null,
-          span: node.span,
+          span: node.body[0].span,
         });
       } else {
         diagnostics.push(error("unsupported", "もしの なかは うごきを 1つ かいてね", node.span.start));
       }
     } else if (node.body.length === 1 && node.body[0].kind === "rule" && node.body[0].maxFires === null) {
-      watcher(node.body[0], node.repeat);
+      watcher(node.body[0], node.repeat, node.span.start.line);
     } else {
       procedural(node);
     }
@@ -405,7 +406,7 @@ export function compileProgram(parsed: ParseResult): CompileResult {
   const program: GameProgram = diagnostics.length
     ? { watchers: [], steps: [] }
     : { watchers, steps };
-  return { rules: diagnostics.length ? [] : rules, program, sourceMap: diagnostics.length ? { watchers: [], steps: [] } : sourceMap, diagnostics };
+  return { rules: diagnostics.length ? [] : rules, program, sourceMap: diagnostics.length ? { watchers: [], watcherLoops: [], steps: [] } : sourceMap, diagnostics };
 }
 
 export function analyzeProgram(source: string | string[], vocabulary: Vocabulary = {}) {
