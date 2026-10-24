@@ -45,6 +45,13 @@
       "source": "こいんとる\nかべとぶ",
       "expect": "cleared",
       "expectedTicks": 512
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "こいんとる\nかべとぶ",
+      "expect": "cleared",
+      "expectedTicks": 512
     }
   ]
 }
