@@ -1,3 +1,19 @@
+export const STAGE_WORLDS = [
+  { title: "こもれびの森", start: 1, end: 10, subtitle: "はじめての ことばのぼうけん" },
+  { title: "夕やけの谷", start: 11, end: 20, subtitle: "はやさと ちえの ぼうけん" },
+  { title: "星あかりの城", start: 21, end: 30, subtitle: "ぜんぶの ちからを あわせよう" },
+] as const;
+
+export function worldIndexForStage(stageId: string | undefined): number {
+  const number = Number(stageId?.match(/^stage-(\\d+)$/)?.[1]);
+  if (!Number.isInteger(number) || number < 1) return 0;
+  return Math.min(STAGE_WORLDS.length - 1, Math.floor((number - 1) / 10));
+}
+
+export function worldPaletteForStage(stageId: string | undefined): "day" | "sunset" | "twilight" {
+  return (["day", "sunset", "twilight"] as const)[worldIndexForStage(stageId)]!;
+}
+
 import { canPlayStage, type ProgressionStage } from "./progression.ts";
 
 export type WorldMapPosition = {
