@@ -9,10 +9,10 @@ test("original title composition is deterministic, playable and committed", () =
   assert.deepEqual(committed, rendered);
   assert.equal(committed.toString("ascii", 0, 4), "RIFF");
   assert.equal(committed.toString("ascii", 8, 12), "WAVE");
-  assert.equal(committed.readUInt32LE(24), 16000);
+  assert.equal(committed.readUInt32LE(24), 32000);
   assert.equal(committed.readUInt16LE(22), 1);
   assert.equal(committed.readUInt16LE(34), 16);
-  assert.ok(committed.length > 100_000);
+  assert.ok(committed.length > 500_000);
 });
 
 test("title music has its own selection without changing map, game or result loops", () => {
