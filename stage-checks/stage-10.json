@@ -11,7 +11,7 @@
     {
       "name": "short-variant",
       "role": "short",
-      "source": "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "2かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
       "expect": "cleared"
     },
     {
