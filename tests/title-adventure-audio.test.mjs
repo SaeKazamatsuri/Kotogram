@@ -9,10 +9,10 @@ test("original title composition is deterministic, playable and committed", () =
   assert.deepEqual(committed, rendered);
   assert.equal(committed.toString("ascii", 0, 4), "RIFF");
   assert.equal(committed.toString("ascii", 8, 12), "WAVE");
-  assert.equal(committed.readUInt32LE(24), 16000);
+  assert.equal(committed.readUInt32LE(24), 32000);
   assert.equal(committed.readUInt16LE(22), 1);
   assert.equal(committed.readUInt16LE(34), 16);
-  assert.ok(committed.length > 100_000);
+  assert.ok(committed.length > 500_000);
 });
 
 test("title music has its own selection without changing map, game or result loops", () => {
@@ -21,4 +21,20 @@ test("title music has its own selection without changing map, game or result loo
   assert.match(audio, /title_adventure\.wav/);
   assert.match(layout, /route\.path === "\/" \? "title_adventure" : "title_loop"/);
   for (const name of ["title_loop", "game_loop", "result_loop"]) assert.match(audio, new RegExp(name));
+});
+
+test("title WAV has headroom and no hard discontinuity at the loop boundary", () => {
+  const wav = Buffer.from(renderTitleAdventure());
+  const samples = (wav.length - 44) / 2;
+  let peak = 0;
+  let sumSquares = 0;
+  for (let index = 0; index < samples; index++) {
+    const sample = wav.readInt16LE(44 + index * 2);
+    peak = Math.max(peak, Math.abs(sample));
+    sumSquares += sample * sample;
+  }
+  const rms = Math.sqrt(sumSquares / samples);
+  assert.ok(peak < 32_000);
+  assert.ok(rms > 500);
+  assert.ok(Math.abs(wav.readInt16LE(44) - wav.readInt16LE(wav.length - 2)) < 100);
 });

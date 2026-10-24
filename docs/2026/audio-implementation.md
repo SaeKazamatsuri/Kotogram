@@ -4,7 +4,7 @@
 
 ## BGM
 
-- `title_adventure`: タイトル専用に新しく作曲した17.14秒のオリジナルループ（C–G–Am–F–C–Em–F–G、112 BPM）。`public/audio/bgm/title_adventure.wav` に収録し、`scripts/generate_title_adventure.mjs` で同一音源を再生成できる
+- `title_adventure`: タイトル専用に新しく作曲した17.14秒のオリジナルループ（C–G–Am–F–C–Em–F–G、112 BPM）。32 kHzのPCM WAVを`public/audio/bgm/title_adventure.wav` に収録し、`scripts/generate_title_adventure.mjs` で同一音源を再生成できる
 - `title_loop`: ステージ選択、コード編集
 - `game_loop`: プログラムの実行中
 - `result_loop`: 失敗画面
@@ -27,3 +27,14 @@ uv run --with numpy==2.3.5 --with scipy==1.17.0 --with soundfile==0.13.1 python 
 ```
 
 編集可能な元のPythonソースは、最初の音源生成ワークフローによって自動的にコミットされます。元データのWAVファイルは `source/wav` に生成されますがリポジトリに含めません。
+
+## 2026-10-25 音色とミックスの改良（Issue #11）
+
+生成スクリプトの音色を増やし、既存の3種類のBGMに弦の持続音、柔らかい鍵盤、木管・マリンバのアルペジオ、控えめなステレオ反射音を重ねる。実行中のBGMでは高域が強いチップ音の反復を抑え、木管とマレット系のソロを切り替える。タイトル専用の `title_adventure` は16 kHzから32 kHzへ更新し、弦・鍵盤・フルートの音色を足す。
+
+- 音色の密度は無制限に増やさない。メロディーと操作SEを優先し、中域を埋めすぎないようにする。
+- BGMのマスターは従来のRMS／ピーク目標（約-19.5 dBFS RMS、ピーク上限-2.8 dBFS）を維持。音量基準ではなく音色の豊かさを主な改善点とする。
+- ループの反射音は循環バッファー上で合成し、先頭／終端に残響の不連続が出にくいようにする。
+- 音源生成はGitHub Actionsの `build-audio` でMP3、OGG、タイトルWAVを再書き出してコミットする。音源のコミットとテスト通過後にマージできる。
+- 1.0／1.3／1.75倍の再生、操作SEの聞こえ方、BGMの重なり、ミュート復帰および会場音量は実機で試聴し、必要があればアレンジを再調整する。
+- 別々の世界へ完全に異なる楽曲を割り当てる案は、ダウンロード量・BGM速度連動・曲間遷移を含め別工程で評価する。
