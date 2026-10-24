@@ -27,7 +27,9 @@ export function createActionHighlights() {
       const line = event.kind === "watcher"
         ? sourceMap?.watchers[event.index] : sourceMap?.steps[event.index];
       if (!line || line < 1) return;
-      strongUntil.set(line, event.tick + STRONG_TICKS);
+      // Crouching only lasts 26 ticks; a shorter pulse leaves time to see its continuing state.
+      const pulse = event.action === "crouch" ? Math.min(10, STRONG_TICKS) : STRONG_TICKS;
+      strongUntil.set(line, event.tick + pulse);
       if (event.action && isPace(event.action)) pace = { line, action: event.action };
       if (event.action === "crouch") crouch = { line, action: "crouch" };
     },
