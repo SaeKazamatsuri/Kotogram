@@ -10,6 +10,7 @@ import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } f
 import { useParser } from "~/composables/useParser";
 import { playSe, setBgm, unlockAudio } from "~/game/audio";
 import type { GameProgram } from "~/game/core";
+import type { SourceMap } from "~/language/parser";
 import type { StageData, StageListItem } from "~/composables/useStageLoader";
 import { canPlayStage, nextStageId } from "~/stage/progression";
 import {
@@ -44,6 +45,8 @@ const editorPanel = ref<HTMLElement | null>(null);
 const gamePanel = ref<HTMLElement | null>(null);
 const editorLines = ref<string[]>([]);
 const program = ref<GameProgram | undefined>(undefined);
+const sourceMap = ref<SourceMap | undefined>(undefined);
+const executionTrace = ref<{ active: number[]; waiting: number | null; repeat: number | null }>({ active: [], waiting: null, repeat: null });
 const running = ref(false);
 const cleared = ref(false);
 const failed = ref(false);
@@ -122,6 +125,8 @@ async function loadCurrentStage() {
   scoreValues.value = null;
   bests.value = {};
   program.value = undefined;
+  sourceMap.value = undefined;
+  executionTrace.value = { active: [], waiting: null, repeat: null };
   editorLines.value = [];
   savedName.value = "";
   saveError.value = "";
@@ -173,6 +178,8 @@ function onRun() {
   sessionGeneration++;
   runningSource.value = editorRef.value?.getText() ?? editorLines.value.join("\n");
   program.value = result.program;
+  sourceMap.value = result.sourceMap;
+  executionTrace.value = { active: [], waiting: null, repeat: null };
   failed.value = false;
   failInfo.value = null;
   cleared.value = false;
@@ -278,6 +285,10 @@ watch(stageId, () => {
             ref="editorRef"
             v-model:lines="editorLines"
             :dictionary="dict || undefined"
+            :running="running"
+            :active-lines="executionTrace.active"
+            :waiting-line="executionTrace.waiting"
+            :repeat-line="executionTrace.repeat"
             @run="onRun"
           />
         </section>
@@ -290,6 +301,8 @@ watch(stageId, () => {
               :stage="stage"
               :program="program"
               :running="running"
+              :source-map="sourceMap"
+              @trace="executionTrace = $event"
               @clear="onClear"
               @fail="onFail"
             />
