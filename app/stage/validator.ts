@@ -1,4 +1,4 @@
-import { GAME, createGame, runToCompletion, type GameStage } from "../game/core.ts";
+import { GAME, SWITCH_COLORS, SWITCH_SHAPES, createGame, runToCompletion, type GameStage } from "../game/core.ts";
 import { analyzeProgram } from "../language/parser.ts";
 import { countSourceCharacters } from "../scoring/score.ts";
 
@@ -94,6 +94,15 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
   )) issues.push({ path: "learningObjectives", message: "provide up to five short learning objectives" });
   if (value.requiredCoins !== undefined && (!Number.isSafeInteger(value.requiredCoins) || (value.requiredCoins as number) < 0)) issues.push({ path: "requiredCoins", message: "requiredCoins must be a nonnegative integer" });
   if (value.requiredSkips !== undefined && (!Number.isSafeInteger(value.requiredSkips) || (value.requiredSkips as number) < 0)) issues.push({ path: "requiredSkips", message: "requiredSkips must be a nonnegative integer" });
+  if (isObject(value.meta) && value.meta.dictionary !== undefined) {
+    const guide = value.meta.dictionary;
+    if (!isObject(guide) || ["conditions", "actions", "examples"].some((key) =>
+      guide[key] !== undefined && (!Array.isArray(guide[key]) ||
+        (guide[key] as unknown[]).some((word) => typeof word !== "string" || !(word as string).trim()) ||
+        (guide[key] as unknown[]).length > 20))) {
+      issues.push({ path: "meta.dictionary", message: "dictionary entries must be arrays of up to 20 nonempty words" });
+    }
+  }
   if (value.objects !== undefined && !Array.isArray(value.objects)) issues.push({ path: "objects", message: "objects must be an array" });
   if (Array.isArray(value.objects)) {
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
@@ -121,6 +130,8 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       }
       if (obj.type === "switch") {
         if (obj.trap === true) trapSwitchCount++;
+        if (obj.color !== undefined && !SWITCH_COLORS.includes(obj.color as typeof SWITCH_COLORS[number])) issues.push({ path: path + ".color", message: "unsupported switch color" });
+        if (obj.shape !== undefined && !SWITCH_SHAPES.includes(obj.shape as typeof SWITCH_SHAPES[number])) issues.push({ path: path + ".shape", message: "unsupported switch shape" });
         if (obj.trap !== undefined && typeof obj.trap !== "boolean") issues.push({ path: path + ".trap", message: "trap must be boolean" });
         if (typeof obj.id !== "string" || !obj.id.trim()) issues.push({ path: path + ".id", message: "switch ID required" });
         if (typeof obj.targetDoorId !== "string" || !obj.targetDoorId.trim()) issues.push({ path: path + ".targetDoorId", message: "target door required" });
