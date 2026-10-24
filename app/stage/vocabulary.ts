@@ -1,7 +1,7 @@
 import { switchAppearance, type SwitchColor, type SwitchShape } from "../game/core.ts";
 
 export type StageWords = {
-  objects?: readonly { type: string; trap?: boolean; color?: SwitchColor; shape?: SwitchShape }[];
+  objects?: readonly { type: string }[];
   meta?: { dictionary?: { conditions?: string[]; actions?: string[]; examples?: string[] } };
 };
 
@@ -31,14 +31,15 @@ export function suggestedStageWords(stage?: StageWords | null) {
     ...(types.has("ghost") ? ["crouch"] : []),
     ...(types.has("coin") ? ["collect"] : []),
     ...(types.has("switch") ? ["press"] : []),
-    ...(objects.some((object) => object.type === "switch" && object.trap) ? ["skip"] : []),
+    ...(objects.some((object) => object.type === "switch" && (object as { trap?: boolean }).trap === true) ? ["skip"] : []),
   ];
   const colors = new Set<SwitchColor>();
   const shapes = new Set<SwitchShape>();
   for (const object of objects) {
     if (object.type !== "switch") continue;
+    const attributes = object as { trap?: boolean; color?: SwitchColor; shape?: SwitchShape };
     const appearance = switchAppearance({
-      trap: object.trap === true, color: object.color, shape: object.shape,
+      trap: attributes.trap === true, color: attributes.color, shape: attributes.shape,
     });
     colors.add(appearance.color);
     shapes.add(appearance.shape);
