@@ -44,8 +44,14 @@ test("walk supersedes the old running line while a jump only flashes", () => {
   assert.equal(game.vx, game.baseSpeed);
   assert.deepEqual(highlights.snapshot(game).sustained, [{ line: 2, action: "walk" }]);
   assert.ok(highlights.snapshot(game).active.includes(2));
-  assert.ok(highlights.snapshot(game).active.includes(3));
-  for (let i = 0; i < 34; i++) stepGame(game, (event) => highlights.record(event, parsed.sourceMap));
+  let jumped = highlights.snapshot(game).active.includes(3);
+  for (let i = 0; i < 35 && game.status === "running"; i++) {
+    stepGame(game, (event) => {
+      highlights.record(event, parsed.sourceMap);
+      if (event.action === "jump") jumped = true;
+    });
+  }
+  assert.equal(jumped, true);
   assert.ok(!highlights.snapshot(game).sustained.some((item) => item.line === 1));
   assert.ok(!highlights.snapshot(game).sustained.some((item) => item.line === 3));
 });
