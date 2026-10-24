@@ -43,6 +43,12 @@ const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "くりかえし", kind: "repeat" },
   { raw: "くりかえ", kind: "repeat" },
   { raw: "みつけたら", kind: "then" },
+  { raw: "みつかったら", kind: "then" },
+  { raw: "みつけるたびに", kind: "then" },
+  { raw: "ちかづいたら", kind: "then" },
+  { raw: "あらわれたら", kind: "then" },
+  { raw: "みえたとき", kind: "then" },
+  { raw: "ぶつかりそうなら", kind: "then" },
   { raw: "みつけると", kind: "then" },
   { raw: "みえたら", kind: "then" },
   { raw: "あったときは", kind: "then" },
@@ -60,7 +66,14 @@ const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "もし", kind: "if" },
   { raw: "する", kind: "particle" },
   { raw: "して", kind: "particle" },
+  { raw: "または", kind: "or" },
+  { raw: "あるいは", kind: "or" },
+  { raw: "や", kind: "or" },
   { raw: "と", kind: "or" },
+  { raw: "ください", kind: "particle" },
+  { raw: "ね", kind: "particle" },
+  { raw: "すぐ", kind: "particle" },
+  { raw: "ここで", kind: "particle" },
   { raw: "に", kind: "particle" },
   { raw: "が", kind: "particle" },
   { raw: "を", kind: "particle" },
@@ -191,6 +204,7 @@ function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[
 }
 
 function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement | ActionStatement | null {
+  while (tokens.at(-1)?.kind === "particle" && ["ね", "ください"].includes(tokens.at(-1)!.raw)) tokens = tokens.slice(0, -1);
   const longForm = ["をする", "をして"].includes(tokens.slice(-2).map((token) => token.raw).join(""));
   const actionIndex = longForm ? tokens.length - 3 : tokens.length - 1;
   const actionToken = tokens[actionIndex];
