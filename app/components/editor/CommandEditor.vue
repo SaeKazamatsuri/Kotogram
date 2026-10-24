@@ -8,7 +8,7 @@ import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
 
-const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
+const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
 const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
@@ -99,9 +99,10 @@ function updateMetrics() {
 function onScroll() {
   if (textarea.value) taScrollTop.value = textarea.value.scrollTop;
 }
-watch(() => props.activeLines?.join(","), () => {
-  if (!props.running || !textarea.value || !props.activeLines?.length) return;
-  const line = props.activeLines[props.activeLines.length - 1]!;
+watch(() => [props.activeLines?.join(","), props.failureLine], () => {
+  if (!textarea.value || (!props.running && props.failureLine == null)) return;
+  const line = props.failureLine ?? props.activeLines?.at(-1);
+  if (line == null) return;
   const top = taPaddingTop.value + (line - 1) * taLineHeight.value;
   const bottom = top + taLineHeight.value;
   const viewTop = textarea.value.scrollTop;
@@ -175,6 +176,7 @@ defineExpose({ getText });
       <h2 class="flex items-center gap-2 text-base font-black"><Icon name="lucide:code-2" class="game-icon text-[#aaf0d0]" aria-hidden="true"/> コードを書く</h2>
       <div class="flex items-center gap-2">
         <span v-if="running" role="status" class="rounded-full bg-[#aaf0d0] px-3 py-1 text-sm font-black text-[#17342c]">▶ 動作中</span>
+        <span v-else-if="failureLine != null" role="status" class="rounded-full bg-[#ffe3b8] px-2 py-1 text-xs font-black text-[#553911]" :aria-label="`最後に動いたのは${failureLine}行目`">さいご：{{ failureLine }}行</span>
         <span class="rounded-full bg-[#17263f] px-3 py-1 text-sm font-black text-white">{{ charCount }} 字</span>
       </div>
     </div>
@@ -205,6 +207,8 @@ defineExpose({ getText });
         :states="lineStates"
         :active-lines="activeLines"
         :sustained-lines="sustainedLines"
+        :monitoring-lines="monitoringLines"
+        :failure-line="failureLine"
         :waiting-line="waitingLine"
         :repeat-line="repeatLine"
         :repeat-progress="repeatProgress"
@@ -215,15 +219,15 @@ defineExpose({ getText });
         :viewport-height="taClientHeight"
       />
       <div class="relative min-h-0 min-w-0 flex-1 overflow-hidden">
-        <div v-if="running" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div v-if="running || failureLine != null" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
           <div :style="{ paddingTop: taPaddingTop + 'px', transform: 'translateY(-' + taScrollTop + 'px)' }">
             <div v-for="(_, index) in lineArray" :key="index" :style="{ height: taLineHeight + 'px' }"
-              :class="activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : ''" />
+              :class="failureLine === index + 1 ? 'bg-[#ffe3b8]' : activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : monitoringLines?.includes(index + 1) ? 'bg-[#f1f5f9]' : ''" />
           </div>
         </div>
       <textarea
         ref="textarea"
-        class="relative h-full w-full min-h-0 min-w-0 resize-none p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a]" :class="running ? 'bg-transparent' : 'bg-[#fffaf1] focus:bg-white'"
+        class="relative h-full w-full min-h-0 min-w-0 resize-none p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a]" :class="running || failureLine != null ? 'bg-transparent' : 'bg-[#fffaf1] focus:bg-white'"
         :value="text"
         :readonly="running"
         aria-label="コードを書く"

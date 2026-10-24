@@ -2,7 +2,7 @@
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { StageData } from "~/composables/useStageLoader";
 import type { SourceMap } from "~/language/parser";
-import { createActionHighlights, type SustainedHighlight } from "~/game/action-highlights";
+import { createActionHighlights, monitoredSourceLines, type SustainedHighlight } from "~/game/action-highlights";
 import type { FailPayload } from "~/types/game";
 import { GAME, createReadyGame, startGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
 import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
@@ -21,8 +21,8 @@ const props = defineProps<{
 }>();
 const emit = defineEmits<{
   (e: "clear", result: { elapsedTicks: number; seconds: number }): void;
-  (e: "fail", payload: FailPayload): void;
-  (e: "trace", payload: { active: number[]; sustained: SustainedHighlight[]; waiting: number | null; repeat: number | null; progress: string | null }): void;
+  (e: "fail", payload: FailPayload & { lastExecutedLine: number | null }): void;
+  (e: "trace", payload: { active: number[]; sustained: SustainedHighlight[]; monitoring: number[]; waiting: number | null; repeat: number | null; progress: string | null }): void;
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -39,6 +39,7 @@ const actionHighlights = createActionHighlights();
 let lastTrace = "";
 function emitTrace() {
   const { active, sustained } = actionHighlights.snapshot(game);
+  const monitoring = monitoredSourceLines(game, props.sourceMap);
   const step = game.steps[game.cursor];
   const waiting = step?.op === "wait" || step?.op === "action" ? props.sourceMap?.steps[game.cursor] ?? null : null;
   const boundedWatcher = game.program.findIndex((rule, index) =>
@@ -53,7 +54,7 @@ function emitTrace() {
   const boundedTotal = boundedWatcher >= 0 ? game.program[boundedWatcher]?.maxFires ?? 0 : 0;
   const progress = frame && loopTotal ? String(loopTotal - frame.remaining + 1) + "/" + loopTotal
     : boundedTotal ? String(game.fired[boundedWatcher]!.size) + "/" + boundedTotal : null;
-  const payload = { active, sustained, waiting, repeat, progress };
+  const payload = { active, sustained, monitoring, waiting, repeat, progress };
   const signature = JSON.stringify(payload);
   if (signature !== lastTrace) { lastTrace = signature; emit("trace", payload); }
 }
@@ -72,7 +73,7 @@ function stop() {
   lastBgmRate = 1;
   actionHighlights.reset();
   if (lastTrace) {
-    emit("trace", { active: [], sustained: [], waiting: null, repeat: null, progress: null });
+    emit("trace", { active: [], sustained: [], monitoring: [], waiting: null, repeat: null, progress: null });
     lastTrace = "";
   }
   setGameBgmRate(1);
@@ -108,8 +109,9 @@ function animateFailure(timestamp: number) {
 
   if (progress >= 1) {
     const reason = game.failureReason ?? "void";
+    const lastExecutedLine = actionHighlights.lastActionLine();
     stop();
-    emit("fail", { reason });
+    emit("fail", { reason, lastExecutedLine });
   } else {
     frame = requestAnimationFrame(animateFailure);
   }
