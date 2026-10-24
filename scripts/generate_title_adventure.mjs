@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs";
 
 export function renderTitleAdventure() {
-  const rate=16000,bpm=112,beat=60/bpm,bars=8,seconds=bars*4*beat;
+  const rate=32000,bpm=112,beat=60/bpm,bars=8,seconds=bars*4*beat;
   const count=Math.round(seconds*rate);
   const mix=new Float32Array(count);
   const hz=(m)=>440*Math.pow(2,(m-69)/12);
@@ -9,11 +9,15 @@ export function renderTitleAdventure() {
     const freq=hz(midi),begin=Math.round(start*rate),length=Math.round(duration*rate);
     for(let i=0;i<length && begin+i<count;i++){
       const t=i/rate,ph=2*Math.PI*freq*t;
-      const attack=Math.min(1,t/(kind==="pad"?.09:.008)),release=Math.min(1,(duration-t)/.09);
-      const decay=kind==="pluck"?Math.exp(-2.4*t):kind==="bell"?Math.exp(-2*t):kind==="bass"?Math.exp(-1.3*t):1;
+      const attack=Math.min(1,t/(kind==="pad"||kind==="strings"?.095:kind==="flute"?.032:.008));
+      const release=Math.min(1,(duration-t)/(kind==="strings"?.22:.12));
+      const decay=kind==="pluck"?Math.exp(-2.4*t):kind==="bell"?Math.exp(-2*t):kind==="bass"?Math.exp(-1.3*t):kind==="keys"?(.3+.7*Math.exp(-3.8*t)):1;
       const wave=kind==="pluck"?.81*Math.sin(ph)+.25*Math.sin(2*ph)+.07*Math.sin(3*ph)
         :kind==="bell"?.76*Math.sin(ph)+.21*Math.sin(ph*2.01)+.08*Math.sin(ph*3.99)
         :kind==="bass"?.85*Math.sin(ph)+.16*Math.sin(2*ph)
+        :kind==="keys"?.72*Math.sin(ph)+.22*Math.sin(ph*2.001)+.09*Math.sin(ph*3.002)
+        :kind==="flute"?.88*Math.sin(ph)+.13*Math.sin(2*ph)+.032*Math.sin(3*ph)
+        :kind==="strings"?.53*Math.sin(ph)+.26*Math.sin(ph*1.004)+.17*Math.sin(2*ph)
         :.68*Math.sin(ph)+.16*Math.sin(ph*2)+.12*Math.sin(ph*1.005);
       mix[begin+i]+=amp*wave*attack*Math.max(0,release)*decay;
     }
@@ -43,6 +47,9 @@ export function renderTitleAdventure() {
   for(let bar=0;bar<bars;bar++){
     const base=bar*4*beat,ch=chords[bar];
     for(const midi of ch.notes) tone(midi-12,base,4*beat,.035,"pad");
+    for(const midi of ch.notes) tone(midi-12,base,4*beat,.016,"strings");
+    for(let j=0;j<2;j++) for(const midi of ch.notes) tone(midi,base+j*2*beat,beat*.85,.030,"keys");
+    if(bar%4===3) tone(ch.notes[1]+12,base+2*beat,beat*1.45,.045,"flute");
     for(let j=0;j<8;j++){
       const pos=base+j*beat/2;
       const arp=ch.notes[[0,1,2,1,0,1,2,1][j]]+12;
@@ -66,9 +73,14 @@ export function renderTitleAdventure() {
       if(m!==null) {
         const next=melody[bar].slice(j+1).findIndex(v=>v!==null);
         const steps=next<0?8-j:next+1;
-        tone(m,pos,Math.min(beat*.5*steps*.85,beat*1.5),.16,"bell");
+        tone(m,pos,Math.min(beat*.5*steps*.85,beat*1.5),.14,"bell");
       }
     }
+  }
+  const dry=mix.slice();
+  for(const [delay,gain] of [[.089,.042],[.173,.033],[.281,.022]]){
+    const offset=Math.round(delay*rate);
+    for(let i=0;i<count;i++) mix[i]+=dry[(i-offset+count)%count]*gain;
   }
   const pcmBytes=count*2;
   const data=new Uint8Array(44+pcmBytes);
