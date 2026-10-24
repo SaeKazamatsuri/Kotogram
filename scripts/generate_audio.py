@@ -278,8 +278,8 @@ def export(name, group, arr):
     mp3 = target / f"{name}.mp3"
     ogg = target / f"{name}.ogg"
     sf.write(wav, arr, SR, subtype="PCM_16")
-    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-codec:a", "libmp3lame", "-b:a", "160k" if group == "bgm" else "128k", str(mp3)], check=True)
-    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-codec:a", "libvorbis", "-q:a", "5" if group == "bgm" else "4", str(ogg)], check=True)
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-codec:a", "libmp3lame", "-b:a", "160k" if group.startswith("bgm") else "128k", str(mp3)], check=True)
+    subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", str(wav), "-codec:a", "libvorbis", "-q:a", "5" if group.startswith("bgm") else "4", str(ogg)], check=True)
     rms = float(np.sqrt(np.mean(arr.astype(np.float64)**2)))
     peak = float(np.max(np.abs(arr)))
     print(f"{group}/{name}: {len(arr) / SR:.3f}s RMS {20 * math.log10(max(rms,1e-9)):.1f} dBFS peak {20 * math.log10(max(peak,1e-9)):.1f} dBFS", flush=True)
