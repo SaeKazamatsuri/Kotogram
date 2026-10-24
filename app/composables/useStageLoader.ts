@@ -8,6 +8,7 @@ export type StageMeta = {
   scrollSpeed?: number;
   hint?: string;
   failHints?: Partial<Record<FailReason, string>>;
+  dictionary?: { conditions?: string[]; actions?: string[]; examples?: string[] };
 };
 export type WallStageObject = { type: "wall"; position: number };
 export type GhostStageObject = { type: "ghost"; position: number };
@@ -18,7 +19,7 @@ export type HoleStageObject = {
 };
 export type GoalStageObject = { type: "goal"; position: number };
 export type CoinStageObject = { type: "coin"; position: number; id?: string };
-export type SwitchStageObject = { type: "switch"; position: number; id: string; targetDoorId: string; trap?: boolean };
+export type SwitchStageObject = { type: "switch"; position: number; id: string; targetDoorId: string; trap?: boolean; color?: "red" | "green" | "blue" | "yellow" | "purple"; shape?: "circle" | "cross" | "triangle" | "square" | "star" };
 export type DoorStageObject = { type: "door"; position: number; id: string };
 export type StageObject =
   | WallStageObject
