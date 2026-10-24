@@ -22,7 +22,7 @@ const conditionNames: Record<string, string> = {
   wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ",
 };
 const grammarNames: Record<string, string> = {
-  repeat: "くりかえし", end: "終わり", if: "もし", then: "条件のつなぎ", or: "または", count: "回数", particle: "助詞",
+  repeat: "くりかえし", end: "終わり", if: "もし", then: "条件のつなぎ", or: "または", count: "回数", particle: "つなぎの言葉",
 };
 const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key !== "powerJump" && key !== "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
 const specialEntries = computed(() => Object.entries(props.dictionary?.actions ?? {}).filter(([key]) => key === "powerJump" || key === "sprint").map(([key, words]) => ({ name: actionNames[key] ?? key, words })));
