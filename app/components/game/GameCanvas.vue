@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import type { StageData } from "~/composables/useStageLoader";
+import type { SourceMap } from "~/language/parser";
 import type { FailPayload } from "~/types/game";
 import { GAME, createReadyGame, startGame, elapsedSeconds, stepGame, type GameProgram, type GameState } from "~/game/core";
 import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
@@ -15,10 +16,12 @@ const props = defineProps<{
   stage: StageData;
   program?: GameProgram;
   running?: boolean;
+  sourceMap?: SourceMap;
 }>();
 const emit = defineEmits<{
   (e: "clear", result: { elapsedTicks: number; seconds: number }): void;
   (e: "fail", payload: FailPayload): void;
+  (e: "trace", payload: { active: number[]; waiting: number | null; repeat: number | null }): void;
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -31,6 +34,17 @@ let failureStartedAt: number | null = null;
 let previewX = 0;
 let previewDrag: { pointerId: number; clientX: number; position: number } | null = null;
 let lastBgmRate = 1;
+const highlightedUntil = new Map<number, number>();
+let lastTrace = "";
+function emitTrace() {
+  const active = [...highlightedUntil].filter(([, until]) => until >= game.elapsedTicks).map(([line]) => line).sort((a, b) => a - b);
+  const step = game.steps[game.cursor];
+  const waiting = step?.op === "wait" || step?.op === "action" ? props.sourceMap?.steps[game.cursor] ?? null : null;
+  const repeat = game.loops.length ? props.sourceMap?.steps[game.loops.at(-1)!.start] ?? null : null;
+  const payload = { active, waiting, repeat };
+  const signature = JSON.stringify(payload);
+  if (signature !== lastTrace) { lastTrace = signature; emit("trace", payload); }
+}
 const STEP_MS = 1000 / GAME.tickRate;
 
 function draw(visualTick = props.running ? game.elapsedTicks : Math.floor(lastIdleDraw / STEP_MS), failureProgress = 1) {
@@ -44,6 +58,8 @@ function draw(visualTick = props.running ? game.elapsedTicks : Math.floor(lastId
 function stop() {
   previewDrag = null;
   lastBgmRate = 1;
+  highlightedUntil.clear();
+  lastTrace = "";
   setGameBgmRate(1);
   cancelAnimationFrame(idleFrame);
   idleFrame = 0;
@@ -90,7 +106,12 @@ function loop(timestamp: number) {
   frameClock = advanced.clock;
   for (let step = 0; step < advanced.steps && game.status === "running"; step++) {
     const before = snapshotGameAudio(game);
-    stepGame(game);
+    stepGame(game, (event) => {
+      const line = event.kind === "watcher"
+        ? props.sourceMap?.watchers[event.index]
+        : props.sourceMap?.steps[event.index];
+      if (line && line > 0) highlightedUntil.set(line, game.elapsedTicks + 18);
+    });
     const speed = game.baseSpeed > 0 ? game.vx / game.baseSpeed : 1;
     if (speed !== lastBgmRate) {
       lastBgmRate = speed;
@@ -98,6 +119,7 @@ function loop(timestamp: number) {
     }
     for (const name of gameAudioEvents(before, game)) playSe(name);
   }
+  emitTrace();
   draw(game.elapsedTicks, game.status === "failed" ? 0 : 1);
 
   if (game.status === "cleared") {
@@ -115,6 +137,7 @@ function start() {
   previewX = 0;
   game = createReadyGame(props.stage, props.program);
   startGame(game);
+  emitTrace();
   draw();
   frame = requestAnimationFrame(loop);
 }
