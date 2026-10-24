@@ -11,6 +11,7 @@ import { useParser } from "~/composables/useParser";
 import { playSe, setBgm, unlockAudio } from "~/game/audio";
 import type { GameProgram } from "~/game/core";
 import type { SourceMap } from "~/language/parser";
+import type { SustainedHighlight } from "~/game/action-highlights";
 import { stageMastery, type MasteryResult } from "~/stage/mastery";
 import type { StageData, StageListItem } from "~/composables/useStageLoader";
 import { canPlayStage, nextStageId } from "~/stage/progression";
@@ -47,7 +48,7 @@ const gamePanel = ref<HTMLElement | null>(null);
 const editorLines = ref<string[]>([]);
 const program = ref<GameProgram | undefined>(undefined);
 const sourceMap = ref<SourceMap | undefined>(undefined);
-const executionTrace = ref<{ active: number[]; waiting: number | null; repeat: number | null; progress: string | null }>({ active: [], waiting: null, repeat: null, progress: null });
+const executionTrace = ref<{ active: number[]; sustained: SustainedHighlight[]; waiting: number | null; repeat: number | null; progress: string | null }>({ active: [], sustained: [], waiting: null, repeat: null, progress: null });
 const mastery = ref<MasteryResult | null>(null);
 const running = ref(false);
 const cleared = ref(false);
@@ -128,7 +129,7 @@ async function loadCurrentStage() {
   bests.value = {};
   program.value = undefined;
   sourceMap.value = undefined;
-  executionTrace.value = { active: [], waiting: null, repeat: null, progress: null };
+  executionTrace.value = { active: [], sustained: [], waiting: null, repeat: null, progress: null };
   editorLines.value = [];
   savedName.value = "";
   saveError.value = "";
@@ -181,7 +182,7 @@ function onRun() {
   runningSource.value = editorRef.value?.getText() ?? editorLines.value.join("\n");
   program.value = result.program;
   sourceMap.value = result.sourceMap;
-  executionTrace.value = { active: [], waiting: null, repeat: null, progress: null };
+  executionTrace.value = { active: [], sustained: [], waiting: null, repeat: null, progress: null };
   mastery.value = null;
   failed.value = false;
   failInfo.value = null;
@@ -291,6 +292,7 @@ watch(stageId, () => {
             :dictionary="dict || undefined"
             :running="running"
             :active-lines="executionTrace.active"
+            :sustained-lines="executionTrace.sustained"
             :waiting-line="executionTrace.waiting"
             :repeat-line="executionTrace.repeat"
             :repeat-progress="executionTrace.progress"
