@@ -30,7 +30,7 @@ export function worldMapPosition(index: number, total = 30): WorldMapPosition {
   const position = Math.max(0, index);
   return {
     x: 8.5 + (position / Math.max(1, count - 1)) * 83,
-    y: [62, 34, 66, 36, 61, 32, 64, 41][position % 8]!,
+    y: [42, 24, 44, 24, 42, 22, 44, 27][position % 8]!,
     mobileX: position % 2 === 0 ? 30 : 70,
     mobileY: 6 + (position / Math.max(1, count - 1)) * 86,
   };
