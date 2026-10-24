@@ -122,6 +122,7 @@ test("switch and press parse identically in concise and detailed forms", () => {
 test("natural Japanese particles, condition phrases and action inflections share an AST", () => {
   const expected = valid("かべとぶ").rules;
   for (const phrase of [
+    "かべをまえにみつけたらじゃんぷする",
     "かべがあったらじゃんぷする",
     "かべをみつけたらとぶ",
     "かべのまえでとぶ",
