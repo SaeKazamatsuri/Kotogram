@@ -22,3 +22,19 @@ test("title music has its own selection without changing map, game or result loo
   assert.match(layout, /route\.path === "\/" \? "title_adventure" : "title_loop"/);
   for (const name of ["title_loop", "game_loop", "result_loop"]) assert.match(audio, new RegExp(name));
 });
+
+test("title WAV has headroom and no hard discontinuity at the loop boundary", () => {
+  const wav = Buffer.from(renderTitleAdventure());
+  const samples = (wav.length - 44) / 2;
+  let peak = 0;
+  let sumSquares = 0;
+  for (let index = 0; index < samples; index++) {
+    const sample = wav.readInt16LE(44 + index * 2);
+    peak = Math.max(peak, Math.abs(sample));
+    sumSquares += sample * sample;
+  }
+  const rms = Math.sqrt(sumSquares / samples);
+  assert.ok(peak < 32_000);
+  assert.ok(rms > 500);
+  assert.ok(Math.abs(wav.readInt16LE(44) - wav.readInt16LE(wav.length - 2)) < 100);
+});
