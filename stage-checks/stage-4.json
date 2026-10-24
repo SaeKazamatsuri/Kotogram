@@ -44,6 +44,13 @@
       "source": "かべとぶ",
       "expect": "failed",
       "failureReason": "enemy"
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "はしる\nかべとぶ\nおばけしゃがむ",
+      "expect": "cleared",
+      "expectedTicks": 620
     }
   ]
 }
