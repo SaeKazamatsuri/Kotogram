@@ -310,7 +310,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.stage-select { display: flex; flex: 1; flex-direction: column; min-height: 0; overflow: hidden; }
+.stage-select { display: flex; flex: 1 1 0; flex-direction: column; height: 100%; min-height: 0; max-height: 100%; overflow: hidden; }
 .stage-select > .mb-5, .stage-select > .mb-4 { flex-shrink: 0; }
 .stage-reset { flex-shrink: 0; }
 .world-picker { flex-shrink: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
@@ -336,7 +336,8 @@ onMounted(() => {
 .map-land--world-2 .map-trail__road { stroke: #f8dfc6; }
 .map-viewport {
   position: relative;
-  flex: 1 1 auto;
+  flex: 1 1 0;
+  height: 0;
   min-height: 0;
   overflow: auto hidden;
   border: 4px solid #718fa0;
