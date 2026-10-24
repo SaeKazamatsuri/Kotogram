@@ -12,7 +12,7 @@ export function monitoredSourceLines(game: GameState, sourceMap?: SourceMap): nu
   const lines = game.program.flatMap((rule, index) => {
     if (!(rule.conds?.length || rule.cond)) return [];
     if (rule.maxFires !== undefined && (game.fired[index]?.size ?? 0) >= rule.maxFires) return [];
-    const line = sourceMap.watchers[index];
+    const line = sourceMap.watcherConditions?.[index] ?? sourceMap.watchers[index];
     return typeof line === "number" && line > 0 ? [line] : [];
   });
   return [...new Set(lines)].sort((a, b) => a - b);
