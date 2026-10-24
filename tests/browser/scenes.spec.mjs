@@ -478,3 +478,16 @@ test("実行中に発火した日本語命令だけがハイライトされる",
   await expect(page.locator('[data-execution="fired"]').first()).toBeVisible({ timeout: 10000 });
   await expect(editor).toHaveValue("かべとぶ");
 });
+
+test("走り続けるコード行は発動後も弱く点灯し、終了時には消える", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("はしる\nかべとぶ");
+  await page.getByRole("button", { name: "動かす" }).click();
+  const runningLine = page.locator('[data-execution="sustained"][data-mode="run"]');
+  await expect(runningLine).toBeVisible({ timeout: 7000 });
+  await expect(runningLine).toContainText("走行中");
+  await expect(editor).toHaveAttribute("readonly", "");
+  await expect(page.getByRole("dialog", { name: "ステージクリア" })).toBeVisible({ timeout: 12000 });
+  await expect(page.locator('[data-execution="sustained"]')).toHaveCount(0);
+});
