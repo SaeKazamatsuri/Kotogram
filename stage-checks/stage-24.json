@@ -11,7 +11,7 @@
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
+      "source": "かべ1かいすごいとぶ\nあなとぶ\nてきかがむ",
       "expect": "cleared"
     },
     {
