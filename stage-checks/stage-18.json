@@ -28,7 +28,7 @@
     },
     {
       "name": "ordinary-actions-without-secret-command",
-      "role": "regression",
+      "role": "learning",
       "source": "はしる\nあなとぶ",
       "expect": "cleared"
     }

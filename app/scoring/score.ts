@@ -71,6 +71,8 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-13": { ...knownReferences["stage-13"]!, stageVersion: "2026-10-25-r2" },
+  "stage-25": { ...knownReferences["stage-25"]!, stageVersion: "2026-10-25-r2" },
   "stage-5": { ...revisedReferences["stage-5"]!, stageVersion: "2026-10-20-r2" },
 };
 

@@ -3,7 +3,7 @@ import { analyzeProgram } from "../language/parser.ts";
 import { countSourceCharacters } from "../scoring/score.ts";
 
 export type ValidationIssue = { path: string; message: string };
-export type CaseRole = "beginner" | "short" | "fast" | "negative" | "regression";
+export type CaseRole = "beginner" | "learning" | "short" | "fast" | "negative" | "regression";
 export type ExpectedOutcome = "cleared" | "failed" | "timeout";
 export type StageCase = {
   name: string;
@@ -173,7 +173,7 @@ export function validateChecks(stageId: string, value: unknown): ValidationIssue
     return issues;
   }
   const names = new Set<string>();
-  const roles = new Set(["beginner", "short", "fast", "negative", "regression"]);
+  const roles = new Set(["beginner", "learning", "short", "fast", "negative", "regression"]);
   for (const [i, entry] of value.cases.entries()) {
     const path = `checks.cases[${i}]`;
     if (!isObject(entry)) { issues.push({ path, message: "test object required" }); continue; }
@@ -186,6 +186,13 @@ export function validateChecks(stageId: string, value: unknown): ValidationIssue
     if (entry.expectedTicks !== undefined && (!Number.isSafeInteger(entry.expectedTicks) || (entry.expectedTicks as number) < 1)) issues.push({ path: path + ".expectedTicks", message: "tick snapshot must be positive integer" });
   }
   return issues;
+}
+
+export function usesSecretAction(source: string): boolean {
+  const program = analyzeProgram(source).program;
+  const isSecret = (action: string | undefined) => action === "powerJump" || action === "sprint";
+  return program.watchers.some((rule) => isSecret(rule.action))
+    || program.steps.some((step) => (step.op === "action" || step.op === "wait") && isSecret(step.action));
 }
 
 export function validateStageCases(stageId: string, stage: unknown, checks: unknown): StageReport {
@@ -209,7 +216,8 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
     let elapsedTicks: number | null = null;
     let failureReason: string | undefined;
     if (diagnostics.length) errors.push("program has syntax/semantic errors");
-    else {
+    if (entry.role === "learning" && usesSecretAction(entry.source)) errors.push("learning route must not require secret actions");
+    if (errors.length === 0) {
       const run = runToCompletion(createGame(source, analysis.program), maxTicks);
       if (run.status === "ready") throw new Error("Headless validation cannot finish in ready state");
       outcome = run.status === "running" ? "timeout" : run.status;
@@ -235,6 +243,9 @@ export function validateStageCases(stageId: string, stage: unknown, checks: unkn
     report.bestKnown.ticks = Math.min(...cleared.map((entry) => entry.elapsedTicks!));
     report.bestKnown.characters = Math.min(...cleared.map((entry) => entry.characters));
     report.bestKnown.timeCharactersProduct = Math.min(...cleared.map((entry) => entry.product!));
+  }
+  if (data.cases.some((entry) => entry.role === "learning") && !cleared.some((entry) => entry.role === "learning")) {
+    report.issues.push({ path: "checks.cases", message: "learning route must clear without secret actions" });
   }
   const beginner = cleared.find((entry) => entry.role === "beginner");
   if (!beginner) report.issues.push({ path: "checks.cases", message: "at least one clearing beginner example required" });

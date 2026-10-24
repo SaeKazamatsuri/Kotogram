@@ -18,7 +18,8 @@ test("new stages have reproducible clears and per-stage score baselines", () => 
     const checks = JSON.parse(readFileSync(new URL(`../stage-checks/stage-${index}.json`, import.meta.url), "utf8"));
     const report = validateStageCases(`stage-${index}`, stage, checks);
     assert.equal(report.pass, true, `${index}: ${JSON.stringify(report.cases.filter((entry) => !entry.pass).map((entry) => ({ name: entry.name, errors: entry.errors, diagnostics: entry.diagnostics })))} ${JSON.stringify(report.issues)}`);
-    const baseline = getScoreReference(`stage-${index}`, "2026-10-20-r1");
+    const stageEntry = manifest.stages.find((entry) => entry.id === `stage-${index}`);
+    const baseline = getScoreReference(`stage-${index}`, stageEntry.version);
     const beginner = report.cases.find((entry) => entry.role === "beginner");
     const shorter = report.cases.find((entry) => entry.role === "short");
     assert.equal(shorter?.outcome, "cleared", `stage-${index}: short program must clear`);
@@ -26,5 +27,18 @@ test("new stages have reproducible clears and per-stage score baselines", () => 
       `stage-${index}: short program must use fewer characters than beginner`);
     assert.equal(baseline.timeTicks, beginner.elapsedTicks);
     assert.equal(baseline.characters, countSourceCharacters(beginner.source));
+  }
+});
+
+test("updated worlds preserve the previous ranking score scope and baseline", () => {
+  for (const id of ["stage-13", "stage-25"]) {
+    const previous = getScoreReference(id, "2026-10-20-r1");
+    const current = getScoreReference(id, "2026-10-25-r2");
+    assert.ok(previous && current, id);
+    assert.equal(current.stageVersion, "2026-10-25-r2");
+    assert.equal(previous.stageVersion, "2026-10-20-r1");
+    assert.equal(current.timeTicks, previous.timeTicks);
+    assert.equal(current.characters, previous.characters);
+    assert.equal(current.product, previous.product);
   }
 });

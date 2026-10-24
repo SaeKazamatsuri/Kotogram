@@ -18,7 +18,15 @@ jobs:
       - name: Validate stage snapshots
         run: npm run validate:stages
       - name: Compare registered solutions across all thirty stages
-        run: npm run analyze:stages > /tmp/kotogram-stage-report.json
+        run: |
+          mkdir -p test-artifacts
+          node --experimental-strip-types scripts/analyze-all-stages.mjs > test-artifacts/stage-balance.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: thirty-stage-balance
+          path: test-artifacts/stage-balance.json
+          if-no-files-found: ignore
       - name: Explore bounded stage candidates
         run: npm run explore:stages -- --max-candidates=128 --max-ms=5000
 

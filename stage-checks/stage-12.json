@@ -34,7 +34,7 @@
     },
     {
       "name": "ordinary-actions-without-secret-command",
-      "role": "regression",
+      "role": "learning",
       "source": "かべとぶ",
       "expect": "cleared"
     }
