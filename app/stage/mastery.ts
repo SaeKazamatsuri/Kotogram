@@ -7,7 +7,7 @@ export type MasteryResult = {
   alternateChallenge: boolean;
 };
 
-const repeatStages = new Set([8, 9, 10, 14, 17, 19, 20, 22, 27, 28, 30]);
+const repeatStages = new Set([8, 9, 10, 14, 17, 18, 19, 20, 22, 27, 28, 30]);
 const alternateStages = new Set([12, 13, 16, 18, 21, 24, 25, 26, 29, 30]);
 
 function isRepeated(statements: Statement[]): boolean {
