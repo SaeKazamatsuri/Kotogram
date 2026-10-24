@@ -38,9 +38,9 @@ const stages = manifest.stages.map((entry) => {
     seconds: item.seconds,
   });
   const pace = {
-    walk: replay(stage, "あるく\\n" + beginner.source),
-    run: replay(stage, "はしる\\n" + beginner.source),
-    sprint: replay(stage, "めっちゃはしる\\n" + beginner.source),
+    walk: replay(stage, "あるく\n" + beginner.source),
+    run: replay(stage, "はしる\n" + beginner.source),
+    sprint: replay(stage, "めっちゃはしる\n" + beginner.source),
   };
   return {
     id: entry.id,
