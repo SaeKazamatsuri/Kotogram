@@ -44,13 +44,6 @@
       "source": "かべとあなとぶ",
       "expect": "cleared",
       "expectedTicks": 983
-    },
-    {
-      "name": "overall-known-best",
-      "role": "overall",
-      "source": "かべとあなとぶ",
-      "expect": "cleared",
-      "expectedTicks": 983
     }
   ]
 }
