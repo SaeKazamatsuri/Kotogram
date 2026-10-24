@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { analyzeProgram } from "../app/language/parser.ts";
 import { createGame, runToCompletion } from "../app/game/core.ts";
 import { validateStage } from "../app/stage/validator.ts";
+import { drawWorldObjects } from "../app/game/obstacles.ts";
 import { suggestedStageWords } from "../app/stage/vocabulary.ts";
 import { LANGUAGE_VERSION, PREVIOUS_LANGUAGE_VERSION } from "../app/scoring/score.ts";
 import { validateScope } from "../worker/validation.mjs";
@@ -108,4 +109,23 @@ test("言語v4は旧v3とランキングのスコープを分離する", () => {
   const v4 = validateScope({ ...v3, languageVersion: LANGUAGE_VERSION });
   assert.equal(v3.languageVersion, PREVIOUS_LANGUAGE_VERSION);
   assert.equal(v4.languageVersion, LANGUAGE_VERSION);
+});
+
+
+test("色覚に依存せずスイッチの記号が常に描かれる", () => {
+  const game = createGame(switchStage);
+  const labels = [];
+  const ctx = new Proxy({}, {
+    get(target, name) {
+      if (name === "createLinearGradient") return () => ({ addColorStop() {} });
+      if (name === "fillText") return (...args) => labels.push(args[0]);
+      return target[name] ?? (() => {});
+    },
+    set(target, name, value) { target[name] = value; return true; },
+  });
+  drawWorldObjects(ctx, game, 0);
+  assert.ok(labels.includes("×"));
+  assert.ok(labels.includes("○"));
+  assert.equal(game.switches[0].shape, "cross");
+  assert.equal(game.switches[1].shape, "circle");
 });
