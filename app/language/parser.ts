@@ -1,7 +1,7 @@
-import type { GameInstruction, GameProgram } from "../game/core";
+import type { GameCondition, GameInstruction, GameProgram, SwitchColor, SwitchShape } from "../game/core";
 import conditionsDictionary from "../../public/dictionary/conditions.json" with { type: "json" };
 import actionsDictionary from "../../public/dictionary/actions.json" with { type: "json" };
-export type Condition = "wall" | "hole" | "enemy" | "ahead" | "coin" | "switch";
+export type Condition = GameCondition;
 export type Action = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip";
 export type Vocabulary = {
   conditions?: Record<string, string[]>;
@@ -16,7 +16,7 @@ export type Diagnostic = {
   column: number;
 };
 export type TokenKind =
-  | "condition" | "action" | "number" | "count" | "repeat" | "end"
+  | "condition" | "attribute" | "action" | "number" | "count" | "repeat" | "end"
   | "if" | "then" | "or" | "particle" | "unknown";
 export type Token = { kind: TokenKind; value: string; raw: string; line: number; column: number; endColumn?: number };
 export type RuleStatement = {
@@ -36,7 +36,23 @@ export type ExecutableRule = { cond?: Condition; conds?: Condition[]; action: Ac
 export type SourceMap = { watchers: number[]; watcherConditions: number[]; watcherLoops: (number | null)[]; steps: number[] };
 export type CompileResult = { rules: ExecutableRule[]; program: GameProgram; sourceMap: SourceMap; diagnostics: Diagnostic[] };
 
-const DEFAULT_CONDITIONS: Record<Condition, string[]> = conditionsDictionary;
+const DEFAULT_CONDITIONS: Record<string, string[]> = conditionsDictionary;
+export const SWITCH_ATTRIBUTES: readonly { raw: string; value: string }[] = [
+  { raw: "あかい", value: "color:red" },
+  { raw: "あか", value: "color:red" },
+  { raw: "みどり", value: "color:green" },
+  { raw: "あおい", value: "color:blue" },
+  { raw: "あお", value: "color:blue" },
+  { raw: "きいろい", value: "color:yellow" },
+  { raw: "きいろ", value: "color:yellow" },
+  { raw: "むらさき", value: "color:purple" },
+  { raw: "まる", value: "shape:circle" },
+  { raw: "ばつ", value: "shape:cross" },
+  { raw: "ばってん", value: "shape:cross" },
+  { raw: "さんかく", value: "shape:triangle" },
+  { raw: "しかく", value: "shape:square" },
+  { raw: "ほし", value: "shape:star" },
+];
 const DEFAULT_ACTIONS: Record<Action, string[]> = actionsDictionary;
 const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "くりかえす", kind: "repeat" },
@@ -117,6 +133,7 @@ function createLexicon(vocabulary: Vocabulary) {
   const allowedActions = Object.fromEntries(Object.entries(DEFAULT_ACTIONS).map(([key, words]) => [key, [...words, ...(vocabulary.actions?.[key] ?? [])]]));
   pushWords(allowedConditions, "condition");
   pushWords(allowedActions, "action");
+  for (const item of SWITCH_ATTRIBUTES) pushWords({ [item.value]: [item.raw] }, "attribute");
   for (const { raw, kind } of CONTROL) {
     if (seen.has(raw)) throw new Error("Vocabulary conflicts with control word: " + raw);
     seen.set(raw, kind + ":" + raw);
@@ -185,9 +202,28 @@ function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[
   else if (meaningful.length === 2 && meaningful[0].kind === "condition" && meaningful[1].value === "ahead") meaningful.pop();
   const conditions: Condition[] = [];
   let expectCondition = true;
+  let color: SwitchColor | null = null;
+  let shape: SwitchShape | null = null;
   for (const token of meaningful) {
-    if (expectCondition && token.kind === "condition") {
-      if (!conditions.includes(token.value as Condition)) conditions.push(token.value as Condition);
+    if (expectCondition && token.kind === "attribute") {
+      const [kind, value] = token.value.split(":");
+      if ((kind === "color" && color !== null) || (kind === "shape" && shape !== null)) {
+        diagnostics.push(error("syntax", "いろや かたちは 1つずつ えらんでね", token));
+        return null;
+      }
+      if (kind === "color") color = value as SwitchColor;
+      else shape = value as SwitchShape;
+    } else if (expectCondition && token.kind === "condition") {
+      if ((color || shape) && token.value !== "switch") {
+        diagnostics.push(error("unsupported", "いろや かたちは ぼたんに つけてね", token));
+        return null;
+      }
+      const condition = color || shape
+        ? `switch:${color ?? "*"}:${shape ?? "*"}` as Condition
+        : token.value as Condition;
+      if (!conditions.includes(condition)) conditions.push(condition);
+      color = null;
+      shape = null;
       expectCondition = false;
     } else if (!expectCondition && token.kind === "or") {
       expectCondition = true;
@@ -241,7 +277,7 @@ function parseSimple(tokens: Token[], diagnostics: Diagnostic[]): RuleStatement 
   }
   const conditions = parseConditions(prefix, diagnostics);
   if (!conditions) return null;
-  if (actionToken.value === "skip" && (conditions.length !== 1 || conditions[0] !== "switch")) {
+  if (actionToken.value === "skip" && (conditions.length !== 1 || !(conditions[0] === "switch" || conditions[0].startsWith("switch:")))) {
     diagnostics.push(error("unsupported", "みおくる のは『すいっち』だけだよ", actionToken));
     return null;
   }
@@ -379,7 +415,7 @@ export function compileProgram(parsed: ParseResult): CompileResult {
       if (node.repeat === 1) rules.push({ action: node.action });
     } else if (node.kind === "if") {
       if (node.body.length === 1 && node.body[0].kind === "action" && node.body[0].repeat === 1) {
-        if (node.body[0].action === "skip" && (node.conditions.length !== 1 || node.conditions[0] !== "switch")) {
+        if (node.body[0].action === "skip" && (node.conditions.length !== 1 || !(node.conditions[0] === "switch" || node.conditions[0].startsWith("switch:")))) {
           diagnostics.push(error("unsupported", "みおくる のは『すいっち』だけだよ", node.span.start));
           continue;
         }
