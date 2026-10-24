@@ -398,7 +398,7 @@ test("3つの世界を選ぶと対応する10ステージと世界観が切り�
   await expect(stops).toHaveCount(10);
   await expect(stops.first()).toContainText("ステージ 11");
   await expect(stops.last()).toContainText("ステージ 20");
-  await page.getByRole("button", { name: /星あかりの城/ }).click();
+  await page.getByRole("button", { name: /星あかりの国/ }).click();
   await expect(page.locator(".map-land--world-2")).toHaveCount(1);
   await expect(stops.first()).toContainText("ステージ 21");
   await expect(stops.last()).toContainText("ステージ 30");
