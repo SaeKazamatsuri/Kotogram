@@ -277,7 +277,7 @@ onMounted(() => {
               >
                 <span class="map-stop__circle"><Icon name="lucide:lock-keyhole" class="map-stop__icon" aria-hidden="true" /></span>
                 <span class="map-stop__sign">
-                  <span class="map-stop__stage">ステージ {{ index + 1 }}</span>
+                  <span class="map-stop__stage">ステージ {{ selectedWorld * 10 + index + 1 }}</span>
                   <span class="map-stop__title">{{ stage.title }}</span>
                 </span>
               </div>
