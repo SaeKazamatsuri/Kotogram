@@ -43,3 +43,11 @@ test("thirty stages are divided into three non-overlapping worlds", () => {
   assert.equal(worldIndexForStage(undefined), 0);
   assert.equal(worldIndexForStage("incorrect"), 0);
 });
+
+test("end stage signs retain horizontal margin at either map edge", () => {
+  const first = worldMapPosition(0, 10);
+  const last = worldMapPosition(9, 10);
+  assert.ok(first.x >= 7);
+  assert.ok(last.x <= 93);
+  assert.equal(first.x + last.x, 100);
+});
