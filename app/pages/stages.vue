@@ -310,7 +310,7 @@ onMounted(() => {
 </template>
 
 <style scoped>
-.stage-select { display: flex; flex: 1 1 0; flex-direction: column; height: 100%; min-height: 0; max-height: 100%; overflow: hidden; }
+.stage-select { display: flex; flex: none; flex-direction: column; height: calc(100dvh - 2 * clamp(14px, 2.2vw, 32px)); min-height: 0; max-height: calc(100dvh - 2 * clamp(14px, 2.2vw, 32px)); overflow: hidden; }
 .stage-select > .mb-5, .stage-select > .mb-4 { flex-shrink: 0; }
 .stage-reset { flex-shrink: 0; }
 .world-picker { flex-shrink: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 12px; }
