@@ -59,10 +59,15 @@ jobs:
           test "$(find public/audio/se -name '*.ogg' | wc -l)" -eq 13
           test "$(find public/audio/se -name '*.mp3' | wc -l)" -eq 13
           for file in public/audio/{bgm,se}/*; do ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$file" >/dev/null; done
+      - name: Verify title WAV matches generator
+        run: node --test tests/title-adventure-audio.test.mjs
       - name: Commit playable assets to this branch
         run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add scripts/generate_audio.py public/audio
           if ! git diff --cached --quiet; then
-            git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m "assets(audio): render original music and sound effects"
-            git push
+            git commit -m "assets(audio): render original music and sound effects"
+            git pull --rebase origin "$GITHUB_REF_NAME"
+            git push origin "HEAD:$GITHUB_REF_NAME"
           fi
