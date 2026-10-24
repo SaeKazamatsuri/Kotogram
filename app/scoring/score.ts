@@ -7,6 +7,14 @@ export const PREVIOUS_LANGUAGE_VERSION = "2026-language-v2";
 export const LEGACY_LANGUAGE_VERSION = "2026-language-v1";
 export const SEASON_ID = "2026-festival";
 
+export type StrategyKind = "speed" | "compact" | "balanced";
+
+export function classifyStrategy(scores: { time: number; chars: number; overall: number }): StrategyKind {
+  if (scores.time > scores.chars * 1.08) return "speed";
+  if (scores.chars > scores.time * 1.08) return "compact";
+  return "balanced";
+}
+
 export type ScoreKind = "time" | "chars" | "overall";
 export type ScoreReference = {
   stageId: string;
