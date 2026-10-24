@@ -5,7 +5,7 @@ import { analyzeProgram } from "../app/language/parser.ts";
 import { createGame, stepGame, runToCompletion } from "../app/game/core.ts";
 import { stageMastery } from "../app/stage/mastery.ts";
 import { validateStageCases } from "../app/stage/validator.ts";
-import { getScoreReference } from "../app/scoring/score.ts";
+import { classifyStrategy, getScoreReference } from "../app/scoring/score.ts";
 
 const load = (file) => JSON.parse(readFileSync(new URL("../" + file, import.meta.url), "utf8"));
 
@@ -98,4 +98,21 @@ test("stage 18 is a longer two-hole loop puzzle with an isolated ranking version
   const newReference = getScoreReference("stage-18", "2026-10-25-r2");
   assert.equal(newReference?.timeTicks, byName("beginner")?.elapsedTicks);
   assert.ok(newReference.timeTicks > 500);
+});
+
+test("optimized watcher retains the repeat header line and fire limit", () => {
+  const parsed = analyzeProgram("3かいくりかえす\nかべとぶ\nおわり");
+  assert.deepEqual(parsed.diagnostics, []);
+  assert.deepEqual(parsed.sourceMap.watchers, [2]);
+  assert.deepEqual(parsed.sourceMap.watcherLoops, [1]);
+  assert.equal(parsed.program.watchers[0].maxFires, 3);
+});
+
+test("three score strategies remain distinct without touching ranked score results", () => {
+  assert.equal(classifyStrategy({ time: 1450, chars: 1080, overall: 1566 }), "speed");
+  assert.equal(classifyStrategy({ time: 950, chars: 1800, overall: 1710 }), "compact");
+  assert.equal(classifyStrategy({ time: 1040, chars: 1000, overall: 1040 }), "balanced");
+  const unchanged = getScoreReference("stage-18", "2026-10-20-r1");
+  assert.equal(unchanged?.timeTicks, 252);
+  assert.equal(unchanged?.product, 2268);
 });
