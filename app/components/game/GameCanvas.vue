@@ -21,7 +21,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "clear", result: { elapsedTicks: number; seconds: number }): void;
   (e: "fail", payload: FailPayload): void;
-  (e: "trace", payload: { active: number[]; waiting: number | null; repeat: number | null }): void;
+  (e: "trace", payload: { active: number[]; waiting: number | null; repeat: number | null; progress: string | null }): void;
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -46,7 +46,13 @@ function emitTrace() {
   const repeat = game.loops.length
     ? props.sourceMap?.steps[game.loops.at(-1)!.start] ?? null
     : boundedWatcher >= 0 ? props.sourceMap?.watcherLoops[boundedWatcher] ?? null : null;
-  const payload = { active, waiting, repeat };
+  const frame = game.loops.at(-1);
+  const loopInstruction = frame ? game.steps[frame.start] : undefined;
+  const loopTotal = loopInstruction?.op === "repeat-start" ? loopInstruction.count : 0;
+  const boundedTotal = boundedWatcher >= 0 ? game.program[boundedWatcher]?.maxFires ?? 0 : 0;
+  const progress = frame && loopTotal ? String(loopTotal - frame.remaining + 1) + "/" + loopTotal
+    : boundedTotal ? String(game.fired[boundedWatcher]!.size) + "/" + boundedTotal : null;
+  const payload = { active, waiting, repeat, progress };
   const signature = JSON.stringify(payload);
   if (signature !== lastTrace) { lastTrace = signature; emit("trace", payload); }
 }
