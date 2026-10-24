@@ -7,7 +7,7 @@ import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
 
-const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; waitingLine?: number | null; repeatLine?: number | null }>();
+const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
 const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
@@ -193,6 +193,7 @@ defineExpose({ getText });
         :active-lines="activeLines"
         :waiting-line="waitingLine"
         :repeat-line="repeatLine"
+        :repeat-progress="repeatProgress"
         :line-height="taLineHeight"
         :padding-top="taPaddingTop"
         :padding-bottom="taPaddingBottom"
