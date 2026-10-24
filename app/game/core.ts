@@ -8,6 +8,8 @@ export type GameInstruction =
   | { op: "repeat-start"; count: number; end: number }
   | { op: "repeat-end"; start: number };
 export type GameProgram = { watchers: GameRule[]; steps: GameInstruction[] };
+export type ExecutionTrace = { kind: "watcher" | "step" | "repeat"; index: number; tick: number; action?: GameAction };
+export type TraceObserver = (trace: ExecutionTrace) => void;
 export type LoopFrame = { start: number; remaining: number };
 export type GameStatus = "ready" | "running" | "cleared" | "failed" | "timeout";
 export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "skip" | "void";
@@ -336,7 +338,7 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
   return false;
 }
 
-function applyProgram(game: GameState) {
+function applyProgram(game: GameState, observe?: TraceObserver) {
   for (const [index, rule] of game.program.entries()) {
     const history = game.fired[index];
     if (rule.maxFires !== undefined && history.size >= rule.maxFires) continue;
@@ -350,15 +352,19 @@ function applyProgram(game: GameState) {
     }
     const key = target?.id ?? "unconditional";
     if (history.has(key)) continue;
-    if (acceptAction(game, rule.action, target?.id)) history.add(key);
+    if (acceptAction(game, rule.action, target?.id)) {
+      history.add(key);
+      observe?.({ kind: "watcher", index, tick: game.elapsedTicks, action: rule.action });
+    }
   }
 }
 
-function applySequence(game: GameState): void {
+function applySequence(game: GameState, observe?: TraceObserver): void {
   const instructionBudget = 128;
   for (let stepsTaken = 0; stepsTaken < instructionBudget && game.cursor < game.steps.length; stepsTaken++) {
     const op = game.steps[game.cursor]!;
     if (op.op === "repeat-start") {
+      observe?.({ kind: "repeat", index: game.cursor, tick: game.elapsedTicks });
       game.loops.push({ start: game.cursor, remaining: op.count });
       game.cursor++;
       continue;
@@ -367,6 +373,7 @@ function applySequence(game: GameState): void {
       const top = game.loops.at(-1);
       if (!top || top.start !== op.start) throw new Error("Invalid compiled repeat block");
       if (--top.remaining > 0) {
+        observe?.({ kind: "repeat", index: op.start, tick: game.elapsedTicks });
         game.cursor = op.start + 1;
         game.sequenceProgress = 0;
         return;
@@ -379,6 +386,7 @@ function applySequence(game: GameState): void {
     }
     if (op.op === "action") {
       if (!acceptAction(game, op.action)) return;
+      observe?.({ kind: "step", index: game.cursor, tick: game.elapsedTicks, action: op.action });
       if (++game.sequenceProgress >= op.count) {
         game.sequenceProgress = 0;
         game.cursor++;
@@ -390,6 +398,7 @@ function applySequence(game: GameState): void {
     const target = sensedTargets(game, op.conds).find((item) => !game.sequenceConsumed.has(item.id));
     if (!target) return;
     if (op.action && !acceptAction(game, op.action, target.id)) return;
+    observe?.({ kind: "step", index: game.cursor, tick: game.elapsedTicks, action: op.action });
     game.sequenceConsumed.add(target.id);
     if (++game.sequenceProgress >= op.count) {
       game.sequenceProgress = 0;
@@ -408,11 +417,11 @@ function fail(game: GameState, reason: GameFailReason) {
   game.failureReason = reason;
 }
 
-export function stepGame(game: GameState): GameStatus {
+export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   if (game.status !== "running") return game.status;
-  applyProgram(game);
+  applyProgram(game, observe);
   if (game.status !== "running") return game.status;
-  applySequence(game);
+  applySequence(game, observe);
   if (game.status !== "running") return game.status;
   game.px += game.vx;
   game.vy += GAME.gravity;
