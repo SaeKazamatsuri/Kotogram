@@ -1,4 +1,4 @@
-import { generateCelebrationWav, type CelebrationCue } from "./celebration-music";
+import { generateCelebrationWav, type CelebrationCue } from "./celebration-music.ts";
 
 export type BgmName = "title_adventure" | "title_loop" | "game_loop" | "result_loop" | "clear_loop";
 export type SoundName =
