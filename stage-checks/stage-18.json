@@ -6,19 +6,22 @@
       "name": "beginner",
       "role": "beginner",
       "source": "あなすごいじゃんぷ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 652
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "あなすごいとぶ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 652
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nあなすごいじゃんぷ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 373
     },
     {
       "name": "missing-actions",
@@ -30,7 +33,8 @@
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
       "source": "はしる\nあなとぶ",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 502
     },
     {
       "name": "repeat-two-wide-holes",
@@ -44,6 +48,13 @@
       "source": "はしる\n1かいくりかえす\nあなとぶ\nおわり",
       "expect": "failed",
       "failureReason": "hole"
+    },
+    {
+      "name": "overall-known-best",
+      "role": "overall",
+      "source": "はしる\nあなとぶ",
+      "expect": "cleared",
+      "expectedTicks": 502
     }
   ]
 }
