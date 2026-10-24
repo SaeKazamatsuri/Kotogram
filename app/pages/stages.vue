@@ -339,7 +339,7 @@ onMounted(() => {
   flex: 1 1 0;
   height: 0;
   min-height: 0;
-  overflow: auto hidden;
+  overflow: auto;
   border: 4px solid #718fa0;
   border-radius: 28px;
   background: #9ad6c7;
@@ -363,6 +363,9 @@ onMounted(() => {
     linear-gradient(110deg, #b6e9d9 0%, #b5e6d3 25%, #88c7b3 50%, #8abec6 75%, #7facc4 100%);
 }
 .map-land--expanded { height: 760px; }
+@media (min-width: 640px) {
+  .map-land, .map-land--expanded { height: 100%; min-height: 340px; }
+}
 .map-land::before {
   position: absolute;
   z-index: 0;
