@@ -8,6 +8,8 @@ defineProps<{
   states: ("valid" | "invalid" | "empty" | "loop")[];
   activeLines?: number[];
   sustainedLines?: SustainedHighlight[];
+  monitoringLines?: number[];
+  failureLine?: number | null;
   waitingLine?: number | null;
   repeatLine?: number | null;
   repeatProgress?: string | null;
@@ -27,16 +29,18 @@ defineProps<{
       transform: `translateY(-${scrollTop}px)`,
     }">
       <div v-for="(state, index) in states" :key="index" class="flex items-center justify-between gap-1 px-1.5 font-mono text-[12px] font-bold"
-        :data-execution="activeLines?.includes(index + 1) ? 'fired' : sustainedLines?.some((item) => item.line === index + 1) ? 'sustained' : waitingLine === index + 1 ? 'waiting' : repeatLine === index + 1 ? 'repeat' : null"
+        :data-execution="failureLine === index + 1 ? 'last-action' : activeLines?.includes(index + 1) ? 'fired' : sustainedLines?.some((item) => item.line === index + 1) ? 'sustained' : waitingLine === index + 1 ? 'waiting' : repeatLine === index + 1 ? 'repeat' : monitoringLines?.includes(index + 1) ? 'monitoring' : null"
         :data-mode="sustainedLines?.find((item) => item.line === index + 1)?.action"
-        :class="activeLines?.includes(index + 1) ? 'bg-[#aaf0d0] text-[#123a31]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3] text-[#255743]' : waitingLine === index + 1 ? 'bg-[#e3d9ff] text-[#34265f]' : 'text-[#5d667a]'" :style="{ height: lineHeight + 'px' }">
+        :class="failureLine === index + 1 ? 'bg-[#ffe3b8] text-[#553911]' : activeLines?.includes(index + 1) ? 'bg-[#aaf0d0] text-[#123a31]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3] text-[#255743]' : waitingLine === index + 1 ? 'bg-[#e3d9ff] text-[#34265f]' : monitoringLines?.includes(index + 1) ? 'bg-[#f1f5f9] text-[#415a71]' : 'text-[#5d667a]'" :style="{ height: lineHeight + 'px' }">
         <span>{{ index + 1 }}</span>
-        <span v-if="activeLines?.includes(index + 1)" aria-label="実行中">▶</span>
+        <span v-if="failureLine === index + 1" class="text-[10px] font-black" aria-label="さいごに動いた行">さいご</span>
+        <span v-else-if="activeLines?.includes(index + 1)" aria-label="実行中">▶</span>
         <span v-else-if="sustainedLines?.some((item) => item.line === index + 1)" class="text-[9px] font-black whitespace-nowrap" aria-label="効果が続いている">
           {{ modeLabel[sustainedLines.find((item) => item.line === index + 1)!.action] }}
         </span>
         <span v-else-if="repeatLine === index + 1" aria-label="くりかえし中">↻<span v-if="repeatProgress" class="ml-1 text-[10px]">{{ repeatProgress }}</span></span>
         <span v-else-if="waitingLine === index + 1" aria-label="まっている">…</span>
+        <span v-else-if="monitoringLines?.includes(index + 1)" class="text-[10px] font-bold whitespace-nowrap" aria-label="見はり中">見はり</span>
         <span v-else class="h-[7px] w-[7px] rounded-full" :class="{
           'bg-[#259d75]': state === 'valid',
           'bg-[#d34b61]': state === 'invalid',
