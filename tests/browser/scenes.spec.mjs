@@ -417,6 +417,7 @@ test("編集中は辞書を表示でき、キャンバスをドラッグして�
   await expect(guide).toContainText("かべ");
   await expect(guide).not.toContainText("めっちゃはしる");
   await expect(guide).not.toContainText("すごいじゃんぷ");
+  await expect(guide).not.toContainText("はしる");
   await expect(guide).not.toContainText("はねる");
 
   const canvas = page.locator(".game-playview canvas");
