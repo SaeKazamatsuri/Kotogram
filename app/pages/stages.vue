@@ -77,7 +77,6 @@ function onMapPointerDown(event: PointerEvent) {
     scrollTop: viewport.scrollTop,
     moved: false,
   };
-  viewport.setPointerCapture(event.pointerId);
 }
 
 function onMapPointerMove(event: PointerEvent) {
@@ -90,6 +89,7 @@ function onMapPointerMove(event: PointerEvent) {
     if (Math.hypot(dx, dy) < 7) return;
     drag.moved = true;
     mapDragging.value = true;
+    viewport.setPointerCapture(event.pointerId);
   }
   viewport.scrollLeft = drag.scrollLeft - dx;
   viewport.scrollTop = drag.scrollTop - dy;
