@@ -49,6 +49,12 @@ const stages = manifest.stages.map((entry) => {
     run: replay(stage, withInitialPace(learning.source, "はしる")),
     sprint: replay(stage, withInitialPace(learning.source, "めっちゃはしる")),
   };
+  const broadConditions = ["まえとぶ", "おばけしゃがむ", "こいんとる"].join("\n");
+  const broadPace = {
+    walk: replay(stage, "あるく\n" + broadConditions),
+    run: replay(stage, "はしる\n" + broadConditions),
+    sprint: replay(stage, "めっちゃはしる\n" + broadConditions),
+  };
   const secretClears = entries.filter((item) => usesSecretAction(item.source));
   const secretAdvantage = {
     faster: secretClears.some((item) => item.elapsedTicks < learning.elapsedTicks),
@@ -76,6 +82,7 @@ const stages = manifest.stages.map((entry) => {
     },
     reference: { ticks: reference.timeTicks, characters: reference.characters },
     pace,
+    broadPace,
     secretAdvantage,
     flags: {
       beginnerSameAsShort: beginner.source === short.source,
@@ -87,6 +94,8 @@ const stages = manifest.stages.map((entry) => {
       hasRepeat: /くりかえす|くりかえし/u.test(beginner.source),
       naiveSprintFails: pace.sprint.status !== "cleared",
       naiveRunFails: pace.run.status !== "cleared",
+      broadRunRisk: broadPace.walk.status === "cleared" && broadPace.run.status === "failed",
+      broadSprintRisk: broadPace.walk.status === "cleared" && broadPace.sprint.status === "failed",
     },
   };
 });
@@ -105,9 +114,11 @@ const summary = {
   naiveSprintFailures: stages.filter((stage) => stage.flags.naiveSprintFails).map((stage) => stage.id),
   naiveRunFailures: stages.filter((stage) => stage.flags.naiveRunFails).map((stage) => stage.id),
   naiveRunSuccesses: stages.filter((stage) => !stage.flags.naiveRunFails).map((stage) => stage.id),
+  broadRunRiskStages: stages.filter((stage) => stage.flags.broadRunRisk).map((stage) => stage.id),
+  broadSprintRiskStages: stages.filter((stage) => stage.flags.broadSprintRisk).map((stage) => stage.id),
   worldStats: [1, 2, 3].map((world) => {
     const subset = stages.filter((stage) => stage.world === world);
-    return { world, stageCount: subset.length, averageBeginnerTicks: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.ticks, 0) / subset.length), averageBeginnerCharacters: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.learning.characters, 0) / subset.length), naiveSprintFailureCount: subset.filter((stage) => stage.flags.naiveSprintFails).length, naiveRunFailureCount: subset.filter((stage) => stage.flags.naiveRunFails).length, secretImprovesOverallCount: subset.filter((stage) => stage.secretAdvantage.betterOverall).length };
+    return { world, stageCount: subset.length, averageBeginnerTicks: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.beginner.ticks, 0) / subset.length), averageBeginnerCharacters: Math.round(subset.reduce((sum, stage) => sum + stage.solutions.learning.characters, 0) / subset.length), naiveSprintFailureCount: subset.filter((stage) => stage.flags.naiveSprintFails).length, naiveRunFailureCount: subset.filter((stage) => stage.flags.naiveRunFails).length, secretImprovesOverallCount: subset.filter((stage) => stage.secretAdvantage.betterOverall).length, broadRunRiskCount: subset.filter((stage) => stage.flags.broadRunRisk).length };
   }),
 };
 
