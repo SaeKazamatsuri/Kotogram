@@ -1,0 +1,41 @@
+{
+  "id": "experiment-two-goals",
+  "goal": 1160,
+  "scrollSpeed": 3,
+  "optionalObjectives": true,
+  "requiredCoins": 2,
+  "requiredSkips": 0,
+  "learningObjectives": [
+    "ゴールを えらんで すすむ",
+    "コインの 点数と 時間を くらべる"
+  ],
+  "objects": [
+    {
+      "type": "coin",
+      "id": "coin-near",
+      "position": 340
+    },
+    {
+      "type": "goal",
+      "id": "quick-goal",
+      "position": 540,
+      "bonusBp": 7000
+    },
+    {
+      "type": "coin",
+      "id": "coin-far",
+      "position": 710
+    },
+    {
+      "type": "wall",
+      "id": "wall-far",
+      "position": 875
+    },
+    {
+      "type": "goal",
+      "id": "treasure-goal",
+      "position": 1160,
+      "bonusBp": 10000
+    }
+  ]
+}
