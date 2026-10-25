@@ -17,11 +17,11 @@ const composing = ref(false);
 const keyboardVisible = ref(false);
 const dictionaryOpen = ref(false);
 const actionNames: Record<string, string> = {
-  jump: "ジャンプ", powerJump: "すごいジャンプ", crouch: "しゃがむ", collect: "取る", openChest: "開ける",
+  jump: "ジャンプ", powerJump: "すごいジャンプ", crouch: "しゃがむ", collect: "取る", openChest: "開ける", enterPortal: "入る",
   run: "走る", sprint: "めっちゃ走る", walk: "歩く", press: "押す", skip: "見送る",
 };
 const conditionNames: Record<string, string> = {
-  wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ", conveyor: "動く床", fragileFloor: "こわれる床", wind: "風", pressurePlate: "ふむ床", movingPlatform: "動く足場", laser: "ひかり", bridge: "橋", key: "かぎ", chest: "宝箱",
+  wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ", conveyor: "動く床", fragileFloor: "こわれる床", wind: "風", pressurePlate: "ふむ床", movingPlatform: "動く足場", laser: "ひかり", bridge: "橋", key: "かぎ", chest: "宝箱", portal: "ワープ",
 };
 const stageWords = computed(() => suggestedStageWords(props.stage));
 const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {})
