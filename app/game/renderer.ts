@@ -5,7 +5,7 @@ import { drawAnimatedCharacter } from "./character.ts";
 import { getPlayerPose, getRepeatProgress, type PlayerPose } from "./visuals.ts";
 import { layerX, PARALLAX_DEPTH, type ScenePalette } from "./scenery.ts";
 
-export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false, failureProgress = 1, reduceMotion = false): void {
+export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, palette: ScenePalette, visualTick = game.elapsedTicks, idle = false, failureProgress = 1, reduceMotion = false, characterOffsetX = 0): void {
   ctx.clearRect(0, 0, GAME.width, GAME.height);
 
   const background = ctx.createLinearGradient(0, 0, 0, GAME.height);
@@ -163,7 +163,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
 
   if (!reduceMotion) drawSpeedTrail(ctx, game, visualTick, idle);
   const pose: PlayerPose = getPlayerPose(game);
-  drawAnimatedCharacter(ctx, game, visualTick, idle, failureProgress);
+  drawAnimatedCharacter(ctx, game, visualTick, idle, failureProgress, characterOffsetX);
 
   const actionLabels: Record<PlayerPose, string> = {
     walking: "あるく",
