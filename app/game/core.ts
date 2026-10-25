@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | "portal" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -9,7 +9,7 @@ export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triang
 export function switchAppearance(input: { trap: boolean; color?: SwitchColor; shape?: SwitchShape }): { color: SwitchColor; shape: SwitchShape } {
   return { color: input.color ?? (input.trap ? "red" : "green"), shape: input.shape ?? (input.trap ? "cross" : "circle") };
 }
-export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor" | "openChest";
+export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor" | "openChest" | "enterPortal";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
 export type GameInstruction =
@@ -42,6 +42,7 @@ export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean; chestId?: string };
 export type KeyItem = { id: string; x: number; collected: boolean };
 export type Chest = { id: string; x: number; keyId: string; opened: boolean; rewardId: string };
+export type Portal = { id: string; x: number; targetX: number; used: boolean };
 export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
@@ -70,6 +71,7 @@ export type GameState = {
   coins: Coin[];
   keys: KeyItem[];
   chests: Chest[];
+  portals: Portal[];
   doors: Door[];
   switches: Switch[];
   conveyors: Conveyor[];
@@ -217,6 +219,12 @@ function makeChests(stage: GameStage): Chest[] {
       opened:false,rewardId:"chest-reward:"+id};
   }).sort((a,b)=>a.x-b.x);
 }
+function makePortals(stage: GameStage): Portal[] {
+  return fromStage(stage,"portal").map((item,index)=>({
+    id:typeof item.id==="string"?item.id:"portal:"+index,
+    x:item.position as number,targetX:item.targetPosition as number,used:false
+  })).sort((a,b)=>a.x-b.x);
+}
 function makeDoors(stage: GameStage): Door[] {
   return fromStage(stage, "door")
     .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true, autoCloseTicks: typeof object.autoCloseTicks === "number" ? object.autoCloseTicks : 0, openedUntilTick: null, passed: false, sequenceLength: 0, nextSequenceStep: 1 }))
@@ -316,6 +324,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const holes = makeHoles(stage);
   const chests = makeChests(stage);
   const keys = makeKeys(stage);
+  const portals = makePortals(stage);
   // Opening a chest yields exactly one coin-equivalent reward. The existing
   // score and Worker replay validation remain authoritative for its value.
   const coins = [...makeCoins(stage), ...chests.map(chest=>({
@@ -332,7 +341,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const bridges = makeBridges(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...portals.map((o) => o.targetX), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -355,6 +364,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     coins,
     keys,
     chests,
+    portals,
     doors,
     switches,
     conveyors,
@@ -448,6 +458,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     if (condition === "conveyor" || condition === "fragileFloor") {
       const target = nextTarget(condition === "conveyor" ? game.conveyors : game.fragileFloors, game.px);
       if (target && target.x - game.px <= range) found.set(target.id, target);
+      continue;
+    }
+    if (condition === "portal") {
+      const target=nextTarget(game.portals.filter(item=>!item.used),game.px);
+      if(target && target.x-game.px<=GAME.switchPressRange) found.set(target.id,target);
       continue;
     }
     if (condition === "key") {
@@ -553,6 +568,17 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
     if (!target) return false;
     target.broken = true;
     target.open = true;
+    return true;
+  }
+  if (action === "enterPortal") {
+    const portal=game.portals.find(item=>!item.used &&
+      (sensedTargetId===undefined || item.id===sensedTargetId) &&
+      item.x+GAME.pad>=game.px && item.x-game.px<=GAME.switchPressRange);
+    if(!portal) return false;
+    portal.used=true;
+    game.px=portal.targetX;
+    // Travel consumes the usual single simulation tick and does not reset
+    // watcher state, elapsed time or previously collected bonus objectives.
     return true;
   }
   if (action === "openChest") {
