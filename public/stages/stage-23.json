@@ -4,8 +4,8 @@
   "scrollSpeed": 3,
   "learningObjectives": [
     "あな・かべ・おばけに 対応しよう",
-    "最後のあなには 行ったり来たりする足場があるよ",
-    "ジャンプしても 足場に乗っても よいよ"
+    "最後のあなは 上下する台に のれるよ",
+    "2かいジャンプして 最後は 台にのろう"
   ],
   "objects": [
     {
@@ -54,18 +54,20 @@
       "multiplier": 1.16
     },
     {
-      "id": "final-moving-bridge",
-      "type": "movingPlatform",
+      "id": "final-vertical-lift",
+      "type": "verticalPlatform",
       "position": 3900,
-      "width": 130,
-      "travel": 60,
-      "period": 180
+      "width": 190,
+      "period": 180,
+      "topY": 272,
+      "travelY": 50,
+      "phaseOffset": 170
     }
   ],
   "meta": {
-    "title": "7つのしれんと 動く足場",
+    "title": "7つのしれんと 上下する台",
     "bg": "twilight",
-    "hint": "最後のあなは 動く足場に乗って わたれるかな",
+    "hint": "最後のあなは のぼりだいにのると わたれるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "風のむきに 気をつけて あなを こえよう",
