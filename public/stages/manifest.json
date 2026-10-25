@@ -65,9 +65,9 @@
     },
     {
       "id": "stage-12",
-      "title": "2つのかべを ひととび",
+      "title": "長いジャンプと 青い門",
       "file": "/stages/stage-12.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-13",
@@ -101,9 +101,9 @@
     },
     {
       "id": "stage-18",
-      "title": "大きな あな",
+      "title": "大きなあなと こわれる道",
       "file": "/stages/stage-18.json",
-      "version": "2026-10-25-r2"
+      "version": "2026-10-25-r3"
     },
     {
       "id": "stage-19",
