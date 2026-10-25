@@ -3,8 +3,9 @@
   "goal": 2020,
   "scrollSpeed": 3,
   "learningObjectives": [
-    "ジャンプと しゃがむを 組み合わせよう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "はじめの かべと おばけは 同じ場所にいるよ",
+    "次のおばけは 左右に 動いているよ",
+    "コインを 取ると 点数が あがるよ"
   ],
   "objects": [
     {
@@ -31,21 +32,30 @@
     {
       "id": "ghost-5",
       "type": "ghost",
-      "position": 1540
+      "position": 1540,
+      "patrolRange": 76,
+      "patrolPeriod": 120
+    },
+    {
+      "id": "choice-coin",
+      "type": "coin",
+      "position": 1200
     }
   ],
   "meta": {
-    "title": "上下を 見わけよう",
+    "title": "動く おばけと 上下の判断",
     "bg": "sunset",
-    "hint": "ジャンプと しゃがむを 組み合わせよう",
+    "hint": "おばけの動きに ちゅういして しゃがもう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
-      "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
+      "enemy": "動くおばけの手前で しゃがもう",
+      "coin": "コインを取ると 点数があがるよ",
       "door": "門の 前に スイッチが あるよ",
       "trap": "あかいスイッチは おさないでね",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
-  }
+  },
+  "requiredCoins": 1,
+  "optionalObjectives": true
 }
