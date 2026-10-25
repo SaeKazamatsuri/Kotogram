@@ -46,7 +46,19 @@ test("stage28 portal route earns time savings but fewer optional coins and skips
       ticks:a.elapsedTicks,chars:countSourceCharacters(c.source),
       bp:objectiveProgress(a).completionBp,used:a.portals.filter(p=>p.used).length};
   });
-  console.log("PORTAL_STAGE_REPORT "+JSON.stringify(results));
+  for(const [index,actual] of results.entries()){
+    const expected=cases[index];
+    assert.equal(actual.status,expected.expect,expected.name);
+    if(expected.expectedTicks!==undefined) assert.equal(actual.ticks,expected.expectedTicks,expected.name);
+    if(expected.failureReason) assert.equal(actual.reason,expected.failureReason,expected.name);
+  }
+  const portal=results.find(x=>x.name==="portal-tradeoff-skips-one-coin-and-gate");
+  assert.equal(portal?.status,"cleared");
+  assert.equal(portal?.ticks,906);
+  assert.equal(portal?.bp,7013);
+  assert.equal(portal?.used,1);
+  assert.equal(results.find(x=>x.role==="beginner")?.bp,10000);
+  assert.ok(portal.ticks<results.find(x=>x.role==="beginner").ticks);
   assert.ok(getScoreReference("stage-28","2026-10-25-r2"));
   assert.ok(getScoreReference("stage-28","2026-10-25-r3"));
 });
