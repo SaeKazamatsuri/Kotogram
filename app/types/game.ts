@@ -1,4 +1,4 @@
-export type FailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "skip" | "void";
+export type FailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "skip" | "void" | "laser";
 
 export type FailPayload = { reason: FailReason };
 
@@ -6,6 +6,7 @@ const reasonLabels: Record<FailReason, string> = {
   hole: "あなにおちちゃった！",
   wall: "かべにぶつかっちゃった！",
   enemy: "おばけにあたっちゃった！",
+  laser: "ひかりに あたっちゃった！",
   coin: "こいんを あつめきれなかったよ！",
   door: "門が しまっているよ！",
   trap: "ちがう スイッチを おしちゃった！",
@@ -17,6 +18,7 @@ const reasonHints: Record<FailReason, string> = {
   hole: "「あな じゃんぷ」など、あなを見つけたらジャンプしよう。",
   wall: "「かべ じゃんぷ」と書いて、かべの前でジャンプできるようにしよう。",
   enemy: "「おばけ しゃがむ」と書くと、おばけの下をくぐれるよ。",
+  laser: "「ひかり しゃがむ」で ひかりを よけよう。",
   coin: "「こいんとる」で こいんを あつめよう。",
   door: "「すいっちおす」で 門を あけよう。",
   trap: "あかいスイッチは『すいっちみおくる』で見送ろう。",

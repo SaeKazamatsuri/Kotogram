@@ -29,11 +29,12 @@ export function suggestedStageWords(stage?: StageWords | null) {
     ...(types.has("wind") ? ["wind"] : []),
     ...(types.has("pressurePlate") ? ["pressurePlate"] : []),
     ...(types.has("movingPlatform") ? ["movingPlatform"] : []),
+    ...(types.has("laser") ? ["laser"] : []),
     ...(obstacle ? ["ahead"] : []),
   ];
   const actions = [
     ...(types.has("wall") || types.has("hole") || types.has("fragileFloor") ? ["jump"] : []),
-    ...(types.has("ghost") ? ["crouch"] : []),
+    ...(types.has("ghost") || types.has("laser") ? ["crouch"] : []),
     ...(types.has("coin") ? ["collect"] : []),
     ...(types.has("switch") ? ["press"] : []),
     ...(objects.some((object) => object.type === "switch" && (object as { trap?: boolean }).trap === true) ? ["skip"] : []),

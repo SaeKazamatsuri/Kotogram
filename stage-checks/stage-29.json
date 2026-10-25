@@ -5,21 +5,21 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "ひかりしゃがむ\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 1047
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべ1かいすごいとぶ\nあなとぶ\nてきかがむ\nこいんとる",
+      "source": "ひかりしゃがむ\nかべ1かいすごいとぶ\nあなとぶ\nてきかがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 1047
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "ひかりしゃがむ\nめっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 597
     },
@@ -38,22 +38,29 @@
     {
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
-      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "ひかりしゃがむ\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 1047
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "ひかりしゃがむ\nめっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 597
     },
     {
       "name": "last-bonus-can-be-missed",
       "role": "regression",
-      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
+      "source": "ひかりしゃがむ\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared"
+    },
+    {
+      "name": "walking-into-active-laser",
+      "role": "negative",
+      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "expect": "failed",
+      "failureReason": "laser"
     }
   ]
 }
