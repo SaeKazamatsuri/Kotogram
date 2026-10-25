@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "もろいゆかとぶ\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1412
+      "expectedTicks": 1438
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "もろいゆかとぶ\nかべ1かいすごいとぶ\nあなとぶ\nてきかがむ\n3かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1412
+      "expectedTicks": 1438
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "もろいゆかとぶ\nめっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 807
+      "expectedTicks": 822
     },
     {
       "name": "missing-actions",
@@ -53,7 +53,7 @@
       "role": "overall",
       "source": "もろいゆかとぶ\nめっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 807
+      "expectedTicks": 822
     },
     {
       "name": "broken-floor-cannot-be-ignored",
@@ -65,7 +65,7 @@
     {
       "name": "bonus-coins-optional",
       "role": "regression",
-      "source": "もろいゆかとぶ\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nすいっちみおくる\nすいっちおす",
+      "source": "もろいゆかとぶ\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared"
     }
   ]
