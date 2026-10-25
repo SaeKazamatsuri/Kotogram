@@ -37,7 +37,7 @@ export type GameStage = {
   holes?: unknown;
 };
 
-export type Barrier = { id: string; x: number; cleared: boolean };
+export type Barrier = { id: string; x: number; cleared: boolean; originX?: number; patrolRange?: number; patrolPeriod?: number };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
 export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
@@ -143,7 +143,20 @@ function makeBarriers(stage: GameStage, type: "wall" | "ghost", legacy: unknown)
     ? objects.map((obj) => obj.position as number)
     : legacyPositions(legacy);
   return positions
-    .map((x, i) => ({ id: type + ":" + i, x, cleared: false }))
+    .map((x, i) => {
+      const source = objects[i];
+      const movingGhost = type === "ghost" && source && isFiniteNumber(source.patrolRange) &&
+        isFiniteNumber(source.patrolPeriod) && source.patrolRange > 0 && source.patrolPeriod >= 40;
+      return {
+        id: typeof source?.id === "string" ? source.id : type + ":" + i,
+        x,
+        cleared: false,
+        ...(movingGhost ? {
+          originX: x, patrolRange: source.patrolRange as number,
+          patrolPeriod: source.patrolPeriod as number,
+        } : {}),
+      };
+    })
     .sort((a, b) => a.x - b.x);
 }
 
@@ -519,8 +532,19 @@ function fail(game: GameState, reason: GameFailReason) {
   game.failureReason = reason;
 }
 
+/** Ghost patrol positions are derived only from elapsed simulation ticks, not frame time. */
+export function patrolGhostX(ghost: Barrier, tick: number): number {
+  if (ghost.originX === undefined || ghost.patrolRange === undefined || ghost.patrolPeriod === undefined) return ghost.x;
+  const phase = (tick % ghost.patrolPeriod) / ghost.patrolPeriod;
+  const outbound = phase <= 0.5 ? phase * 2 : (1 - phase) * 2;
+  return ghost.originX - ghost.patrolRange * outbound;
+}
+
 export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   if (game.status !== "running") return game.status;
+  for (const ghost of game.ghosts) {
+    if (ghost.originX !== undefined) ghost.x = patrolGhostX(ghost, game.elapsedTicks);
+  }
   applyProgram(game, observe);
   if (game.status !== "running") return game.status;
   applySequence(game, observe);
