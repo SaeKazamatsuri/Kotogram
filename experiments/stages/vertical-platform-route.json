@@ -1,0 +1,32 @@
+{
+  "id": "experiment-vertical-platform",
+  "goal": 930,
+  "scrollSpeed": 3,
+  "learningObjectives": [
+    "あしばに のる",
+    "あなを こえる"
+  ],
+  "objects": [
+    {
+      "type": "hole",
+      "id": "lower-gap",
+      "position": 340,
+      "width": 100
+    },
+    {
+      "type": "verticalPlatform",
+      "id": "lifting-bridge",
+      "position": 300,
+      "width": 190,
+      "topY": 272,
+      "travelY": 50,
+      "period": 180,
+      "phaseOffset": 105
+    },
+    {
+      "type": "wall",
+      "id": "landing-wall",
+      "position": 635
+    }
+  ]
+}
