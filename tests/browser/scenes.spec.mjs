@@ -41,9 +41,9 @@ test("失敗後も開始地点を下見でき、オブジェクト名と色分�
   await page.goto("/play/stage-1");
   const editor = page.getByRole("textbox", { name: "コードを書く" });
   await editor.fill("かべをみつけたらじゃんぷする");
-  await expect(page.locator("pre").first()).toContainText("かべをみつけたらじゃんぷする");
-  await expect(page.locator("pre span").filter({ hasText: "かべ" }).first()).toHaveClass(/underline/);
-  await expect(page.locator("pre span").filter({ hasText: "じゃんぷ" }).first()).toHaveClass(/font-black/);
+  await expect(page.locator("[data-syntax-mirror]").first()).toContainText("かべをみつけたらじゃんぷする");
+  await expect(page.locator("[data-syntax-mirror] span").filter({ hasText: "かべ" }).first()).toHaveClass(/underline/);
+  await expect(page.locator("[data-syntax-mirror] span").filter({ hasText: "じゃんぷ" }).first()).toHaveClass(/font-bold/);
   const canvas = page.locator("canvas");
   const hoverWall = async () => {
     const bounds = await canvas.boundingBox();
