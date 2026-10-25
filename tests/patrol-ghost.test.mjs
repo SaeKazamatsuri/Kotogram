@@ -31,5 +31,12 @@ test("stage16 ordinary and secret routes stay deterministic with ghost patrol",(
       [second.status,second.failureReason,second.elapsedTicks,objectiveProgress(second)],c.name);
     report.push({name:c.name,role:c.role,state:first.status,ticks:first.elapsedTicks,chars:countSourceCharacters(c.source),bp:objectiveProgress(first).completionBp,reason:first.failureReason});
   }
-  console.log("PATROL_STAGE_REPORT "+JSON.stringify(report));
+    for (const [index, result] of report.entries()) {
+      const expected = cases[index];
+      assert.equal(result.state, expected.expect, expected.name);
+      if (expected.expectedTicks !== undefined) assert.equal(result.ticks, expected.expectedTicks, expected.name);
+      if (expected.failureReason) assert.equal(result.reason, expected.failureReason, expected.name);
+    }
+    assert.equal(report.find(x=>x.role==="beginner")?.bp,10000);
+    assert.equal(report.find(x=>x.name==="optional-coin-low-score")?.bp,3000);
 });
