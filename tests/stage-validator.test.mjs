@@ -33,7 +33,7 @@ test("rejects unsupported types, duplicate obstacles, NaN and invalid dimensions
   const stage = { goal: 3000, scrollSpeed: 3, objects: [
     { type: "wall", position: 600, id: "a" },
     { type: "wall", position: 600, id: "a" },
-    { type: "laser", position: 900 },
+    { type: "unknown-gimmick", position: 900 },
     { type: "hole", position: 1000, width: 0 },
   ] };
   const errors = validateStage("stage-example", stage);
