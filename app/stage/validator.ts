@@ -111,7 +111,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     const placements = new Set<string>();
     const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind"]);
     const doors = new Map<string, number>();
-    const switches: { x: number; target: string; path: string }[] = [];
+    const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     let coinCount = 0;
     let trapSwitchCount = 0;
     let explicitGoalCount = 0;
@@ -134,10 +134,11 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         if (obj.color !== undefined && !SWITCH_COLORS.includes(obj.color as typeof SWITCH_COLORS[number])) issues.push({ path: path + ".color", message: "unsupported switch color" });
         if (obj.shape !== undefined && !SWITCH_SHAPES.includes(obj.shape as typeof SWITCH_SHAPES[number])) issues.push({ path: path + ".shape", message: "unsupported switch shape" });
         if (obj.trap !== undefined && typeof obj.trap !== "boolean") issues.push({ path: path + ".trap", message: "trap must be boolean" });
+        if (obj.sequenceStep !== undefined && (obj.trap === true || !Number.isSafeInteger(obj.sequenceStep) || (obj.sequenceStep as number) < 1 || (obj.sequenceStep as number) > 5)) issues.push({ path: path + ".sequenceStep", message: "sequenceStep must be 1..5 on a safe switch" });
         if (typeof obj.id !== "string" || !obj.id.trim()) issues.push({ path: path + ".id", message: "switch ID required" });
         if (typeof obj.targetDoorId !== "string" || !obj.targetDoorId.trim()) issues.push({ path: path + ".targetDoorId", message: "target door required" });
         if (isNonnegativeFinite(obj.position) && typeof obj.targetDoorId === "string") {
-          switches.push({ x: obj.position, target: obj.targetDoorId, path });
+          switches.push({ x: obj.position, target: obj.targetDoorId, path, trap: obj.trap === true, sequenceStep: typeof obj.sequenceStep === "number" ? obj.sequenceStep : undefined });
         }
       }
       if (obj.type === "door" && (typeof obj.id !== "string" || !obj.id.trim())) issues.push({ path: path + ".id", message: "door ID required" });
@@ -170,6 +171,14 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       else if (item.x >= targetX - GAME.playerWidth - GAME.switchPressRange) {
         issues.push({ path: item.path + ".position", message: "switch must provide approach space before its door" });
       }
+    }
+    for (const [doorId] of doors) {
+      const safe = switches.filter(item => item.target === doorId && !item.trap);
+      const numbered = safe.filter(item => item.sequenceStep !== undefined);
+      if (!numbered.length) continue;
+      if (numbered.length !== safe.length) issues.push({ path: "objects", message: "numbered gates cannot mix ordered and ordinary safe switches" });
+      const steps = numbered.map(item => item.sequenceStep).sort((a,b) => (a ?? 0)-(b ?? 0));
+      if (steps.some((step,i) => step !== i+1)) issues.push({ path: "objects", message: "ordered gate sequence must be numbered 1 to N without duplicates" });
     }
     if (Number.isSafeInteger(value.requiredCoins) && (value.requiredCoins as number) > coinCount) issues.push({ path: "requiredCoins", message: "requiredCoins exceeds available coins" });
     if (Number.isSafeInteger(value.requiredSkips) && (value.requiredSkips as number) > trapSwitchCount) issues.push({ path: "requiredSkips", message: "requiredSkips exceeds available trap switches" });
