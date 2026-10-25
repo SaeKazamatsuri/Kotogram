@@ -188,8 +188,8 @@ export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameS
     ctx.fill();
   }
   ctx.translate(x + motion.offsetX, game.py + GAME.epsilon + motion.offsetY - motion.bounce * 0.2 - motion.breathe * 0.5);
-  ctx.rotate(motion.tilt);
-  ctx.scale(1, motion.squash);
+  ctx.rotate(game.direction * motion.tilt);
+  ctx.scale(game.direction, motion.squash);
 
   drawCharacterArtwork(ctx, motion);
   ctx.restore();
