@@ -1,4 +1,5 @@
 import { generateCelebrationWav, type CelebrationCue } from "./celebration-music.ts";
+import { generateSecretCueWav, type SecretCue } from "./secret-sfx.ts";
 
 export type StageBgmMode = "edit" | "run";
 export type StageBgmName = `stage-${number}-${StageBgmMode}`;
@@ -16,13 +17,13 @@ function isRunningBgm(name: BgmName): boolean {
 export type SoundName =
   | "avoid" | "confirm" | "crouch" | "gameover" | "high_score"
   | "hit" | "jump" | "land" | "score" | "score_bonus"
-  | "select" | "start" | "warning" | "clear_fanfare";
+  | "select" | "start" | "warning" | "clear_fanfare" | SecretCue;
 
 const STORAGE_KEY = "kotogram.audio.muted";
 const EFFECT_VOLUME = 0.42;
 const FANFARE_VOLUME = 0.75;
 const CLEAR_BGM_VOLUME = 0.24;
-const generatedUrls = new Map<CelebrationCue, string>();
+const generatedUrls = new Map<CelebrationCue | SecretCue, string>();
 const BGM_VOLUME = 0.25;
 const voices = new Map<SoundName, HTMLAudioElement[]>();
 const lastEffect = new Map<SoundName, number>();
@@ -52,6 +53,14 @@ export function getAudioMuted(): boolean {
 }
 
 function fileUrl(folder: "bgm" | "se", name: string): string {
+  if (folder === "se" && (name === "door_break" || name === "door_vault")) {
+    const cue = name as SecretCue;
+    const existing = generatedUrls.get(cue);
+    if (existing) return existing;
+    const url = URL.createObjectURL(new Blob([generateSecretCueWav(cue)], { type: "audio/wav" }));
+    generatedUrls.set(cue, url);
+    return url;
+  }
   if ((folder === "bgm" && name === "clear_loop") || (folder === "se" && name === "clear_fanfare")) {
     const cue = name as CelebrationCue;
     const existing = generatedUrls.get(cue);
