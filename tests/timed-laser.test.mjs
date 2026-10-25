@@ -45,5 +45,13 @@ test("stage29 registered programs provide deterministic full bonus and beam fail
   report.push({name:c.name,role:c.role,status:first.status,reason:first.failureReason,ticks:first.elapsedTicks,
     chars:countSourceCharacters(c.source),bp:objectiveProgress(first).completionBp});
  }
- console.log("LASER_STAGE_REPORT "+JSON.stringify(report));
+ for(const [i,item] of report.entries()){
+   const expected=checks[i];
+   assert.equal(item.status,expected.expect,expected.name);
+   if(expected.expectedTicks!==undefined)assert.equal(item.ticks,expected.expectedTicks,expected.name);
+   if(expected.failureReason)assert.equal(item.reason,expected.failureReason,expected.name);
+ }
+ assert.equal(report.find(x=>x.name==="walking-into-active-laser")?.reason,"laser");
+ assert.equal(report.find(x=>x.role==="beginner")?.bp,10000);
+ assert.equal(report.find(x=>x.name==="last-bonus-can-be-missed")?.bp,3000);
 });
