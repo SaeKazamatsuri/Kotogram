@@ -41,6 +41,12 @@
       "source": "めっちゃはしる\n2かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 373
+    },
+    {
+      "name": "colored-shape-sequential",
+      "role": "regression",
+      "source": "あかいばつのぼたんみおくる\nむらさきのほしのぼたんみおくる\nみどりのぼたんおす\nきいろいぼたんおす",
+      "expect": "cleared"
     }
   ]
 }
