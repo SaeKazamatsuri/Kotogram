@@ -1,4 +1,4 @@
-import { GAME, worldToScreenX, type GameState, type SwitchColor, type SwitchShape } from "./core.ts";
+import { GAME, isLaserActive, worldToScreenX, type GameState, type SwitchColor, type SwitchShape } from "./core.ts";
 
 const SWITCH_PALETTE: Record<SwitchColor, string> = { red: "#b83250", green: "#278a74", blue: "#255caf", yellow: "#b47b16", purple: "#7e4aa0" };
 const SWITCH_SYMBOLS: Record<SwitchShape, string> = { circle: "○", cross: "×", triangle: "△", square: "□", star: "☆" };
@@ -35,6 +35,23 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
 }
 
 export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks): void {
+  for(const laser of game.lasers){
+    const x=worldToScreenX(game,laser.x);
+    if(x < -28 || x > GAME.width+28)continue;
+    const active=isLaserActive(laser,game.elapsedTicks);
+    ctx.save();
+    ctx.strokeStyle=active?"#f04b66":"#697689";
+    ctx.lineWidth=active?5:2;
+    if(!active)ctx.setLineDash([5,6]);
+    ctx.beginPath();
+    ctx.moveTo(x,GAME.groundY-135);
+    ctx.lineTo(x,GAME.groundY-5);
+    ctx.stroke();
+    ctx.fillStyle=active?"#8c1731":"#32465b";
+    ctx.font="bold 17px sans-serif";
+    ctx.fillText(active?"！":"○",x+8,GAME.groundY-141);
+    ctx.restore();
+  }
   for (const wind of game.winds) {
     const x = worldToScreenX(game, wind.x);
     if (x > GAME.width || x + wind.w < 0) continue;
