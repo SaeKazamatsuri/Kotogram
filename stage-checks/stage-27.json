@@ -41,6 +41,18 @@
       "source": "めっちゃはしる\nかべとぶ\n3かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 632
+    },
+    {
+      "name": "color-pair-three-doors",
+      "role": "regression",
+      "source": "かべとぶ\nあかいぼたんみおくる\nむらさきのぼたんみおくる\nきいろいぼたんみおくる\nみどりのぼたんおす\nあおいぼたんおす\nむらさきのまるのぼたんおす",
+      "expect": "cleared"
+    },
+    {
+      "name": "optional-skip-rate",
+      "role": "regression",
+      "source": "かべとぶ\n3かいくりかえす\nすいっちおす\nおわり",
+      "expect": "failed"
     }
   ]
 }
