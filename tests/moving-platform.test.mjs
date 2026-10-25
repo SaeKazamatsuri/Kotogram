@@ -45,6 +45,6 @@ test("stage23 paths including moving bridge are deterministic and stage versions
   if(expected.expectedTicks!==undefined)assert.equal(result.ticks,expected.expectedTicks,expected.name);
   if(expected.failureReason)assert.equal(result.reason,expected.failureReason,expected.name);
  }
- assert.equal(report.find(x=>x.name==="bridge-replaces-third-jump")?.status,"cleared");
- assert.equal(report.find(x=>x.name==="bridge-replaces-third-jump")?.ticks,1442);
+ assert.equal(report.find(x=>x.name==="vertical-lift-replaces-third-jump")?.status,"cleared");
+ assert.equal(report.find(x=>x.name==="vertical-lift-missing-board")?.reason,"hole");
 });
