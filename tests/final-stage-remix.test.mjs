@@ -22,5 +22,14 @@ test("Final stage combines all five movement/bonus mechanisms without nondetermi
       ticks: first.elapsedTicks, chars: countSourceCharacters(c.source), bp: objectiveProgress(first).completionBp,
       broken: first.doors.filter(x => x.broken).length };
   });
-  console.log("FINAL_STAGE_REPORT " + JSON.stringify(results));
+  for (const [i, result] of results.entries()) {
+    assert.equal(result.status, cases[i].expect, result.name);
+    if (cases[i].expectedTicks !== undefined) assert.equal(result.ticks, cases[i].expectedTicks, result.name);
+    if (cases[i].failureReason !== undefined) assert.equal(result.reason, cases[i].failureReason, result.name);
+  }
+  assert.equal(results.find(x => x.role === "beginner").bp, 10000);
+  assert.equal(results.find(x => x.name === "broken-floor-cannot-be-ignored").reason, "hole");
+  assert.equal(results.find(x => x.name === "bonus-coins-optional").bp, 3000);
+  assert.equal(results.find(x => x.name === "hidden-last-gate-shortcut").bp, 6133);
+  assert.equal(results.find(x => x.name === "hidden-last-gate-shortcut").broken, 1);
 });
