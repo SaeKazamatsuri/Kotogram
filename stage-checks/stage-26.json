@@ -5,23 +5,23 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "あおいしかくのぼたんおす\nみどりのまるのぼたんおす\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 852
+      "expectedTicks": 979
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべとあなとぶ\nてきかがむ\nこいんとる",
+      "source": "あおいしかくのぼたんおす\nみどりのまるのぼたんおす\nかべとあなとぶ\nてきかがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 852
+      "expectedTicks": 979
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "あおいしかくのぼたんおす\nみどりのまるのぼたんおす\nめっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 487
+      "expectedTicks": 560
     },
     {
       "name": "missing-actions",
@@ -32,9 +32,16 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "あおいしかくのぼたんおす\nみどりのまるのぼたんおす\nめっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 487
+      "expectedTicks": 560
+    },
+    {
+      "name": "wrong-order-gate",
+      "role": "negative",
+      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる\nみどりのまるのぼたんおす",
+      "expect": "failed",
+      "failureReason": "trap"
     }
   ]
 }

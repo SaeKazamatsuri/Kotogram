@@ -120,7 +120,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.fillText(SWITCH_SYMBOLS[item.shape], x - 8, y + (item.activated ? 20 : 18));
     ctx.fillStyle = "#f9fcf3";
     ctx.font = "bold 12px sans-serif";
-    ctx.fillText(item.skipped ? "→" : item.activated ? "○" : item.trap ? "!" : "おす", x - (item.skipped || item.activated || item.trap ? 6 : 12), y - 7);
+    ctx.fillText(item.skipped ? "→" : item.activated ? "○" : item.trap ? "!" : item.sequenceStep !== null ? String(item.sequenceStep) : "おす", x - (item.skipped || item.activated || item.trap || item.sequenceStep !== null ? 6 : 12), y - 7);
   }
 
   for (const door of game.doors) {
@@ -156,6 +156,11 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
       ctx.moveTo(x + GAME.doorWidth - 5, y + 15);
       ctx.lineTo(x + GAME.doorWidth - 5, GAME.groundY - 6);
       ctx.stroke();
+    }
+    if (door.sequenceLength > 0 && !door.open) {
+      ctx.fillStyle = "#ffe6a1";
+      ctx.font = "bold 14px sans-serif";
+      ctx.fillText(String(Math.min(door.nextSequenceStep - 1, door.sequenceLength)) + "/" + String(door.sequenceLength), x + 3, y - 13);
     }
     if (door.open && door.autoCloseTicks > 0) {
       ctx.fillStyle = "#ffe6a1";

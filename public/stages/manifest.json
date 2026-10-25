@@ -113,9 +113,9 @@
     },
     {
       "id": "stage-20",
-      "title": "かべの先の スイッチ",
+      "title": "2つを順番に おす門",
       "file": "/stages/stage-20.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-21",
@@ -149,9 +149,9 @@
     },
     {
       "id": "stage-26",
-      "title": "上下の かけひき",
+      "title": "上下と 2つのボタン",
       "file": "/stages/stage-26.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-27",
