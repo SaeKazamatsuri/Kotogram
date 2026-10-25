@@ -109,6 +109,7 @@ const MAX_REPEAT = 30;
 export function normalizeLine(input: string): string {
   return input.normalize("NFC")
     .replace(/[０-９]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0xfee0))
+    .replace(/[ァ-ヶ]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 0x60))
     .replace(/[ \t\u3000]/g, "");
 }
 
