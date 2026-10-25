@@ -36,7 +36,7 @@
       "id": "door-4",
       "type": "door",
       "position": 780,
-      "autoCloseTicks": 95
+      "autoCloseTicks": 150
     },
     {
       "id": "trap-5",
@@ -64,7 +64,7 @@
       "id": "door-8",
       "type": "door",
       "position": 1540,
-      "autoCloseTicks": 95
+      "autoCloseTicks": 150
     },
     {
       "id": "belt-1",
