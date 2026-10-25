@@ -361,24 +361,36 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
 }
 
 export function drawFinish(ctx: CanvasRenderingContext2D, game: GameState): void {
-  const x = worldToScreenX(game, game.goalX);
-  if (x >= GAME.width || x + GAME.goalWidth <= 0) return;
-  const y = GAME.groundY - GAME.goalHeight;
-  ctx.save();
-  ctx.shadowColor = "#fce9a4";
-  ctx.shadowBlur = 12;
-  ctx.strokeStyle = "#f8dd91";
-  ctx.lineWidth = 7;
-  ctx.beginPath();
-  ctx.moveTo(x + 1, GAME.groundY);
-  ctx.lineTo(x + 1, y + 18);
-  ctx.quadraticCurveTo(x + 16, y - 10, x + 31, y + 18);
-  ctx.lineTo(x + 31, GAME.groundY);
-  ctx.stroke();
-  ctx.shadowBlur = 0;
-  ctx.fillStyle = "#7fd3ba";
-  ctx.beginPath();
-  ctx.roundRect(x + 8, y + 24, 16, 29, 7);
-  ctx.fill();
-  ctx.restore();
+  for (const goal of game.goals) {
+    const x = worldToScreenX(game, goal.x);
+    if (x >= GAME.width || x + GAME.goalWidth <= 0) continue;
+    const y = GAME.groundY - GAME.goalHeight;
+    ctx.save();
+    ctx.shadowColor = goal.skipped ? "#94a3b8" : goal.isFinal ? "#fce9a4" : "#a5d8ff";
+    ctx.shadowBlur = goal.skipped ? 0 : 12;
+    ctx.strokeStyle = goal.skipped ? "#94a3b8" : goal.isFinal ? "#f8dd91" : "#60a5fa";
+    ctx.lineWidth = 7;
+    ctx.beginPath();
+    ctx.moveTo(x + 1, GAME.groundY);
+    ctx.lineTo(x + 1, y + 18);
+    ctx.quadraticCurveTo(x + 16, y - 10, x + 31, y + 18);
+    ctx.lineTo(x + 31, GAME.groundY);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = goal.skipped ? "#cbd5e1" : goal.isFinal ? "#7fd3ba" : "#c4e7ff";
+    ctx.beginPath();
+    ctx.roundRect(x + 8, y + 24, 16, 29, 7);
+    ctx.fill();
+    if (game.goals.length > 1) {
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 13px sans-serif";
+      ctx.fillText(goal.skipped ? "→" : goal.isFinal ? "☆" : "①", x + 10, y + 44);
+      ctx.fillStyle = "rgba(255,255,255,0.96)";
+      ctx.fillRect(x - 29, y - 33, 92, 22);
+      ctx.fillStyle = "#0f172a";
+      ctx.font = "bold 12px sans-serif";
+      ctx.fillText(goal.skipped ? "みおくった" : goal.isFinal ? "ごほうび" : "ちかみち", x - 25, y - 17);
+    }
+    ctx.restore();
+  }
 }

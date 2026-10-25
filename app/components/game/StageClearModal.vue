@@ -15,6 +15,7 @@ const props = defineProps<{
   chars: number;
   mastery?: MasteryResult | null;
   objectives?: ObjectiveProgress | null;
+  goalChoice?: { label: string; bonusBp: number } | null;
   scores?: { time: number; chars: number; overall: number } | null;
   bests?: BestRuns<ScoredRun>;
   apiBase?: string;
@@ -68,6 +69,11 @@ function bestScore(kind: "time" | "chars" | "overall") {
         <div class="rounded-xl bg-[#e8f0f5] p-4"><p class="text-sm font-black text-[#41556e]">タイム</p><p class="text-2xl font-black text-[#172439]">{{ seconds.toFixed(1) }}<span class="ml-1 text-sm">秒</span></p></div>
         <div class="rounded-xl bg-[#e8f0f5] p-4"><p class="text-sm font-black text-[#41556e]">文字数</p><p class="text-2xl font-black text-[#172439]">{{ chars }}<span class="ml-1 text-sm">字</span></p></div>
       </div>
+      <div v-if="goalChoice" class="mb-4 rounded-xl border border-[#c3d8b6] bg-[#f0f8e7] px-4 py-3 text-sm font-black text-[#243b52]" aria-label="えらんだゴール">
+        <p><Icon name="lucide:flag-triangle-right" class="game-icon" aria-hidden="true"/> {{ goalChoice.label }}ゴールに とうちゃく！</p>
+        <p v-if="goalChoice.bonusBp < 10000" class="mt-1 text-[#76501e]">ちかみちの 点数倍率は {{ Math.round(goalChoice.bonusBp / 100) }}%</p>
+        <p v-else class="mt-1 text-[#14684e]">ごほうびの 点数倍率は 100%</p>
+      </div>
       <div v-if="mastery && (mastery.loopChallenge || mastery.secretFound)" class="mb-4 flex flex-wrap gap-2 text-sm font-black">
         <span v-if="mastery.loopChallenge && mastery.repeatUsed" class="rounded-full bg-[#c9eedd] px-3 py-2 text-[#17503f]"><Icon name="lucide:repeat" class="game-icon" aria-hidden="true" /> くりかえしで クリア！</span>
         <span v-else-if="mastery.loopChallenge" class="rounded-full bg-[#e7edf2] px-3 py-2 text-[#38556a]">次は くりかえしでも クリアしてみよう</span>
@@ -76,7 +82,7 @@ function bestScore(kind: "time" | "chars" | "overall") {
       <div v-if="objectives && (objectives.coinTarget || objectives.skipTarget)" class="mb-4 rounded-xl border border-[#bbd6e1] bg-[#eaf4f7] px-3 py-2 text-sm font-black text-[#244254]" aria-label="おつかいの達成">
         <p v-if="objectives.coinTarget">コイン {{ objectives.collected }}/{{ objectives.coinTarget }}</p>
         <p v-if="objectives.skipTarget">見送った ボタン {{ objectives.skipped }}/{{ objectives.skipTarget }}</p>
-        <p v-if="objectives.completionBp < 10000" class="text-[#994c22]">おつかいが のこったので 点数が {{ Math.round(objectives.completionBp / 100) }}%に なったよ</p>
+        <p v-if="objectives.completionBp < 10000" class="text-[#994c22]">{{ goalChoice ? "ゴールと おつかいの 点数倍率は" : "おつかいが のこったので 点数が" }} {{ Math.round(objectives.completionBp / 100) }}%に なったよ</p>
       </div>
       <div v-if="scores" class="mb-4 rounded-2xl bg-[#fff0c6] p-3">
         <div class="grid grid-cols-3 gap-2" aria-label="3つの点数">

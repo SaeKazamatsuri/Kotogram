@@ -122,9 +122,7 @@ export function validateRunPayload(input) {
   return { ...scope, runId, playerId, nickname, source, elapsedTicks: input.elapsedTicks, charCount: input.charCount, completionBp };
 }
 
-export function verifyRunResult(input) {
-  const stage = replayStages.get(input.stageId);
-  if (!stage) throw new RangeError("unknown stage for replay");
+export function verifyStageRunResult(stage, input) {
   const parsed = analyzeProgram(input.source);
   if (parsed.diagnostics.length) throw new RangeError("invalid program");
   const game = runToCompletion(createGame(stage, parsed.program), MAX_REPLAY_TICKS);
@@ -134,6 +132,12 @@ export function verifyRunResult(input) {
   if (input.completionBp !== undefined && objectiveProgress(game).completionBp !== input.completionBp) throw new RangeError("objective progress does not match replay");
   if (input.completionBp === undefined && objectiveProgress(game).completionBp !== 10000) throw new RangeError("missing objective progress");
   return game.elapsedTicks;
+}
+
+export function verifyRunResult(input) {
+  const stage = replayStages.get(input.stageId);
+  if (!stage) throw new RangeError("unknown stage for replay");
+  return verifyStageRunResult(stage, input);
 }
 
 export function sameRun(a, b) {
