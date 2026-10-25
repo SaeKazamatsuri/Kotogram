@@ -103,9 +103,9 @@ test("辞典に出さない言葉もパーサーはそのまま受理する", ()
 });
 
 test("言語v4は旧v3とランキングのスコープを分離する", () => {
-  assert.equal(LANGUAGE_VERSION, "2026-language-v4");
-  assert.equal(PREVIOUS_LANGUAGE_VERSION, "2026-language-v3");
-  const v3 = validateScope({ seasonId: "2026-festival", stageId: "stage-8", stageVersion: "2026-10-20-r2", engineVersion: "2026-core-v2", languageVersion: PREVIOUS_LANGUAGE_VERSION, scoringVersion: "2026-v1" });
+  assert.equal(LANGUAGE_VERSION, "2026-language-v5");
+  assert.equal(PREVIOUS_LANGUAGE_VERSION, "2026-language-v4");
+  const v3 = validateScope({ seasonId: "2026-festival", stageId: "stage-8", stageVersion: "2026-10-20-r2", engineVersion: "2026-core-v3", languageVersion: PREVIOUS_LANGUAGE_VERSION, scoringVersion: "2026-v1" });
   const v4 = validateScope({ ...v3, languageVersion: LANGUAGE_VERSION });
   assert.equal(v3.languageVersion, PREVIOUS_LANGUAGE_VERSION);
   assert.equal(v4.languageVersion, LANGUAGE_VERSION);
