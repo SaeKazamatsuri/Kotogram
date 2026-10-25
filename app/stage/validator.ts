@@ -176,7 +176,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       }
       if (obj.type === "hole") {
         if (obj.width !== undefined && !isPositiveFinite(obj.width)) issues.push({ path: path + ".width", message: "hole width must be positive" });
-      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
+      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
       if (isNonnegativeFinite(obj.position) && obj.type !== "goal" && typeof obj.type === "string" && knownTypes.has(obj.type)) {
         const positionKey = `${obj.type}@${obj.position}`;
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
