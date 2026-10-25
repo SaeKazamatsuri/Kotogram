@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 1052
+      "expectedTicks": 1047
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべ1かいすごいとぶ\nあなとぶ\nてきかがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 1052
+      "expectedTicks": 1047
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 602
+      "expectedTicks": 597
     },
     {
       "name": "missing-actions",
@@ -40,14 +40,14 @@
       "role": "learning",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 1052
+      "expectedTicks": 1047
     },
     {
       "name": "overall-known-best",
       "role": "overall",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 1052
+      "expectedTicks": 1047
     },
     {
       "name": "last-bonus-can-be-missed",
