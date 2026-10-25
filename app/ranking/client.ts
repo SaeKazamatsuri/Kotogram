@@ -11,6 +11,7 @@ export type RankingRow = {
   nickname: string;
   elapsedTicks: number;
   charCount: number;
+  completionBp?: number;
 };
 export type RunSubmission = RankingScope & {
   runId: string;
@@ -19,6 +20,7 @@ export type RunSubmission = RankingScope & {
   source: string;
   elapsedTicks: number;
   charCount: number;
+  completionBp?: number;
 };
 export type SavedSubmission = {
   ok: true;
