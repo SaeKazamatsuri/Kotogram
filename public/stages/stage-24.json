@@ -3,8 +3,9 @@
   "goal": 2020,
   "scrollSpeed": 3,
   "learningObjectives": [
-    "1回の すごいジャンプを 使ってみよう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "2つのかべを ひととびで こえよう",
+    "あなの近くでは 風が ジャンプに えいきょうするよ",
+    "最後は おばけの下を くぐろう"
   ],
   "objects": [
     {
@@ -27,12 +28,19 @@
       "id": "ghost-4",
       "type": "ghost",
       "position": 1540
+    },
+    {
+      "id": "breeze-after-gap",
+      "type": "wind",
+      "position": 1040,
+      "width": 160,
+      "multiplier": 1.15
     }
   ],
   "meta": {
-    "title": "とぶ道と しゃがむ道",
+    "title": "ジャンプのあとに 風",
     "bg": "twilight",
-    "hint": "1回の すごいジャンプを 使ってみよう",
+    "hint": "長いジャンプ・あな・風・おばけの 順で すすもう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",

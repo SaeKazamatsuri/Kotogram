@@ -71,9 +71,9 @@
     },
     {
       "id": "stage-13",
-      "title": "はやく はしりぬけ",
+      "title": "速さを きりかえる道",
       "file": "/stages/stage-13.json",
-      "version": "2026-10-25-r2"
+      "version": "2026-10-25-r3"
     },
     {
       "id": "stage-14",
@@ -95,9 +95,9 @@
     },
     {
       "id": "stage-17",
-      "title": "3回の じゅんばん",
+      "title": "かべと おばけと こわれる床",
       "file": "/stages/stage-17.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-18",
@@ -119,9 +119,9 @@
     },
     {
       "id": "stage-21",
-      "title": "ひととびで コインまで",
+      "title": "2つの かべと コインの道",
       "file": "/stages/stage-21.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-22",
@@ -137,9 +137,9 @@
     },
     {
       "id": "stage-24",
-      "title": "とぶ道と しゃがむ道",
+      "title": "ジャンプのあとに 風",
       "file": "/stages/stage-24.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-25",

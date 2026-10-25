@@ -5,21 +5,21 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "かべとぶ\nおばけしゃがむ",
+      "source": "もろいゆかとぶ\nかべとぶ\nおばけしゃがむ",
       "expect": "cleared",
       "expectedTicks": 1252
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべとぶ\nてきかがむ",
+      "source": "もろいゆかとぶ\nかべとぶ\nてきかがむ",
       "expect": "cleared",
       "expectedTicks": 1252
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nかべとぶ\nおばけしゃがむ",
+      "source": "もろいゆかとぶ\nめっちゃはしる\nかべとぶ\nおばけしゃがむ",
       "expect": "cleared",
       "expectedTicks": 716
     },
@@ -32,15 +32,22 @@
     {
       "name": "sequential-repeat",
       "role": "regression",
-      "source": "3かいくりかえす\nかべとぶ\nおばけしゃがむ\nおわり",
+      "source": "もろいゆかとぶ\n3かいくりかえす\nかべとぶ\nおばけしゃがむ\nおわり",
       "expect": "cleared"
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "かべとぶ\nてきかがむ",
+      "source": "もろいゆかとぶ\nめっちゃはしる\nかべとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 1252
+      "expectedTicks": 716
+    },
+    {
+      "name": "fragile-floor-ignored",
+      "role": "negative",
+      "source": "かべとぶ\nおばけしゃがむ",
+      "expect": "failed",
+      "failureReason": "hole"
     }
   ]
 }
