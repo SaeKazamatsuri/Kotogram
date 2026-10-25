@@ -6,7 +6,7 @@
   "learningObjectives": [
     "×と☆の ちがいを 見て みおくろう",
     "色と形を 使って あんぜんなボタンを おそう",
-    "後の門は 時間がたつと しまるよ"
+    "後の門は 時間がたつと しまるよ。↑の門は 大ジャンプも ためせるよ"
   ],
   "objects": [
     {
@@ -29,7 +29,8 @@
     {
       "id": "door-4",
       "type": "door",
-      "position": 780
+      "position": 780,
+      "vaultable": true
     },
     {
       "id": "trap-4",
@@ -52,7 +53,8 @@
       "id": "door-7",
       "type": "door",
       "position": 1540,
-      "autoCloseTicks": 130
+      "autoCloseTicks": 130,
+      "vaultable": true
     }
   ],
   "meta": {
@@ -64,9 +66,11 @@
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
-      "door": "ボタンを 見て 門がしまる前に すすもう",
+      "door": "安全な ボタンを おすか、↑のある門を すごいじゃんぷで こえよう",
       "trap": "×や☆の ボタンを おさないように しよう",
-      "skip": "あかいスイッチを どうやって こえたかな"
+      "skip": "×と☆の あぶない ボタンを みおくろう"
     }
-  }
+  },
+  "optionalObjectives": true,
+  "secretDoorRiskBp": 8600
 }
