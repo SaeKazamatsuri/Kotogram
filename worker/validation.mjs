@@ -1,5 +1,5 @@
 import {
-  ENGINE_VERSION, LANGUAGE_VERSION, PREVIOUS_LANGUAGE_VERSION, LEGACY_LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
+  ENGINE_VERSION, LANGUAGE_VERSION, PREVIOUS_LANGUAGE_VERSION, EARLIER_LANGUAGE_VERSION, LEGACY_LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
   countSourceCharacters, getScoreReference, rankingScopeKey,
 } from "../app/scoring/score.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
@@ -92,7 +92,7 @@ export function validateScope(input) {
   if (
     scope.seasonId !== SEASON_ID ||
     scope.engineVersion !== ENGINE_VERSION ||
-    ![LANGUAGE_VERSION, PREVIOUS_LANGUAGE_VERSION, LEGACY_LANGUAGE_VERSION].includes(scope.languageVersion) ||
+    ![LANGUAGE_VERSION, PREVIOUS_LANGUAGE_VERSION, EARLIER_LANGUAGE_VERSION, LEGACY_LANGUAGE_VERSION].includes(scope.languageVersion) ||
     scope.scoringVersion !== SCORING_VERSION ||
     !getScoreReference(scope.stageId, scope.stageVersion)
   ) throw new RangeError("unsupported ranking scope");

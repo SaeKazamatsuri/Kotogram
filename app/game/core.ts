@@ -1,4 +1,14 @@
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch";
+export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
+export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
+export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | SwitchSelector;
+
+export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
+export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
+
+export function switchAppearance(input: { trap: boolean; color?: SwitchColor; shape?: SwitchShape }): { color: SwitchColor; shape: SwitchShape } {
+  return { color: input.color ?? (input.trap ? "red" : "green"), shape: input.shape ?? (input.trap ? "cross" : "circle") };
+}
 export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
@@ -30,7 +40,7 @@ export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
 export type Door = { id: string; x: number; open: boolean };
-export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean };
+export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape };
 export type GameState = {
   status: GameStatus;
   failureReason?: GameFailReason;
@@ -174,6 +184,7 @@ function makeSwitches(stage: GameStage): Switch[] {
       activated: false,
       skipped: false,
       trap: object.trap === true,
+      ...switchAppearance({ trap: object.trap === true, color: object.color as SwitchColor | undefined, shape: object.shape as SwitchShape | undefined }),
     }))
     .sort((a, b) => a.x - b.x);
 }
@@ -250,8 +261,13 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
   const range = GAME.approachBase + game.vx * GAME.reactionFrames;
   const found = new Map<string, { id: string; x: number }>();
   for (const condition of conditions) {
-    if (condition === "switch") {
-      const target = nextTarget(game.switches.filter((item) => !item.activated && !item.skipped), game.px);
+    if (condition === "switch" || condition.startsWith("switch:")) {
+      const [, color, shape] = condition.split(":");
+      const target = nextTarget(game.switches.filter((item) =>
+        !item.activated && !item.skipped &&
+        (!color || color === "*" || item.color === color) &&
+        (!shape || shape === "*" || item.shape === shape)
+      ), game.px);
       if (target && target.x - game.px <= GAME.switchPressRange) found.set(target.id, target);
       continue;
     }

@@ -1,4 +1,7 @@
-import { GAME, worldToScreenX, type GameState } from "./core.ts";
+import { GAME, worldToScreenX, type GameState, type SwitchColor, type SwitchShape } from "./core.ts";
+
+const SWITCH_PALETTE: Record<SwitchColor, string> = { red: "#b83250", green: "#278a74", blue: "#255caf", yellow: "#b47b16", purple: "#7e4aa0" };
+const SWITCH_SYMBOLS: Record<SwitchShape, string> = { circle: "○", cross: "×", triangle: "△", square: "□", star: "☆" };
 
 export function obstaclePhase(ticks: number, index: number, rate: number): number {
   return (ticks + index * 13) * rate;
@@ -68,16 +71,19 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.beginPath();
     ctx.roundRect(x - 12, y + 3, 24, 23, 4);
     ctx.fill();
-    ctx.fillStyle = item.skipped ? "#64748b" : item.trap ? "#b83250" : item.activated ? "#4eaf8c" : "#278a74";
+    ctx.fillStyle = item.skipped ? "#64748b" : item.activated ? "#4eaf8c" : SWITCH_PALETTE[item.color];
     ctx.beginPath();
     ctx.roundRect(x - 9, y + (item.activated ? 11 : 6), 18, item.activated ? 9 : 13, 4);
     ctx.fill();
     ctx.strokeStyle = "#354c5d";
     ctx.lineWidth = 2;
     ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillText(SWITCH_SYMBOLS[item.shape], x - 8, y + (item.activated ? 20 : 18));
     ctx.fillStyle = "#f9fcf3";
     ctx.font = "bold 12px sans-serif";
-    ctx.fillText(item.skipped ? "→" : item.trap ? "×" : item.activated ? "○" : "おす", x - (item.trap || item.activated || item.skipped ? 6 : 12), y - 7);
+    ctx.fillText(item.skipped ? "→" : item.activated ? "○" : item.trap ? "!" : "おす", x - (item.skipped || item.activated || item.trap ? 6 : 12), y - 7);
   }
 
   for (const door of game.doors) {

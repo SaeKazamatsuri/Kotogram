@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from "vue";
-import { CONTROL_WORDS, type Vocabulary } from "~/language/parser";
+import { CONTROL_WORDS, SWITCH_ATTRIBUTES, type Vocabulary } from "~/language/parser";
 import { ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID } from "~/scoring/score";
 import { STAGE_WORLDS } from "~/stage/world-map";
 
@@ -36,7 +36,7 @@ const conditions = computed(() => Object.entries(dictionary.value.conditions ?? 
   name: conditionLabels[key] ?? key, key, words,
 })));
 const vocabularyCount = computed(() => actions.value.reduce((n, e) => n + e.words.length, 0)
-  + conditions.value.reduce((n, e) => n + e.words.length, 0) + CONTROL_WORDS.length);
+  + conditions.value.reduce((n, e) => n + e.words.length, 0) + CONTROL_WORDS.length + SWITCH_ATTRIBUTES.length);
 const worlds = computed(() => STAGE_WORLDS.map((world) => ({
   ...world, stages: manifest.value.stages.slice(world.start - 1, world.end),
 })));
@@ -73,7 +73,7 @@ onMounted(async () => {
 
       <section class="game-panel space-y-4 p-5" aria-label="言葉辞書">
         <h2 class="text-xl font-black">パーサーの言葉辞書（全表記）</h2>
-        <p class="text-sm">入力時にはひらがな・数字を使用します。ここには実際のJSON辞書に登録された別表記もすべて掲載しています。</p>
+        <p class="text-sm">入力時にはひらがな・数字を使用します。ここにはJSON辞書とパーサーの修飾語を含む全表記を掲載しています。</p>
         <div class="grid gap-5 md:grid-cols-2">
           <div>
             <h3 class="mb-2 text-lg font-black">対象・条件</h3>
@@ -94,6 +94,13 @@ onMounted(async () => {
             </dl>
           </div>
         </div>
+        <h3 class="border-t border-[#c9d6d8] pt-4 text-lg font-black">色・形を表す言葉</h3>
+        <dl class="grid gap-3 sm:grid-cols-2">
+          <div v-for="word in SWITCH_ATTRIBUTES" :key="word.raw">
+            <dt class="font-black">{{ word.raw }}</dt>
+            <dd class="text-sm">{{ word.value }}</dd>
+          </div>
+        </dl>
         <h3 class="border-t border-[#c9d6d8] pt-4 text-lg font-black">制御語・接続語</h3>
         <dl class="grid gap-3 sm:grid-cols-2">
           <div v-for="[kind, words] in controlGroups" :key="kind">

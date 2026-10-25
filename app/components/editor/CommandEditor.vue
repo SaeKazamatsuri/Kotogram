@@ -7,8 +7,9 @@ import LineGutter from "./LineGutter.vue";
 import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
+import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
-const props = defineProps<{ dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
+const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
 const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
@@ -22,10 +23,12 @@ const actionNames: Record<string, string> = {
 const conditionNames: Record<string, string> = {
   wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ",
 };
+const stageWords = computed(() => suggestedStageWords(props.stage));
 const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {})
-  .filter(([key]) => key !== "powerJump" && key !== "sprint")
+  .filter(([key]) => stageWords.value.actions.includes(key) && key !== "powerJump" && key !== "sprint" && key !== "run")
   .map(([key, words]) => ({ name: actionNames[key] ?? key, word: words[0] ?? "" })));
 const conditionEntries = computed(() => Object.entries(props.dictionary?.conditions ?? {})
+  .filter(([key]) => stageWords.value.conditions.includes(key))
   .map(([key, words]) => ({ name: conditionNames[key] ?? key, word: words[0] ?? "" })));
 const history = new EditorHistory();
 const historyRevision = ref(0);
@@ -192,6 +195,7 @@ defineExpose({ getText });
           <h3 class="mb-2 text-sm font-black">何を見つける？</h3>
           <ul class="space-y-1 text-sm">
             <li v-for="entry in conditionEntries" :key="entry.name"><span class="font-black">{{ entry.name }}</span>：{{ entry.word }}</li>
+            <li v-for="example in stageWords.examples" :key="example">{{ example }}</li>
           </ul>
         </section>
         <section>
