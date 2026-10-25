@@ -45,7 +45,7 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
+      "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 383
     },
@@ -78,6 +78,13 @@
       "name": "p2-short-partial-sprint",
       "role": "regression",
       "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる",
+      "expect": "cleared",
+      "expectedTicks": 383
+    },
+    {
+      "name": "p2-full-bonus-compact-sprint",
+      "role": "regression",
+      "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
       "expectedTicks": 383
     }
