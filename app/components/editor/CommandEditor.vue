@@ -231,12 +231,12 @@ defineExpose({ getText });
               :class="failureLine === index + 1 ? 'bg-[#ffe3b8]' : activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : monitoringLines?.includes(index + 1) ? 'bg-[#f1f5f9]' : ''" />
           </div>
         </div>
-      <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div v-if="!composing" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
         <pre class="m-0 box-border w-full whitespace-pre-wrap break-all p-4 text-[18px] font-bold leading-[1.7]" :style="{ transform: 'translateY(-' + taScrollTop + 'px)' }"><template v-for="(line, index) in highlightedLines" :key="index"><span v-for="(piece, pieceIndex) in line" :key="pieceIndex" :class="TOKEN_CLASS[piece.kind]">{{ piece.text }}</span><span v-if="index < highlightedLines.length - 1">{{ '\n' }}</span></template></pre>
       </div>
       <textarea
         ref="textarea"
-        class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] text-transparent caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2]"
+        class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2]" :class="composing ? 'text-[#172439]' : 'text-transparent'"
         :value="text"
         :readonly="running"
         aria-label="コードを書く"
