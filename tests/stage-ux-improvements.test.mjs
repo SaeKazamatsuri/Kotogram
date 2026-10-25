@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { analyzeProgram, tokenizeLine } from "../app/language/parser.ts";
-import { GAME, aimedJumpRange, createGame } from "../app/game/core.ts";
+import { GAME, aimedJumpRange, createGame, stepGame } from "../app/game/core.ts";
 import { analyzeJumpTrajectories } from "../app/game/trajectory.ts";
 import { syntaxPieces, TOKEN_CLASS } from "../app/editor/syntax-colors.ts";
 import { inspectGameObject } from "../app/game/object-inspection.ts";
@@ -79,4 +79,28 @@ test("inspection follows rendered coin, key, wind and vertical-platform geometry
   assert.equal(inspectGameObject(game, 450, 135)?.name, "風");
   assert.equal(inspectGameObject(game, 640, 170)?.name, "上下する足場");
   assert.equal(inspectGameObject(game, 450, 125), null);
+});
+
+test("power jumps peak over vaultable door centers at normal and sprint pace", () => {
+  for (const prefix of ["", "めっちゃはしる\n"]) {
+    const stage = { goal: 960, scrollSpeed: 3, objects: [
+      { type: "door", id: "gate", position: 500, vaultable: true },
+    ] };
+    const parsed = analyzeProgram(prefix + "とびらすごいじゃんぷ");
+    assert.deepEqual(parsed.diagnostics, []);
+    const game = createGame(stage, parsed.program);
+    let peakY = Infinity;
+    let peakCenterX = 0;
+    while (game.status === "running" && game.elapsedTicks < 1000) {
+      stepGame(game);
+      if (game.py < peakY) {
+        peakY = game.py;
+        peakCenterX = game.px + GAME.playerWidth / 2;
+      }
+    }
+    assert.equal(game.status, "cleared", prefix);
+    const gateCenter = 500 + GAME.doorWidth / 2;
+    assert.ok(Math.abs(peakCenterX - gateCenter) <= game.vx + 2, JSON.stringify({ prefix, peakCenterX, gateCenter }));
+    assert.equal(game.doors[0].vaulted, true);
+  }
 });
