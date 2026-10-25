@@ -63,7 +63,7 @@ test("stage JSON rejects invalid secret-door capabilities", () => {
   }
 });
 test("new engine scope rejects old posts but supports read-only archived leaderboards", () => {
-  assert.equal(ENGINE_VERSION, "2026-core-v3");
+  assert.equal(ENGINE_VERSION, "2026-core-v4");
   assert.equal(PREVIOUS_ENGINE_VERSION, "2026-core-v2");
   const scope = { seasonId: "2026-festival", stageId: "stage-8", stageVersion: "2026-10-20-r2", engineVersion: PREVIOUS_ENGINE_VERSION, languageVersion: "2026-language-v4", scoringVersion: "2026-v1" };
   assert.deepEqual(validateScope(scope), scope);
