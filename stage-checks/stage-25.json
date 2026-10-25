@@ -67,6 +67,12 @@
       "source": "めっちゃはしる\nまえとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "failed",
       "failureReason": "hole"
+    },
+    {
+      "name": "coin-bonus-is-optional",
+      "role": "regression",
+      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
+      "expect": "cleared"
     }
   ]
 }
