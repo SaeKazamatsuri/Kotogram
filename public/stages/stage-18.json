@@ -3,8 +3,9 @@
   "goal": 2020,
   "scrollSpeed": 3,
   "learningObjectives": [
-    "大きな あなと 小さな あなを こえよう",
-    "くりかえしの 回数を ちょうせいしてみよう"
+    "大きさのちがう あなを ジャンプで こえよう",
+    "とちゅうの こわれる床に ちゅういしよう",
+    "おそい床のあとも つぎのあなを 見よう"
   ],
   "objects": [
     {
@@ -18,15 +19,29 @@
       "type": "hole",
       "position": 1540,
       "width": 80
+    },
+    {
+      "type": "fragileFloor",
+      "id": "middle-crumble",
+      "position": 1060,
+      "width": 92,
+      "breakAfterTicks": 16
+    },
+    {
+      "type": "conveyor",
+      "id": "hole-approach-slow",
+      "position": 1280,
+      "width": 130,
+      "multiplier": 0.78
     }
   ],
   "meta": {
-    "title": "大きな あな",
+    "title": "大きなあなと こわれる道",
     "bg": "sunset",
-    "hint": "大きなあなと 小さなあなが あるよ。2回くりかえすと どうなるかな",
+    "hint": "2つのあなの あいだに こわれる床が あるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
-      "hole": "1回しか とばないと 2つめの あなで とまるよ",
+      "hole": "こわれる床と あなに ちゅういして ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
       "door": "門の 前に スイッチが あるよ",
