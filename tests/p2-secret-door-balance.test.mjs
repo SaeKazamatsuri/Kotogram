@@ -24,7 +24,7 @@ for(const number of [8,10]){
   const ref=getScoreReference(id,version);
   assert.equal(version,"2026-10-25-r5");
   assert.deepEqual(validateStage(id,stage,true),[]);
-  assert.equal(stage.secretDoorRiskBp,8300);
+  assert.equal(stage.secretDoorRiskBp,8600);
   assert.equal(getScoreReference(id,"2026-10-25-r4")?.product,ref.product);
   const found=role=>checks.find(x=>x.role===role);
   const make=(source,runId)=>{
@@ -39,19 +39,19 @@ for(const number of [8,10]){
   const pure=make("とびらをやぶる","unrewarded");
   assert.equal(beginner.completionBp,10000);
   assert.equal(normal.completionBp,10000);
-  assert.equal(secret.completionBp,6889);
-  assert.equal(objectiveProgress(secret.game).secretDoorRiskBp,6889);
+  assert.equal(secret.completionBp,7396);
+  assert.equal(objectiveProgress(secret.game).secretDoorRiskBp,7396);
   assert.equal(pure.completionBp,1200);
   assert.equal(secret.game.doors.filter(x=>x.broken).length,2);
   assert.ok(compareRuns("time",normal,secret)<0,"ordinary precision must win adjusted time");
   assert.ok(compareRuns("overall",secret,normal)<0,"secret route can win overall despite risk");
   const bonusPower=make("すいっちみおくる\nこいんとる\nとびらめっちゃとぶ","vault");
-  assert.equal(bonusPower.completionBp,6889);
+  assert.equal(bonusPower.completionBp,7396);
   const all=checks.filter(c=>c.expect==="cleared").map(c=>make(c.source,c.name));
   const best=selectBestRuns(all);
   assert.equal(best.overall.runId,found("overall").name);
   assert.ok(new Set([best.time.runId,best.chars.runId,best.overall.runId]).size>=2);
-  assert.equal(verifyRunResult({stageId:id,source:secret.source,elapsedTicks:secret.elapsedTicks,completionBp:6889}),secret.elapsedTicks);
+  assert.equal(verifyRunResult({stageId:id,source:secret.source,elapsedTicks:secret.elapsedTicks,completionBp:7396}),secret.elapsedTicks);
   assert.throws(()=>verifyRunResult({stageId:id,source:secret.source,elapsedTicks:secret.elapsedTicks,completionBp:10000}),/objective progress/);
   console.log("P2_SECRET_BALANCE "+JSON.stringify({stage:id,version,
     ordinary:{ticks:normal.elapsedTicks,chars:normal.charCount,bp:normal.completionBp,scores:calculateScores(ref,normal)},
