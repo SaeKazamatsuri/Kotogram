@@ -78,5 +78,6 @@
     }
   },
   "requiredSkips": 2,
-  "optionalObjectives": true
+  "optionalObjectives": true,
+  "secretDoorRiskBp": 8300
 }
