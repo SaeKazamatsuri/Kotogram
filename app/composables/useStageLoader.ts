@@ -27,6 +27,7 @@ export type WindStageObject = { type: "wind"; position: number; id?: string; wid
 export type PressurePlateStageObject = { type: "pressurePlate"; position: number; id: string; width: number; holdTicks: number; targetDoorId: string };
 export type MovingPlatformStageObject = { type: "movingPlatform"; position: number; id: string; width: number; travel: number; period: number };
 export type LaserStageObject = { type: "laser"; position: number; id: string; period: number; activeTicks: number; phaseOffset?: number };
+export type BridgeStageObject = { type: "bridge"; position: number; id: string; width: number; targetDoorId: string };
 export type StageObject =
   | WallStageObject
   | GhostStageObject
@@ -41,6 +42,7 @@ export type StageObject =
   | PressurePlateStageObject
   | MovingPlatformStageObject
   | LaserStageObject
+  | BridgeStageObject
   | { type: string; [key: string]: unknown };
 export type StageData = {
   id?: string;
