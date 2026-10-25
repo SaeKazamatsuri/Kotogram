@@ -29,7 +29,7 @@ test("thirty stages freeze beginner, short, fast and independently registered ov
     if (stage.optionalObjectives) {
       const adjusted = allClears.map(entryCase => {
         const game = runToCompletion(createGame(stage, analyzeProgram(entryCase.source).program));
-        return { ...entryCase, completionBp: objectiveProgress(game).completionBp };
+        return { ...entryCase, charCount: entryCase.characters, completionBp: objectiveProgress(game).completionBp };
       });
       const best = adjusted.reduce((winner, candidate) => compareRuns("overall", candidate, winner) < 0 ? candidate : winner);
       assert.equal(overall.source, best.source, entry.id + ": best adjusted overall source");
