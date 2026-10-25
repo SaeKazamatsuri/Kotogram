@@ -40,7 +40,7 @@ test("runtime trace fires only accepted actions and records simultaneous events"
 
 test("loop trace visits correct source lines without changing results", () => {
   const stage = load("public/stages/stage-17.json");
-  const source = "3かいくりかえす\nかべとぶ\nおばけしゃがむ\nおわり";
+  const source = "もろいゆかとぶ\n3かいくりかえす\nかべとぶ\nおばけしゃがむ\nおわり";
   const parsed = analyzeProgram(source);
   const recorded = [];
   const game = createGame(stage, parsed.program);
@@ -48,7 +48,7 @@ test("loop trace visits correct source lines without changing results", () => {
     kind: event.kind, line: parsed.sourceMap.steps[event.index], tick: event.tick,
   }));
   assert.equal(game.status, "cleared");
-  assert.deepEqual([1, 2, 3], [1, 2, 3].filter((line) => recorded.some((event) => event.line === line)));
+  assert.deepEqual([2, 3, 4], [2, 3, 4].filter((line) => recorded.some((event) => event.line === line)));
   assert.equal(recorded.filter((event) => event.kind === "step").length, 6);
   assert.equal(recorded.filter((event) => event.kind === "repeat").length, 3);
   const reference = runToCompletion(createGame(stage, parsed.program));
