@@ -11,7 +11,7 @@ export type StageMeta = {
   dictionary?: { conditions?: string[]; actions?: string[]; examples?: string[] };
 };
 export type WallStageObject = { type: "wall"; position: number };
-export type GhostStageObject = { type: "ghost"; position: number };
+export type GhostStageObject = { type: "ghost"; position: number; patrolRange?: number; patrolPeriod?: number };
 export type HoleStageObject = {
   type: "hole";
   position: number;
