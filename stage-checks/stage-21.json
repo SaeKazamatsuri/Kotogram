@@ -6,19 +6,22 @@
       "name": "beginner",
       "role": "beginner",
       "source": "かべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 670
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべ1かいすごいとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 670
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 383
     },
     {
       "name": "missing-actions",
@@ -36,13 +39,15 @@
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
       "source": "かべとぶ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 670
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "かべとぶ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
-      "expect": "cleared"
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
+      "expect": "cleared",
+      "expectedTicks": 383
     },
     {
       "name": "optional-coin-low-score",
