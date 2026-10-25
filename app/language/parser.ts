@@ -249,13 +249,18 @@ function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[
         }
         const colors = [...new Set(groups.map((entry) => entry.color).filter((item): item is SwitchColor => item !== null))];
         const shapes = [...new Set(groups.map((entry) => entry.shape).filter((item): item is SwitchShape => item !== null))];
-        if ((colors.length > 1 && groups.some((entry) => !entry.color)) ||
-            (shapes.length > 1 && groups.some((entry) => !entry.shape))) {
+        if (colors.length > 1 && shapes.length > 1 && groups.some((entry) => !entry.color || !entry.shape)) {
           diagnostics.push(error("syntax", "どの いろと かたちか わかるように かいてね", token));
           return null;
         }
+        const sharedShape = colors.length > 1 && shapes.length === 1 &&
+          groups.every((entry) => entry.color !== null) && groups.at(-1)?.shape !== null;
+        const sharedColor = shapes.length > 1 && colors.length === 1 &&
+          groups.every((entry) => entry.shape !== null) && groups[0]?.color !== null;
         for (const entry of groups) {
-          const condition = `switch:${entry.color ?? colors[0] ?? "*"}:${entry.shape ?? shapes[0] ?? "*"}` as Condition;
+          const color = entry.color ?? (sharedColor ? colors[0] : null);
+          const shape = entry.shape ?? (sharedShape ? shapes[0] : null);
+          const condition = `switch:${color ?? "*"}:${shape ?? "*"}` as Condition;
           if (!conditions.includes(condition)) conditions.push(condition);
         }
       } else {
