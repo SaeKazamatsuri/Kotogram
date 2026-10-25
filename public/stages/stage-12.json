@@ -1,10 +1,11 @@
 {
   "id": "stage-12",
-  "goal": 940,
+  "goal": 1360,
   "scrollSpeed": 3,
   "learningObjectives": [
-    "1回の ジャンプで 2つのかべを とべるかな",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "長いジャンプで 2つのかべを こえよう",
+    "青い☆のボタンを おして門をあけよう",
+    "コインを 取れば 点数が あがるよ"
   ],
   "objects": [
     {
@@ -16,20 +17,41 @@
       "id": "wall-2",
       "type": "wall",
       "position": 460
+    },
+    {
+      "type": "coin",
+      "id": "power-coin",
+      "position": 625
+    },
+    {
+      "type": "switch",
+      "id": "exit-switch",
+      "position": 760,
+      "targetDoorId": "exit-door",
+      "color": "blue",
+      "shape": "star"
+    },
+    {
+      "type": "door",
+      "id": "exit-door",
+      "position": 940,
+      "breakable": true
     }
   ],
   "meta": {
-    "title": "2つのかべを ひととび",
+    "title": "長いジャンプと 青い門",
     "bg": "day",
-    "hint": "1回の ジャンプで 2つのかべを とべるかな",
+    "hint": "2つのかべの先には 青い☆のボタンが あるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
-      "door": "門の 前に スイッチが あるよ",
+      "coin": "コインを取ると 点数があがるよ",
+      "door": "青い☆のボタンで 門をあけよう",
       "trap": "あかいスイッチは おさないでね",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
-  }
+  },
+  "requiredCoins": 1,
+  "optionalObjectives": true
 }
