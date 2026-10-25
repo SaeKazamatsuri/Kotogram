@@ -36,11 +36,14 @@ export function evaluateStageCompetition(stageId, stageVersion, stage, cases) {
       a.charCount * b.completionBp < b.charCount * a.completionBp;
     return faster && smaller && strict;
   };
-  const frontier = cleared.filter(a => !cleared.some(b => b!==a && dominates(b,a))).map(a => a.name);
+  const nondominated = cleared.filter(a => !cleared.some(b => b!==a && dominates(b,a)));
+  const frontier = nondominated.filter((a,i) => !nondominated.slice(0,i).some(b =>
+    a.elapsedTicks * b.completionBp === b.elapsedTicks * a.completionBp &&
+    a.charCount * b.completionBp === b.charCount * a.completionBp)).map(a=>a.name);
   const byRole = Object.fromEntries(["beginner","short","fast","overall"].map(role => [role,cleared.find(a => a.role===role) ?? null]));
   const winner = key => ({name:best[key].name,role:best[key].role,
     ticks:best[key].elapsedTicks,characters:best[key].charCount,
-    bonusPct:best[key].completionBp/100,score:Math.round(best[key].scores[key==="speed"?"time":key==="compact"?"chars":"overall"]*100)/100});
+    bonusPct:best[key].completionBp/100,score:Math.round(best[key].scores[key]*100)/100});
   const bestStats = {
     time: { ...winner("time"),score:Math.round(best.time.scores.time*100)/100 },
     chars: { ...winner("chars"),score:Math.round(best.chars.scores.chars*100)/100 },
@@ -51,7 +54,7 @@ export function evaluateStageCompetition(stageId, stageVersion, stage, cases) {
     stageId,stageVersion,objectCount:stage.objects?.length??0, optionalObjectives:stage.optionalObjectives===true,
     registered:cases.length,clearCount:cleared.length,
     frontier,frontierCount:frontier.length,best:bestStats,
-    submittedOverallIsBest:overallSubmitted?.runId===best.overall.runId,
+    submittedOverallIsBest: !!overallSubmitted && compareRuns("overall",overallSubmitted,best.overall)===0,
     differentObjectives: new Set([best.time.runId,best.chars.runId,best.overall.runId]).size,
     timeGainPct: Math.round((1-best.time.elapsedTicks/byRole.beginner.elapsedTicks)*1000)/10,
     charsGainPct: Math.round((1-best.chars.charCount/byRole.beginner.charCount)*1000)/10,
