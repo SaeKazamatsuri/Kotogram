@@ -45,9 +45,9 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる",
+      "source": "ごーるみおくる\nめっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
-      "expectedTicks": 383
+      "expectedTicks": 463
     },
     {
       "name": "optional-coin-low-score",
@@ -87,6 +87,27 @@
       "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
       "expectedTicks": 383
+    },
+    {
+      "name": "p2-far-goal-partial-reward",
+      "role": "regression",
+      "source": "ごーるみおくる\nめっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる",
+      "expect": "cleared",
+      "expectedTicks": 463
+    },
+    {
+      "name": "p2-far-goal-walk-all-rewards",
+      "role": "regression",
+      "source": "ごーるみおくる\nかべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
+      "expect": "cleared",
+      "expectedTicks": 810
+    },
+    {
+      "name": "p2-near-goal-still-clears",
+      "role": "regression",
+      "source": "かべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
+      "expect": "cleared",
+      "expectedTicks": 670
     }
   ]
 }
