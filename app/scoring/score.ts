@@ -86,7 +86,7 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-8": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 592, characters: 30, product: 17760 },
   "stage-9": { ...knownReferences["stage-9"]!, stageVersion: "2026-10-25-r3" },
-  "stage-10": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 634, characters: 30, product: 19020 },
+  "stage-10": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 632, characters: 30, product: 18960 },
   "stage-19": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 41, product: 26732 },
   "stage-18": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 9, product: 5868 },
   "stage-13": { ...knownReferences["stage-13"]!, stageVersion: "2026-10-25-r2" },
