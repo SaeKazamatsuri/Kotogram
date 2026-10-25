@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import { validateManifest, validateStageCases } from "../app/stage/validator.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
 import { analyzeJumpTrajectories } from "../app/game/trajectory.ts";
+import { GAME } from "../app/game/core.ts";
 import { getScoreReference } from "../app/scoring/score.ts";
 
 const read = (path) => JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
@@ -64,7 +65,7 @@ test("公開の穴付きステージでジャンプの最高点が穴の中心�
       const holes = trace.jumps.filter((jump) => jump.target?.type === "hole");
       assert.ok(holes.length > 0, id);
       for (const hole of holes) {
-        assert.ok(Math.abs(hole.peakOffsetX) <= 24, id + " " + item.role + ": " + hole.peakOffsetX);
+        assert.ok(Math.abs(hole.peakOffsetX - GAME.playerWidth / 2) <= stage.scrollSpeed * GAME.sprintMultiplier + 3, id + " " + item.role + ": " + hole.peakOffsetX);
       }
     }
   }
