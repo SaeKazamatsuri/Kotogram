@@ -240,3 +240,20 @@ test("mixed hiragana, katakana, kanji and printed symbols share the same switch 
   assert.deepEqual(valid("門をすごいジャンプ").rules, valid("とびらをすごいじゃんぷ").rules);
   assert.deepEqual(valid("壁があったらジャンプ").rules, valid("かべがあったらじゃんぷ").rules);
 });
+
+test("independent switch colors and shapes are OR, not an implicit combination", () => {
+  const cases = [
+    ["あかとほしぼたんみおくる", ["switch:red:*", "switch:*:star"]],
+    ["まるときいろぼたんおす", ["switch:*:circle", "switch:yellow:*"]],
+    ["あかのまるときいろぼたんおす", ["switch:red:circle", "switch:yellow:*"]],
+    ["まるときいろのばつぼたんみおくる", ["switch:*:circle", "switch:yellow:cross"]],
+    ["みどりとあかのまるのぼたんおす", ["switch:green:circle", "switch:red:circle"]],
+    ["みどりのまるとばつのぼたんおす", ["switch:green:circle", "switch:green:cross"]],
+    ["あかのまるとみどりのばつのぼたんおす", ["switch:red:circle", "switch:green:cross"]],
+  ];
+  for (const [source, expected] of cases) {
+    assert.deepEqual(valid(source).rules[0].conds, expected, source);
+  }
+  const ambiguous = analyzeProgram("みどりとあかのまるとばつのぼたんをおす");
+  assert.ok(ambiguous.diagnostics.length > 0);
+});
