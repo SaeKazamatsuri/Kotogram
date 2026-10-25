@@ -26,6 +26,7 @@ export function suggestedStageWords(stage?: StageWords | null) {
     ...(types.has("key") ? ["key"] : []),
     ...(types.has("chest") ? ["chest"] : []),
     ...(types.has("portal") ? ["portal"] : []),
+    ...(objects.filter((object) => object.type === "goal").length === 2 ? ["goal"] : []),
     ...(types.has("switch") ? ["switch"] : []),
     ...(types.has("conveyor") ? ["conveyor"] : []),
     ...(types.has("fragileFloor") ? ["fragileFloor"] : []),
@@ -43,6 +44,7 @@ export function suggestedStageWords(stage?: StageWords | null) {
     ...(types.has("chest") ? ["openChest"] : []),
     ...(types.has("portal") ? ["enterPortal"] : []),
     ...(types.has("switch") ? ["press"] : []),
+    ...(objects.filter((object) => object.type === "goal").length === 2 ? ["skip"] : []),
     ...(objects.some((object) => object.type === "switch" && (object as { trap?: boolean }).trap === true) ? ["skip"] : []),
   ];
   const colors = new Set<SwitchColor>();
