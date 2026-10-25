@@ -127,6 +127,7 @@ const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 const secretDoorReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-8": { stageVersion: "2026-10-25-r4", scoringVersion: SCORING_VERSION, timeTicks: 592, characters: 30, product: 17760 },
   "stage-10": { stageVersion: "2026-10-25-r4", scoringVersion: SCORING_VERSION, timeTicks: 632, characters: 30, product: 18960 },
+  "stage-23": { stageVersion: "2026-10-25-r4", scoringVersion: SCORING_VERSION, timeTicks: 1446, characters: 15, product: 21690 },
 };
 
 export function getScoreReference(stageId: string, stageVersion: string, scoringVersion = SCORING_VERSION): ScoreReference | null {
