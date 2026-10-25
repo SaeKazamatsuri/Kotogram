@@ -520,6 +520,13 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     if (standing && floor.firstStepTick === null) floor.firstStepTick = game.elapsedTicks;
     if (floor.firstStepTick !== null && game.elapsedTicks - floor.firstStepTick >= floor.breakAfterTicks) {
       floor.collapsed = true;
+      // A collapsing platform must hit the player while their feet are still on it.
+      // Testing the front edge alone lets players bypass narrow floors without jumping.
+      if (game.px <= floor.x + floor.w && game.px + GAME.playerWidth >= floor.x &&
+          Math.abs(game.py - (GAME.groundY - GAME.epsilon)) < 0.1) {
+        fail(game, "hole");
+        return game.status;
+      }
     }
   }
   if (game.py < GAME.groundY - GAME.epsilon - 8) {

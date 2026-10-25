@@ -5,23 +5,23 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "もろいゆかとぶ\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1159
+      "expectedTicks": 1163
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "4かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
+      "source": "もろいゆかとぶ\n4かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1159
+      "expectedTicks": 1163
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "もろいゆかとぶ\nめっちゃはしる\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 663
+      "expectedTicks": 665
     },
     {
       "name": "missing-actions",
@@ -32,15 +32,28 @@
     {
       "name": "jump-over-trap",
       "role": "regression",
-      "source": "4かいくりかえす\nすいっちじゃんぷ\nこいんとる\nすいっちおす\nおわり",
+      "source": "もろいゆかとぶ\n4かいくりかえす\nすいっちじゃんぷ\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared"
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "もろいゆかとぶ\nめっちゃはしる\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 663
+      "expectedTicks": 665
+    },
+    {
+      "name": "fragile-floor-required",
+      "role": "negative",
+      "source": "4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "failed",
+      "failureReason": "hole"
+    },
+    {
+      "name": "alternative-last-gate",
+      "role": "regression",
+      "source": "もろいゆかとぶ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\nとびらをやぶる",
+      "expect": "cleared"
     }
   ]
 }
