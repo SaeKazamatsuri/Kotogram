@@ -19,6 +19,14 @@ for (const number of [8, 9, 10]) {
       assert.deepEqual([first.status, first.elapsedTicks, objectiveProgress(first)], [second.status, second.elapsedTicks, objectiveProgress(second)], item.name);
       return { name: item.name, role: item.role, status: first.status, ticks: first.elapsedTicks, chars: [...item.source.replace(/\s/g, "")].length, failureReason: first.failureReason, progress: objectiveProgress(first) };
     });
-    console.log("STAGE_REMIX_REPORT " + JSON.stringify({ stage: number, result }));
+    for (const [index, actual] of result.entries()) {
+      const expected = checks.cases[index];
+      assert.equal(actual.status, expected.expect, expected.name);
+      if (expected.expectedTicks !== undefined) assert.equal(actual.ticks, expected.expectedTicks, expected.name);
+    }
+    assert.equal(result.find(item => item.role === "beginner").progress.completionBp, 10000);
+    if (number === 8) assert.equal(result.find(item => item.name === "optional-coin-without-deliberate-skip").progress.completionBp, 4000);
+    if (number === 9) assert.equal(result.find(item => item.name === "overall-secret-break").progress.completionBp, 4000);
+    if (number === 10) assert.equal(result.find(item => item.name === "skip-optional-bonus-route").progress.completionBp, 1200);
   });
 }
