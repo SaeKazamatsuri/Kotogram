@@ -21,7 +21,7 @@ const actionNames: Record<string, string> = {
   run: "走る", sprint: "めっちゃ走る", walk: "歩く", press: "押す", skip: "見送る",
 };
 const conditionNames: Record<string, string> = {
-  wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ",
+  wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ", conveyor: "動く床", fragileFloor: "こわれる床",
 };
 const stageWords = computed(() => suggestedStageWords(props.stage));
 const actionEntries = computed(() => Object.entries(props.dictionary?.actions ?? {})
