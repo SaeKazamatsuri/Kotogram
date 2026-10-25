@@ -45,7 +45,15 @@ for(const n of [23,25,29]) {
         [again.status,again.failureReason,again.elapsedTicks,objectiveProgress(again)],item.name);
       result.push({name:item.name,role:item.role,status:first.status,failure:first.failureReason,ticks:first.elapsedTicks,chars:countSourceCharacters(item.source),bp:objectiveProgress(first).completionBp});
     }
-    console.log("WIND_WORLD_REPORT "+JSON.stringify({n,result}));
+    for (const [index, route] of result.entries()) {
+      const expected = checks.cases[index];
+      assert.equal(route.status, expected.expect, expected.name);
+      if (expected.failureReason) assert.equal(route.failure, expected.failureReason, expected.name);
+      if (expected.expectedTicks !== undefined) assert.equal(route.ticks, expected.expectedTicks, expected.name);
+    }
+    assert.equal(result.find(x => x.role === "beginner")?.bp, 10000);
+    if (n === 25) assert.equal(result.find(x => x.name === "coin-bonus-is-optional")?.bp, 3000);
+    if (n === 29) assert.equal(result.find(x => x.name === "last-bonus-can-be-missed")?.bp, 3000);
     assert.ok(suggestedStageWords(stage).conditions.includes("wind"));
   });
 }
