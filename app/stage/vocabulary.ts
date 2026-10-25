@@ -23,6 +23,8 @@ export function suggestedStageWords(stage?: StageWords | null) {
     ...(types.has("hole") ? ["hole"] : []),
     ...(types.has("ghost") ? ["enemy"] : []),
     ...(types.has("coin") ? ["coin"] : []),
+    ...(types.has("key") ? ["key"] : []),
+    ...(types.has("chest") ? ["chest"] : []),
     ...(types.has("switch") ? ["switch"] : []),
     ...(types.has("conveyor") ? ["conveyor"] : []),
     ...(types.has("fragileFloor") ? ["fragileFloor"] : []),
@@ -36,7 +38,8 @@ export function suggestedStageWords(stage?: StageWords | null) {
   const actions = [
     ...(types.has("wall") || types.has("hole") || types.has("fragileFloor") ? ["jump"] : []),
     ...(types.has("ghost") || types.has("laser") ? ["crouch"] : []),
-    ...(types.has("coin") ? ["collect"] : []),
+    ...(types.has("coin") || types.has("key") ? ["collect"] : []),
+    ...(types.has("chest") ? ["openChest"] : []),
     ...(types.has("switch") ? ["press"] : []),
     ...(objects.some((object) => object.type === "switch" && (object as { trap?: boolean }).trap === true) ? ["skip"] : []),
   ];
