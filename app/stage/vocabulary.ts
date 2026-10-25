@@ -17,17 +17,19 @@ const SHAPE_WORDS: Record<SwitchShape, string> = {
 export function suggestedStageWords(stage?: StageWords | null) {
   const objects = stage?.objects ?? [];
   const types = new Set(objects.map((object) => object.type));
-  const obstacle = ["wall", "ghost", "hole"].some((type) => types.has(type));
+  const obstacle = ["wall", "ghost", "hole", "fragileFloor"].some((type) => types.has(type));
   const conditions = [
     ...(types.has("wall") ? ["wall"] : []),
     ...(types.has("hole") ? ["hole"] : []),
     ...(types.has("ghost") ? ["enemy"] : []),
     ...(types.has("coin") ? ["coin"] : []),
     ...(types.has("switch") ? ["switch"] : []),
+    ...(types.has("conveyor") ? ["conveyor"] : []),
+    ...(types.has("fragileFloor") ? ["fragileFloor"] : []),
     ...(obstacle ? ["ahead"] : []),
   ];
   const actions = [
-    ...(types.has("wall") || types.has("hole") ? ["jump"] : []),
+    ...(types.has("wall") || types.has("hole") || types.has("fragileFloor") ? ["jump"] : []),
     ...(types.has("ghost") ? ["crouch"] : []),
     ...(types.has("coin") ? ["collect"] : []),
     ...(types.has("switch") ? ["press"] : []),
