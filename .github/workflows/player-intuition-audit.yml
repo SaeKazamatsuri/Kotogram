@@ -1,0 +1,34 @@
+name: Player Intuition Audit
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Round 1 - vocabulary and beginner personas
+        run: node --experimental-strip-types --test --test-name-pattern="persona round 1" tests/persona-stage.test.mjs
+      - name: Round 2 - speedrunner and shortcut personas
+        run: node --experimental-strip-types --test --test-name-pattern="persona round 2" tests/persona-stage.test.mjs
+      - name: Round 3 - adversarial and experimental personas
+        run: node --experimental-strip-types --test --test-name-pattern="persona round 3" tests/persona-stage.test.mjs
+      - name: Full regression suite
+        run: npm test
+      - name: Stage validation
+        run: npm run validate:stages
+      - name: Type checking
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
