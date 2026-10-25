@@ -4,8 +4,9 @@
   "scrollSpeed": 3,
   "requiredCoins": 1,
   "learningObjectives": [
-    "長いジャンプの あとに コインを とろう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "2つのかべを ひととびで こえられるかな",
+    "おそい床の先には コインがあるよ",
+    "コインを 取ると 点数が あがるよ"
   ],
   "objects": [
     {
@@ -27,20 +28,28 @@
       "id": "ghost-4",
       "type": "ghost",
       "position": 1540
+    },
+    {
+      "id": "slow-coin-floor",
+      "type": "conveyor",
+      "position": 690,
+      "width": 160,
+      "multiplier": 0.75
     }
   ],
   "meta": {
-    "title": "ひととびで コインまで",
+    "title": "2つの かべと コインの道",
     "bg": "sunset",
-    "hint": "長いジャンプの あとに コインを とろう",
+    "hint": "長いジャンプの あとは 動く床と コインにも ちゅうい",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
+      "coin": "コインを とって 高得点を ねらおう",
       "door": "門の 前に スイッチが あるよ",
       "trap": "あかいスイッチは おさないでね",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
-  }
+  },
+  "optionalObjectives": true
 }
