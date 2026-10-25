@@ -32,9 +32,9 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "こいんとる\nかべとあなとぶ\nてきかがむ",
+      "source": "こいんとる\nめっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 373
     },
     {
       "name": "optional-coin-low-score",
