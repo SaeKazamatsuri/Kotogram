@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -46,6 +46,7 @@ export type WindZone = { id: string; x: number; w: number; multiplier: number };
 export type PressurePlate = { id: string; x: number; w: number; holdTicks: number; heldTicks: number; targetDoorId: string; activated: boolean };
 export type MovingPlatform = { id: string; x: number; originX: number; w: number; travel: number; period: number };
 export type Laser = { id: string; x: number; period: number; activeTicks: number; phaseOffset: number; passed: boolean };
+export type Bridge = { id: string; x: number; w: number; targetDoorId: string };
 export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
 export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape; sequenceStep: number | null };
 export type GameState = {
@@ -72,6 +73,7 @@ export type GameState = {
   pressurePlates: PressurePlate[];
   movingPlatforms: MovingPlatform[];
   lasers: Laser[];
+  bridges: Bridge[];
   fragileFloors: FragileFloor[];
   requiredCoins: number;
   requiredSkips: number;
@@ -270,6 +272,16 @@ function makeLasers(stage: GameStage): Laser[] {
 export function isLaserActive(laser: Pick<Laser,"period"|"activeTicks"|"phaseOffset">,tick:number): boolean {
   return (tick+laser.phaseOffset)%laser.period < laser.activeTicks;
 }
+function makeBridges(stage: GameStage): Bridge[] {
+  return fromStage(stage,"bridge").map((item,index)=>({
+    id: typeof item.id==="string" ? item.id : "bridge:"+index,
+    x: item.position as number,w:item.width as number,
+    targetDoorId: item.targetDoorId as string,
+  })).sort((a,b)=>a.x-b.x);
+}
+export function isBridgeOpen(bridge: Pick<Bridge,"targetDoorId">, doors: readonly Door[]): boolean {
+  return doors.some(door=>door.id===bridge.targetDoorId && door.open);
+}
 function makeFragileFloors(stage: GameStage): FragileFloor[] {
   return fromStage(stage, "fragileFloor").map((item, i) => ({
     id: typeof item.id === "string" ? item.id : "fragileFloor:" + i,
@@ -294,9 +306,10 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const pressurePlates = makePressurePlates(stage);
   const movingPlatforms = makeMovingPlatforms(stage);
   const lasers = makeLasers(stage);
+  const bridges = makeBridges(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -324,6 +337,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     pressurePlates,
     movingPlatforms,
     lasers,
+    bridges,
     fragileFloors,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
@@ -384,6 +398,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     if (condition === "pressurePlate") {
       const target = nextTarget(game.pressurePlates.filter(item=>!item.activated),game.px);
       if (target && target.x - game.px <= range) found.set(target.id,target);
+      continue;
+    }
+    if (condition === "bridge") {
+      const target=nextTarget(game.bridges,game.px);
+      if(target && target.x-game.px<=range) found.set(target.id,target);
       continue;
     }
     if (condition === "laser") {
@@ -588,7 +607,8 @@ function overHole(game: GameState, x: number): boolean {
     game.fragileFloors.some((floor)=>floor.collapsed && x>=floor.x && x<=floor.x+floor.w);
   if(!unsafe) return false;
   const supported=game.py<=GAME.groundY-GAME.epsilon+8 &&
-    game.movingPlatforms.some(platform=>x>=platform.x && x<=platform.x+platform.w);
+    (game.movingPlatforms.some(platform=>x>=platform.x && x<=platform.x+platform.w) ||
+      game.bridges.some(bridge=>isBridgeOpen(bridge,game.doors) && x>=bridge.x && x<=bridge.x+bridge.w));
   return !supported;
 }
 

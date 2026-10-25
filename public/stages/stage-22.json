@@ -1,13 +1,13 @@
 {
   "id": "stage-22",
-  "goal": 2780,
+  "goal": 3100,
   "scrollSpeed": 3,
   "requiredCoins": 3,
   "requiredSkips": 3,
   "learningObjectives": [
     "ボタンの 色と形を 見分けよう",
-    "うごくゆかで 速さの へんかを ためそう",
-    "コインと 見おくりは 点数にも つながる"
+    "コインと見おくりを ふやして 点数をあげよう",
+    "門が あくと 橋もつながるよ"
   ],
   "objects": [
     {
@@ -98,15 +98,28 @@
       "position": 830,
       "width": 180,
       "multiplier": 1.35
+    },
+    {
+      "id": "gap-after-doors",
+      "type": "hole",
+      "position": 2500,
+      "width": 100
+    },
+    {
+      "id": "bridge-after-doors",
+      "type": "bridge",
+      "position": 2470,
+      "width": 160,
+      "targetDoorId": "door-12"
     }
   ],
   "meta": {
-    "title": "色がかわる たから道",
+    "title": "スイッチで つながる橋",
     "bg": "sunset",
-    "hint": "色と形のちがいに 気づけるかな？",
+    "hint": "さいごの門が あくと あなの上に 橋ができるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
-      "hole": "あなを こえるために ジャンプしよう",
+      "hole": "あなの上の橋は 門が あくと つながるよ",
       "enemy": "おばけの 下を くぐってみよう",
       "door": "次の ボタンと しかけを さがしてみよう",
       "trap": "あぶない ボタンの 色と形を 見よう"

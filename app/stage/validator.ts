@@ -109,10 +109,11 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser", "bridge"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
+    const bridges: { x: number; width: number; target: string; path: string }[] = [];
     let coinCount = 0;
     let trapSwitchCount = 0;
     let explicitGoalCount = 0;
@@ -154,6 +155,14 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       if (obj.type === "door" && obj.breakable !== undefined && typeof obj.breakable !== "boolean") issues.push({ path: path + ".breakable", message: "breakable must be boolean" });
       if (obj.type === "door" && obj.vaultable !== undefined && typeof obj.vaultable !== "boolean") issues.push({ path: path + ".vaultable", message: "vaultable must be boolean" });
       if (obj.type === "door" && obj.autoCloseTicks !== undefined && (!Number.isSafeInteger(obj.autoCloseTicks) || (obj.autoCloseTicks as number) < 10 || (obj.autoCloseTicks as number) > 10000)) issues.push({ path: path + ".autoCloseTicks", message: "autoCloseTicks must be between 10 and 10000" });
+      if (obj.type === "bridge") {
+        if (!isPositiveFinite(obj.width) || obj.width < 70 || obj.width > 280)
+          issues.push({ path:path+".width", message:"bridge width must be 70..280" });
+        if (typeof obj.targetDoorId!=="string" || !obj.targetDoorId.trim())
+          issues.push({ path:path+".targetDoorId", message:"bridge must have a target door" });
+        if (isNonnegativeFinite(obj.position) && typeof obj.width==="number" && typeof obj.targetDoorId==="string")
+          bridges.push({ x:obj.position,width:obj.width,target:obj.targetDoorId,path });
+      }
       if (obj.type === "laser") {
         if (!Number.isSafeInteger(obj.period) || (obj.period as number)<40 || (obj.period as number)>600)
           issues.push({path:path+".period",message:"laser period must be 40..600 ticks"});
@@ -196,13 +205,22 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       }
       if (obj.type === "hole") {
         if (obj.width !== undefined && !isPositiveFinite(obj.width)) issues.push({ path: path + ".width", message: "hole width must be positive" });
-      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate" && obj.type !== "movingPlatform") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
+      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate" && obj.type !== "movingPlatform" && obj.type !== "bridge") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
       if (isNonnegativeFinite(obj.position) && obj.type !== "goal" && typeof obj.type === "string" && knownTypes.has(obj.type)) {
         const positionKey = `${obj.type}@${obj.position}`;
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
-        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate" || obj.type === "movingPlatform") && typeof obj.width === "number" ? obj.width : 0));
+        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate" || obj.type === "movingPlatform" || obj.type === "bridge") && typeof obj.width === "number" ? obj.width : 0));
       }
+    }
+    for (const bridge of bridges) {
+      const target = doors.get(bridge.target);
+      if (target === undefined) issues.push({path:bridge.path+".targetDoorId",message:"bridge target door does not exist"});
+      else if (target >= bridge.x) issues.push({path:bridge.path+".position",message:"bridge must be past its controlling door"});
+      const crossesHole = value.objects.some(obj=>isObject(obj) && obj.type==="hole" &&
+        isNonnegativeFinite(obj.position) && bridge.x<=obj.position &&
+        bridge.x+bridge.width>=obj.position + (isPositiveFinite(obj.width) ? obj.width : GAME.defaultHoleWidth));
+      if (!crossesHole) issues.push({path:bridge.path+".width",message:"bridge must fully span a hole"});
     }
     for (const plate of pressurePlates) {
       const target = doors.get(plate.target);

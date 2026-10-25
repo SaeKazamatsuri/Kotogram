@@ -30,6 +30,7 @@ export function suggestedStageWords(stage?: StageWords | null) {
     ...(types.has("pressurePlate") ? ["pressurePlate"] : []),
     ...(types.has("movingPlatform") ? ["movingPlatform"] : []),
     ...(types.has("laser") ? ["laser"] : []),
+    ...(types.has("bridge") ? ["bridge"] : []),
     ...(obstacle ? ["ahead"] : []),
   ];
   const actions = [
