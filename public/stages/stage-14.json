@@ -4,8 +4,9 @@
   "scrollSpeed": 3,
   "requiredSkips": 2,
   "learningObjectives": [
-    "同じスイッチにも 2つの答え",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "×と☆の ちがいを 見て みおくろう",
+    "色と形を 使って あんぜんなボタンを おそう",
+    "後の門は 時間がたつと しまるよ"
   ],
   "objects": [
     {
@@ -13,13 +14,17 @@
       "type": "switch",
       "position": 340,
       "targetDoorId": "door-4",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "safe-2",
       "type": "switch",
       "position": 570,
-      "targetDoorId": "door-4"
+      "targetDoorId": "door-4",
+      "color": "green",
+      "shape": "circle"
     },
     {
       "id": "door-4",
@@ -31,31 +36,36 @@
       "type": "switch",
       "position": 1100,
       "targetDoorId": "door-7",
-      "trap": true
+      "trap": true,
+      "color": "purple",
+      "shape": "star"
     },
     {
       "id": "safe-5",
       "type": "switch",
       "position": 1330,
-      "targetDoorId": "door-7"
+      "targetDoorId": "door-7",
+      "color": "yellow",
+      "shape": "triangle"
     },
     {
       "id": "door-7",
       "type": "door",
-      "position": 1540
+      "position": 1540,
+      "autoCloseTicks": 130
     }
   ],
   "meta": {
-    "title": "みおくるか とぶか",
+    "title": "色と形の 二つの門",
     "bg": "day",
-    "hint": "同じスイッチにも 2つの答え",
+    "hint": "一つ目と 二つ目では ボタンの 色も形も ちがうよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
-      "door": "門の 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
+      "door": "ボタンを 見て 門がしまる前に すすもう",
+      "trap": "×や☆の ボタンを おさないように しよう",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
   }
