@@ -38,7 +38,7 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "めっちゃはしる\n3かいくりかえす\nぼたんみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 570
     },
@@ -53,6 +53,13 @@
       "role": "regression",
       "source": "あかいばつのぼたんみおくる\nむらさきのほしのぼたんみおくる\nあおいしかくのぼたんみおくる\nみどりのぼたんおす\nきいろいぼたんおす\nこいんとる",
       "expect": "cleared"
+    },
+    {
+      "name": "p2-medium-pace",
+      "role": "regression",
+      "source": "はしる\n3かいくりかえす\nぼたんみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 767
     }
   ]
 }
