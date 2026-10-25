@@ -109,7 +109,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string }[] = [];
     let coinCount = 0;
@@ -143,6 +143,12 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       if (obj.type === "door" && (typeof obj.id !== "string" || !obj.id.trim())) issues.push({ path: path + ".id", message: "door ID required" });
       if (obj.type === "door" && obj.breakable !== undefined && typeof obj.breakable !== "boolean") issues.push({ path: path + ".breakable", message: "breakable must be boolean" });
       if (obj.type === "door" && obj.vaultable !== undefined && typeof obj.vaultable !== "boolean") issues.push({ path: path + ".vaultable", message: "vaultable must be boolean" });
+      if (obj.type === "door" && obj.autoCloseTicks !== undefined && (!Number.isSafeInteger(obj.autoCloseTicks) || (obj.autoCloseTicks as number) < 10 || (obj.autoCloseTicks as number) > 10000)) issues.push({ path: path + ".autoCloseTicks", message: "autoCloseTicks must be between 10 and 10000" });
+      if (obj.type === "conveyor" || obj.type === "fragileFloor") {
+        if (!isPositiveFinite(obj.width) || (obj.width as number) < 30 || (obj.width as number) > 600) issues.push({ path: path + ".width", message: "floor width must be between 30 and 600" });
+        if (obj.type === "conveyor" && (!isPositiveFinite(obj.multiplier) || (obj.multiplier as number) < 0.5 || (obj.multiplier as number) > 2.5)) issues.push({ path: path + ".multiplier", message: "conveyor multiplier must be between 0.5 and 2.5" });
+        if (obj.type === "fragileFloor" && (!Number.isSafeInteger(obj.breakAfterTicks) || (obj.breakAfterTicks as number) < 5 || (obj.breakAfterTicks as number) > 600)) issues.push({ path: path + ".breakAfterTicks", message: "fragile floor timeout must be between 5 and 600 ticks" });
+      }
       if (obj.type === "coin") coinCount++;
       if (obj.type === "goal") {
         explicitGoalCount++;
@@ -150,12 +156,12 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       }
       if (obj.type === "hole") {
         if (obj.width !== undefined && !isPositiveFinite(obj.width)) issues.push({ path: path + ".width", message: "hole width must be positive" });
-      } else if (obj.width !== undefined) issues.push({ path: path + ".width", message: "width is only supported for holes" });
+      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
       if (isNonnegativeFinite(obj.position) && obj.type !== "goal" && typeof obj.type === "string" && knownTypes.has(obj.type)) {
         const positionKey = `${obj.type}@${obj.position}`;
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
-        furthestObstacle = Math.max(furthestObstacle, obj.position);
+        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor") && typeof obj.width === "number" ? obj.width : 0));
       }
     }
     for (const item of switches) {
