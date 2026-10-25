@@ -109,9 +109,10 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
+    const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
     let coinCount = 0;
     let trapSwitchCount = 0;
     let explicitGoalCount = 0;
@@ -153,6 +154,16 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       if (obj.type === "door" && obj.breakable !== undefined && typeof obj.breakable !== "boolean") issues.push({ path: path + ".breakable", message: "breakable must be boolean" });
       if (obj.type === "door" && obj.vaultable !== undefined && typeof obj.vaultable !== "boolean") issues.push({ path: path + ".vaultable", message: "vaultable must be boolean" });
       if (obj.type === "door" && obj.autoCloseTicks !== undefined && (!Number.isSafeInteger(obj.autoCloseTicks) || (obj.autoCloseTicks as number) < 10 || (obj.autoCloseTicks as number) > 10000)) issues.push({ path: path + ".autoCloseTicks", message: "autoCloseTicks must be between 10 and 10000" });
+      if (obj.type === "pressurePlate") {
+        if (!isPositiveFinite(obj.width) || obj.width < 60 || obj.width > 500)
+          issues.push({ path: path + ".width", message: "pressure plate width must be 60..500" });
+        if (!Number.isSafeInteger(obj.holdTicks) || (obj.holdTicks as number) < 3 || (obj.holdTicks as number) > 120)
+          issues.push({ path: path + ".holdTicks", message: "pressure plate holdTicks must be 3..120" });
+        if (typeof obj.targetDoorId !== "string" || !obj.targetDoorId.trim())
+          issues.push({ path: path + ".targetDoorId", message: "pressure plate must target a door" });
+        if (isNonnegativeFinite(obj.position) && typeof obj.width === "number" && typeof obj.targetDoorId === "string")
+          pressurePlates.push({ x: obj.position, width: obj.width, target: obj.targetDoorId, path });
+      }
       if (obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind") {
         if (!isPositiveFinite(obj.width) || (obj.width as number) < 30 || (obj.width as number) > 600) issues.push({ path: path + ".width", message: "floor width must be between 30 and 600" });
         if ((obj.type === "conveyor" || obj.type === "wind") && (!isPositiveFinite(obj.multiplier) || (obj.multiplier as number) < 0.5 || (obj.multiplier as number) > 2.5)) issues.push({ path: path + ".multiplier", message: "conveyor multiplier must be between 0.5 and 2.5" });
@@ -170,8 +181,14 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         const positionKey = `${obj.type}@${obj.position}`;
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
-        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind") && typeof obj.width === "number" ? obj.width : 0));
+        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate") && typeof obj.width === "number" ? obj.width : 0));
       }
+    }
+    for (const plate of pressurePlates) {
+      const target = doors.get(plate.target);
+      if (target === undefined) issues.push({ path: plate.path + ".targetDoorId", message: "pressure plate target door does not exist" });
+      else if (plate.x + plate.width + GAME.playerWidth >= target - GAME.switchPressRange)
+        issues.push({ path: plate.path + ".position", message: "pressure plate must finish before its door" });
     }
     for (const item of switches) {
       const targetX = doors.get(item.target);
