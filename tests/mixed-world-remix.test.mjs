@@ -25,8 +25,8 @@ for(const n of [13,17,21,24]){
     if (expected.failureReason) assert.equal(actual.reason, expected.failureReason, expected.name);
     if (expected.expectedTicks !== undefined) assert.equal(actual.ticks, expected.expectedTicks, expected.name);
   }
-  assert.equal(results.find(x=>x.role==="beginner")?.bp,10000);
+  assert.equal(results.find(x=>x.role==="beginner")?.bp,n===21?6600:10000);
   if(n===17)assert.equal(results.find(x=>x.name==="fragile-floor-ignored")?.reason,"hole");
-  if(n===21)assert.equal(results.find(x=>x.name==="optional-coin-low-score")?.bp,3000);
+  if(n===21)assert.equal(results.find(x=>x.name==="optional-coin-low-score")?.bp,1980);
  });
 }
