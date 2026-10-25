@@ -41,6 +41,18 @@
       "source": "めっちゃはしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 518
+    },
+    {
+      "name": "optional-last-gate-route",
+      "role": "regression",
+      "source": "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\nとびらをやぶる",
+      "expect": "cleared"
+    },
+    {
+      "name": "color-shape-selectors",
+      "role": "regression",
+      "source": "あかいばつのぼたんみおくる\nむらさきのほしのぼたんみおくる\nあおいしかくのぼたんみおくる\nみどりのぼたんおす\nきいろいぼたんおす\nこいんとる",
+      "expect": "cleared"
     }
   ]
 }
