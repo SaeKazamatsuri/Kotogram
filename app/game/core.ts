@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -9,7 +9,7 @@ export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triang
 export function switchAppearance(input: { trap: boolean; color?: SwitchColor; shape?: SwitchShape }): { color: SwitchColor; shape: SwitchShape } {
   return { color: input.color ?? (input.trap ? "red" : "green"), shape: input.shape ?? (input.trap ? "cross" : "circle") };
 }
-export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor";
+export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor" | "openChest";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
 export type GameInstruction =
@@ -39,7 +39,9 @@ export type GameStage = {
 
 export type Barrier = { id: string; x: number; cleared: boolean; originX?: number; patrolRange?: number; patrolPeriod?: number };
 export type Hole = { id: string; x: number; w: number };
-export type Coin = { id: string; x: number; collected: boolean };
+export type Coin = { id: string; x: number; collected: boolean; chestId?: string };
+export type KeyItem = { id: string; x: number; collected: boolean };
+export type Chest = { id: string; x: number; keyId: string; opened: boolean; rewardId: string };
 export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
@@ -66,6 +68,8 @@ export type GameState = {
   ghosts: Barrier[];
   holes: Hole[];
   coins: Coin[];
+  keys: KeyItem[];
+  chests: Chest[];
   doors: Door[];
   switches: Switch[];
   conveyors: Conveyor[];
@@ -200,6 +204,19 @@ function makeCoins(stage: GameStage): Coin[] {
     .sort((a, b) => a.x - b.x);
 }
 
+function makeKeys(stage: GameStage): KeyItem[] {
+  return fromStage(stage,"key").map((item,index)=>({
+    id:typeof item.id==="string"?item.id:"key:"+index,
+    x:item.position as number,collected:false
+  })).sort((a,b)=>a.x-b.x);
+}
+function makeChests(stage: GameStage): Chest[] {
+  return fromStage(stage,"chest").map((item,index)=>{
+    const id=typeof item.id==="string"?item.id:"chest:"+index;
+    return {id,x:item.position as number,keyId:item.keyId as string,
+      opened:false,rewardId:"chest-reward:"+id};
+  }).sort((a,b)=>a.x-b.x);
+}
 function makeDoors(stage: GameStage): Door[] {
   return fromStage(stage, "door")
     .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true, autoCloseTicks: typeof object.autoCloseTicks === "number" ? object.autoCloseTicks : 0, openedUntilTick: null, passed: false, sequenceLength: 0, nextSequenceStep: 1 }))
@@ -297,7 +314,13 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const walls = makeBarriers(stage, "wall", stage.walls);
   const ghosts = makeBarriers(stage, "ghost", stage.ghosts);
   const holes = makeHoles(stage);
-  const coins = makeCoins(stage);
+  const chests = makeChests(stage);
+  const keys = makeKeys(stage);
+  // Opening a chest yields exactly one coin-equivalent reward. The existing
+  // score and Worker replay validation remain authoritative for its value.
+  const coins = [...makeCoins(stage), ...chests.map(chest=>({
+    id:chest.rewardId,x:chest.x,collected:false,chestId:chest.id
+  }))].sort((a,b)=>a.x-b.x);
   const doors = makeDoors(stage);
   const switches = makeSwitches(stage);
   for (const door of doors) door.sequenceLength = switches.filter(item => item.targetDoorId === door.id && item.sequenceStep !== null).length;
@@ -309,7 +332,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const bridges = makeBridges(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -330,6 +353,8 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     ghosts,
     holes,
     coins,
+    keys,
+    chests,
     doors,
     switches,
     conveyors,
@@ -425,8 +450,18 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       if (target && target.x - game.px <= range) found.set(target.id, target);
       continue;
     }
+    if (condition === "key") {
+      const target=nextTarget(game.keys.filter(item=>!item.collected),game.px);
+      if(target && target.x-game.px<=GAME.coinPickupRange) found.set(target.id,target);
+      continue;
+    }
+    if (condition === "chest") {
+      const target=nextTarget(game.chests.filter(item=>!item.opened),game.px);
+      if(target && target.x-game.px<=GAME.coinPickupRange) found.set(target.id,target);
+      continue;
+    }
     if (condition === "coin") {
-      const target = nextTarget(game.coins.filter((coin) => !coin.collected), game.px);
+      const target = nextTarget(game.coins.filter((coin) => !coin.collected && !coin.chestId), game.px);
       if (target && target.x - game.px <= GAME.coinPickupRange) found.set(target.id, target);
       continue;
     }
@@ -520,9 +555,25 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
     target.open = true;
     return true;
   }
+  if (action === "openChest") {
+    const target=game.chests.find(chest=>!chest.opened &&
+      (sensedTargetId===undefined || chest.id===sensedTargetId) &&
+      chest.x+GAME.pad>=game.px && chest.x-game.px<=GAME.coinPickupRange &&
+      game.keys.some(key=>key.id===chest.keyId && key.collected));
+    if(!target) return false;
+    target.opened=true;
+    const reward=game.coins.find(coin=>coin.id===target.rewardId);
+    if(reward) reward.collected=true;
+    return true;
+  }
   if (action === "collect") {
+    const key=game.keys.find(item=>!item.collected &&
+      (sensedTargetId===undefined || item.id===sensedTargetId) &&
+      item.x+GAME.pad>=game.px && item.x-game.px<=GAME.coinPickupRange);
+    if(key){key.collected=true;return true;}
     const target = game.coins.find((coin) =>
-      !coin.collected && coin.x + GAME.pad >= game.px &&
+      !coin.collected && !coin.chestId &&
+      (sensedTargetId === undefined || coin.id === sensedTargetId) && coin.x + GAME.pad >= game.px &&
       coin.x - game.px <= GAME.coinPickupRange
     );
     if (!target) return false;

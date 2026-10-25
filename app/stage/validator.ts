@@ -109,11 +109,13 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser", "bridge"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser", "bridge", "key", "chest"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
     const bridges: { x: number; width: number; target: string; path: string }[] = [];
+    const keyLocations = new Map<string, number>();
+    const chestLinks: { path:string; keyId:string; x:number }[] = [];
     let coinCount = 0;
     let trapSwitchCount = 0;
     let explicitGoalCount = 0;
@@ -128,6 +130,17 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         else if (objectIds.has(obj.id)) issues.push({ path: path + ".id", message: "duplicate object ID" });
         else objectIds.add(obj.id);
       } else if (requireIds) issues.push({ path: path + ".id", message: "explicit object ID required" });
+      if (obj.type === "key" && typeof obj.id === "string" && isNonnegativeFinite(obj.position))
+        keyLocations.set(obj.id,obj.position);
+      if (obj.type === "chest") {
+        if (typeof obj.keyId!=="string" || !obj.keyId.trim())
+          issues.push({path:path+".keyId",message:"chest must reference an existing key"});
+        else if (isNonnegativeFinite(obj.position))
+          chestLinks.push({path,keyId:obj.keyId,x:obj.position});
+        // An opened chest grants one score coin. This is validated and replayed,
+        // not trusted from the client-submitted completion rate.
+        coinCount++;
+      }
       if (obj.type === "door" && typeof obj.id === "string" && isNonnegativeFinite(obj.position)) {
         doors.set(obj.id, obj.position);
       }
@@ -212,6 +225,13 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         placements.add(positionKey);
         furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate" || obj.type === "movingPlatform" || obj.type === "bridge") && typeof obj.width === "number" ? obj.width : 0));
       }
+    }
+    for (const chest of chestLinks) {
+      const keyX=keyLocations.get(chest.keyId);
+      if(keyX===undefined)
+        issues.push({path:chest.path+".keyId",message:"linked key does not exist"});
+      else if(keyX>=chest.x-50)
+        issues.push({path:chest.path+".position",message:"linked key must appear before the chest with enough pickup room"});
     }
     for (const bridge of bridges) {
       const target = doors.get(bridge.target);

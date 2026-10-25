@@ -5,21 +5,21 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "かべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる",
+      "source": "かべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
       "expectedTicks": 670
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべ1かいすごいとぶ\nてきかがむ\nこいんとる",
+      "source": "かべ1かいすごいとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
       "expectedTicks": 670
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる",
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
       "expectedTicks": 383
     },
@@ -38,21 +38,33 @@
     {
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
-      "source": "かべとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "かべとぶ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
       "expectedTicks": 670
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "かべとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
-      "expectedTicks": 670
+      "expectedTicks": 383
     },
     {
       "name": "optional-coin-low-score",
       "role": "regression",
       "source": "かべ1かいすごいじゃんぷ\nおばけしゃがむ",
+      "expect": "cleared"
+    },
+    {
+      "name": "key-without-opening-chest",
+      "role": "regression",
+      "source": "かべとぶ\nおばけしゃがむ\nこいんとる\nかぎとる",
+      "expect": "cleared"
+    },
+    {
+      "name": "chest-without-picking-up-key",
+      "role": "regression",
+      "source": "かべとぶ\nおばけしゃがむ\nこいんとる\nたからばこあける",
       "expect": "cleared"
     }
   ]
