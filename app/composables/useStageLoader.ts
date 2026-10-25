@@ -24,6 +24,7 @@ export type DoorStageObject = { type: "door"; position: number; id: string; brea
 export type ConveyorStageObject = { type: "conveyor"; position: number; id?: string; width: number; multiplier: number };
 export type FragileFloorStageObject = { type: "fragileFloor"; position: number; id?: string; width: number; breakAfterTicks: number };
 export type WindStageObject = { type: "wind"; position: number; id?: string; width: number; multiplier: number };
+export type MovingPlatformStageObject = { type: "movingPlatform"; position: number; id: string; width: number; travel: number; period: number };
 export type StageObject =
   | WallStageObject
   | GhostStageObject
@@ -35,6 +36,7 @@ export type StageObject =
   | ConveyorStageObject
   | FragileFloorStageObject
   | WindStageObject
+  | MovingPlatformStageObject
   | { type: string; [key: string]: unknown };
 export type StageData = {
   id?: string;
