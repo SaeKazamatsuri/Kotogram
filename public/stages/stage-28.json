@@ -5,8 +5,9 @@
   "requiredCoins": 4,
   "requiredSkips": 4,
   "learningObjectives": [
-    "4回の 手順を まとめよう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "色と形を 見て ボタンを えらぼう",
+    "うごくゆかと 時間のある門を すすもう",
+    "こわれるゆかは ジャンプで こえよう"
   ],
   "objects": [
     {
@@ -14,7 +15,9 @@
       "type": "switch",
       "position": 340,
       "targetDoorId": "door-4",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "coin-2",
@@ -25,19 +28,24 @@
       "id": "safe-3",
       "type": "switch",
       "position": 570,
-      "targetDoorId": "door-4"
+      "targetDoorId": "door-4",
+      "color": "green",
+      "shape": "circle"
     },
     {
       "id": "door-4",
       "type": "door",
-      "position": 780
+      "position": 780,
+      "autoCloseTicks": 160
     },
     {
       "id": "trap-5",
       "type": "switch",
       "position": 1100,
       "targetDoorId": "door-8",
-      "trap": true
+      "trap": true,
+      "color": "purple",
+      "shape": "star"
     },
     {
       "id": "coin-6",
@@ -48,19 +56,24 @@
       "id": "safe-7",
       "type": "switch",
       "position": 1330,
-      "targetDoorId": "door-8"
+      "targetDoorId": "door-8",
+      "color": "blue",
+      "shape": "triangle"
     },
     {
       "id": "door-8",
       "type": "door",
-      "position": 1540
+      "position": 1540,
+      "autoCloseTicks": 160
     },
     {
       "id": "trap-9",
       "type": "switch",
       "position": 1860,
       "targetDoorId": "door-12",
-      "trap": true
+      "trap": true,
+      "color": "yellow",
+      "shape": "square"
     },
     {
       "id": "coin-10",
@@ -71,19 +84,24 @@
       "id": "safe-11",
       "type": "switch",
       "position": 2090,
-      "targetDoorId": "door-12"
+      "targetDoorId": "door-12",
+      "color": "green",
+      "shape": "star"
     },
     {
       "id": "door-12",
       "type": "door",
-      "position": 2300
+      "position": 2300,
+      "vaultable": true
     },
     {
       "id": "trap-13",
       "type": "switch",
       "position": 2620,
       "targetDoorId": "door-16",
-      "trap": true
+      "trap": true,
+      "color": "blue",
+      "shape": "cross"
     },
     {
       "id": "coin-14",
@@ -94,26 +112,49 @@
       "id": "safe-15",
       "type": "switch",
       "position": 2850,
-      "targetDoorId": "door-16"
+      "targetDoorId": "door-16",
+      "color": "purple",
+      "shape": "circle"
     },
     {
       "id": "door-16",
       "type": "door",
-      "position": 3060
+      "position": 3060,
+      "breakable": true
+    },
+    {
+      "id": "slow-belt",
+      "type": "conveyor",
+      "position": 1620,
+      "width": 155,
+      "multiplier": 0.72
+    },
+    {
+      "id": "speed-belt",
+      "type": "conveyor",
+      "position": 2350,
+      "width": 155,
+      "multiplier": 1.45
+    },
+    {
+      "id": "break-floor",
+      "type": "fragileFloor",
+      "position": 3170,
+      "width": 84,
+      "breakAfterTicks": 16
     }
   ],
   "meta": {
-    "title": "4回の おつかい",
+    "title": "しかけが かわる 4つの門",
     "bg": "twilight",
-    "hint": "4回の 手順を まとめよう",
+    "hint": "門のちがいを 見ながら じゅんばんを 工夫しよう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
-      "hole": "あなを こえるために ジャンプしよう",
+      "hole": "こわれるゆかは 早めに ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
-      "door": "門の 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
-      "skip": "あかいスイッチを どうやって こえたかな"
+      "door": "門が しまる前に すすもう",
+      "trap": "色と形を よく見て おすボタンを えらぼう"
     }
-  }
+  },
+  "optionalObjectives": true
 }
