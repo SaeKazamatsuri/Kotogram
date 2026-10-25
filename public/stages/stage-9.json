@@ -4,8 +4,8 @@
   "scrollSpeed": 3,
   "requiredSkips": 1,
   "learningObjectives": [
-    "スイッチを とばすか とびこすか 考えよう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "色か形で ボタンをえらぼう",
+    "もっと ちがう道が あるかも"
   ],
   "objects": [
     {
@@ -13,32 +13,38 @@
       "type": "switch",
       "position": 340,
       "targetDoorId": "door-4",
-      "trap": true
+      "trap": true,
+      "color": "yellow",
+      "shape": "square"
     },
     {
       "id": "safe-2",
       "type": "switch",
       "position": 570,
-      "targetDoorId": "door-4"
+      "targetDoorId": "door-4",
+      "color": "blue",
+      "shape": "triangle"
     },
     {
       "id": "door-4",
       "type": "door",
-      "position": 780
+      "position": 780,
+      "breakable": true,
+      "vaultable": true
     }
   ],
   "meta": {
-    "title": "あかいスイッチの道",
+    "title": "青い 三角の ひみつ",
     "bg": "day",
-    "hint": "スイッチを とばすか とびこすか 考えよう",
+    "hint": "黄色い□と 青い△を 見分けよう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
-      "door": "とびらの 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
-      "skip": "あかいスイッチを どうやって こえたかな"
+      "door": "先へ すすむ しかけを さがそう",
+      "trap": "□のボタンを みおくると あんぜん"
     }
-  }
+  },
+  "optionalObjectives": true
 }
