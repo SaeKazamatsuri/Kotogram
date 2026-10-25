@@ -59,7 +59,8 @@
       "name": "portal-tradeoff-skips-one-coin-and-gate",
       "role": "regression",
       "source": "わーぷにはいる\nもろいゆかとぶ\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 906
     }
   ]
 }
