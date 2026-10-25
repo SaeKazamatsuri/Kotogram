@@ -4,8 +4,9 @@
   "scrollSpeed": 3,
   "requiredCoins": 2,
   "learningObjectives": [
-    "あなを とびこえながら コインを とろう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "コインは 取ると点数が あがるよ",
+    "おそいゆかを どう 通るか 考えよう",
+    "あなと かべを ジャンプで こえよう"
   ],
   "objects": [
     {
@@ -28,20 +29,28 @@
       "id": "wall-4",
       "type": "wall",
       "position": 2140
+    },
+    {
+      "id": "slow-lane",
+      "type": "conveyor",
+      "position": 540,
+      "width": 190,
+      "multiplier": 0.72
     }
   ],
   "meta": {
-    "title": "コインと あな",
+    "title": "コインと 速さの 選び方",
     "bg": "sunset",
-    "hint": "あなを とびこえながら コインを とろう",
+    "hint": "おそいゆかに のると 進む速さが かわるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
+      "coin": "コインを 取れば てんすうが上がるよ",
       "door": "門の 前に スイッチが あるよ",
       "trap": "あかいスイッチは おさないでね",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
-  }
+  },
+  "optionalObjectives": true
 }
