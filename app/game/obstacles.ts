@@ -145,7 +145,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
       ctx.lineTo(x + GAME.doorWidth - 5, GAME.groundY - 6);
       ctx.stroke();
     }
-    if (!door.open && door.autoCloseTicks > 0) {
+    if (door.open && door.autoCloseTicks > 0) {
       ctx.fillStyle = "#ffe6a1";
       const remaining = door.openedUntilTick === null ? 0 : Math.max(0, (door.openedUntilTick - game.elapsedTicks) / door.autoCloseTicks);
       ctx.fillRect(x + 4, y + 3, GAME.doorWidth * remaining, 5);
