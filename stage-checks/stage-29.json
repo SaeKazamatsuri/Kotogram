@@ -48,6 +48,12 @@
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 1052
+    },
+    {
+      "name": "last-bonus-can-be-missed",
+      "role": "regression",
+      "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
+      "expect": "cleared"
     }
   ]
 }
