@@ -41,6 +41,24 @@
       "source": "めっちゃはしる\n1かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 228
+    },
+    {
+      "name": "color-shape-language-route",
+      "role": "regression",
+      "source": "しかくのぼたんみおくる\nあおいさんかくのぼたんおす",
+      "expect": "cleared"
+    },
+    {
+      "name": "secret-break-low-score",
+      "role": "regression",
+      "source": "とびらをやぶる",
+      "expect": "cleared"
+    },
+    {
+      "name": "secret-vault-low-score",
+      "role": "regression",
+      "source": "とびらめっちゃとぶ",
+      "expect": "cleared"
     }
   ]
 }
