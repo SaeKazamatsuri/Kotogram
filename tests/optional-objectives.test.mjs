@@ -36,7 +36,7 @@ test("legacy-required objectives still fail; trap and unopened door remain fatal
   const old = play("あるく", { ...noDoorStage, optionalObjectives: false });
   assert.equal(old.status, "failed");
   assert.equal(old.failureReason, "coin");
-  const unsafe = play("あかいぼたんおす");
+  const unsafe = play("あかいぼたんおす", stage);
   assert.equal(unsafe.status, "failed");
   assert.equal(unsafe.failureReason, "trap");
   const closed = play("あるく", stage);
@@ -62,4 +62,10 @@ test("score scopes remain separated and archived v1 rankings readable", () => {
   assert.equal(PREVIOUS_SCORING_VERSION, "2026-v1");
   const scope = { seasonId: "2026-festival", stageId: "stage-8", stageVersion: "2026-10-20-r2", engineVersion: "2026-core-v2", languageVersion: "2026-language-v4", scoringVersion: "2026-v1" };
   assert.deepEqual(validateScope(scope), scope);
+});
+
+test("Worker rejects forged completion rates and recomputes progress from the source", () => {
+  const run = { stageId: "stage-1", source: "かべとぶ", elapsedTicks: 712, completionBp: 10000 };
+  assert.equal(verifyRunResult(run), 712);
+  assert.throws(() => verifyRunResult({ ...run, completionBp: 1200 }), /objective progress/);
 });
