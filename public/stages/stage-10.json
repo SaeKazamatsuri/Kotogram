@@ -5,8 +5,9 @@
   "requiredCoins": 2,
   "requiredSkips": 2,
   "learningObjectives": [
-    "2回の 手順を くりかえそう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "ボタンで 時間のある門をあけよう",
+    "うごくゆかで 速さがかわるよ",
+    "2回の じゅんばんを 工夫しよう"
   ],
   "objects": [
     {
@@ -14,7 +15,9 @@
       "type": "switch",
       "position": 340,
       "targetDoorId": "door-4",
-      "trap": true
+      "trap": true,
+      "color": "purple",
+      "shape": "triangle"
     },
     {
       "id": "coin-2",
@@ -25,19 +28,24 @@
       "id": "safe-3",
       "type": "switch",
       "position": 570,
-      "targetDoorId": "door-4"
+      "targetDoorId": "door-4",
+      "color": "blue",
+      "shape": "star"
     },
     {
       "id": "door-4",
       "type": "door",
-      "position": 780
+      "position": 780,
+      "autoCloseTicks": 95
     },
     {
       "id": "trap-5",
       "type": "switch",
       "position": 1100,
       "targetDoorId": "door-8",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "coin-6",
@@ -48,26 +56,35 @@
       "id": "safe-7",
       "type": "switch",
       "position": 1330,
-      "targetDoorId": "door-8"
+      "targetDoorId": "door-8",
+      "color": "green",
+      "shape": "circle"
     },
     {
       "id": "door-8",
       "type": "door",
-      "position": 1540
+      "position": 1540,
+      "autoCloseTicks": 95
+    },
+    {
+      "id": "belt-1",
+      "type": "conveyor",
+      "position": 900,
+      "width": 180,
+      "multiplier": 1.5
     }
   ],
   "meta": {
-    "title": "2回のおつかい",
+    "title": "時間のある門",
     "bg": "day",
-    "hint": "2回の 手順を くりかえそう",
+    "hint": "○・△・☆を よく見て、門がしまる前にすすもう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
-      "door": "とびらの 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
-      "skip": "あかいスイッチを どうやって こえたかな"
+      "door": "門がしまる前に すすもう",
+      "trap": "あかいスイッチは おさないでね"
     }
-  }
+  },
+  "optionalObjectives": true
 }
