@@ -183,3 +183,44 @@ test("if blocks only allow skip on switches", () => {
   assert.ok(invalid.diagnostics.some(item => item.code === "unsupported"));
   assert.deepEqual(invalid.program, { watchers: [], steps: [] });
 });
+
+test("joined switch colors and shapes expand to precise OR conditions", () => {
+  const cases = [
+    ["みどりとあかのぼたんをおす", ["switch:green:*", "switch:red:*"]],
+    ["みどりのぼたんとあかいぼたんをおす", ["switch:green:*", "switch:red:*"]],
+    ["みどりとあかのまるのぼたんをおす", ["switch:green:circle", "switch:red:circle"]],
+    ["みどりのまるとあかいばつのぼたんをおす", ["switch:green:circle", "switch:red:cross"]],
+    ["みどりのまるとばつのぼたんをおす", ["switch:green:circle", "switch:green:cross"]],
+    ["あかいぼたんとおばけがきたらしゃがむ", ["switch:red:*", "enemy"]],
+  ];
+  for (const [phrase, expected] of cases) {
+    assert.deepEqual(valid(phrase).rules[0].conds, expected, phrase);
+  }
+  for (const phrase of ["みどりとぼたんをおす", "みどりとあかのまるとばつのぼたんをおす"]) {
+    assert.ok(analyzeProgram(phrase).diagnostics.length > 0, phrase);
+  }
+});
+
+test("grouped switch colors press both switches without pressing unlisted traps", () => {
+  const stage = {
+    goal: 1550,
+    scrollSpeed: 3,
+    objects: [
+      { id: "green", type: "switch", position: 320, targetDoorId: "door-green", color: "green", shape: "circle" },
+      { id: "door-green", type: "door", position: 580 },
+      { id: "blue", type: "switch", position: 760, targetDoorId: "door-blue", trap: true, color: "blue", shape: "cross" },
+      { id: "red", type: "switch", position: 950, targetDoorId: "door-red", color: "red", shape: "circle" },
+      { id: "door-red", type: "door", position: 1200 },
+    ],
+  };
+  const result = runToCompletion(createGame(stage, valid("みどりとあかのぼたんをおす").rules));
+  assert.equal(result.status, "cleared");
+  assert.deepEqual(result.switches.filter((item) => item.activated).map((item) => item.id), ["green", "red"]);
+  assert.equal(result.switches.find((item) => item.id === "blue").activated, false);
+});
+
+test("hints can be expressed using alternative obstacle names", () => {
+  assert.deepEqual(valid("もんをすごいじゃんぷ").rules[0].conds, ["door"]);
+  assert.deepEqual(valid("おそいゆかをあるく").rules[0].conds, ["conveyor"]);
+  assert.deepEqual(valid("ひびがみえたらとぶ").rules[0].conds, ["fragileFloor"]);
+});
