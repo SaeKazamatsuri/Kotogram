@@ -102,6 +102,16 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.beginPath();
     ctx.roundRect(x + 3, y + 1, width, GAME.doorHeight - 3, 4);
     ctx.fill();
+    if (door.broken) {
+      ctx.fillStyle = "#ffd4a0";
+      ctx.fillRect(x + 4, GAME.groundY - 18, 12, 5);
+      ctx.fillRect(x + 20, GAME.groundY - 8, 9, 4);
+    }
+    if (door.vaulted) {
+      ctx.fillStyle = "#a0efd3";
+      ctx.font = "bold 17px sans-serif";
+      ctx.fillText("↑", x + 10, y - 10);
+    }
     if (door.open) {
       ctx.strokeStyle = "#b5f2d8";
       ctx.lineWidth = 4;

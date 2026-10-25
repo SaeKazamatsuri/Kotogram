@@ -140,6 +140,8 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         }
       }
       if (obj.type === "door" && (typeof obj.id !== "string" || !obj.id.trim())) issues.push({ path: path + ".id", message: "door ID required" });
+      if (obj.type === "door" && obj.breakable !== undefined && typeof obj.breakable !== "boolean") issues.push({ path: path + ".breakable", message: "breakable must be boolean" });
+      if (obj.type === "door" && obj.vaultable !== undefined && typeof obj.vaultable !== "boolean") issues.push({ path: path + ".vaultable", message: "vaultable must be boolean" });
       if (obj.type === "coin") coinCount++;
       if (obj.type === "goal") {
         explicitGoalCount++;

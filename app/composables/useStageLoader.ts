@@ -20,7 +20,7 @@ export type HoleStageObject = {
 export type GoalStageObject = { type: "goal"; position: number };
 export type CoinStageObject = { type: "coin"; position: number; id?: string };
 export type SwitchStageObject = { type: "switch"; position: number; id: string; targetDoorId: string; trap?: boolean; color?: "red" | "green" | "blue" | "yellow" | "purple"; shape?: "circle" | "cross" | "triangle" | "square" | "star" };
-export type DoorStageObject = { type: "door"; position: number; id: string };
+export type DoorStageObject = { type: "door"; position: number; id: string; breakable?: boolean; vaultable?: boolean };
 export type StageObject =
   | WallStageObject
   | GhostStageObject

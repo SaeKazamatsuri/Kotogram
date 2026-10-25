@@ -1,11 +1,13 @@
 import { normalizeLine } from "../language/parser.ts";
 
 export const SCORING_VERSION = "2026-v1";
-export const ENGINE_VERSION = "2026-core-v2";
-export const LANGUAGE_VERSION = "2026-language-v4";
-export const PREVIOUS_LANGUAGE_VERSION = "2026-language-v3";
-export const EARLIER_LANGUAGE_VERSION = "2026-language-v2";
-export const LEGACY_LANGUAGE_VERSION = "2026-language-v1";
+export const ENGINE_VERSION = "2026-core-v3";
+export const PREVIOUS_ENGINE_VERSION = "2026-core-v2";
+export const LANGUAGE_VERSION = "2026-language-v5";
+export const PREVIOUS_LANGUAGE_VERSION = "2026-language-v4";
+export const EARLIER_LANGUAGE_VERSION = "2026-language-v3";
+export const LEGACY_LANGUAGE_VERSION = "2026-language-v2";
+export const FIRST_LANGUAGE_VERSION = "2026-language-v1";
 export const SEASON_ID = "2026-festival";
 
 export type StrategyKind = "speed" | "compact" | "balanced";

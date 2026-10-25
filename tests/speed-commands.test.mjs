@@ -49,5 +49,5 @@ test("speed alone brings a wall collision forward, preserving risk", () => {
 });
 
 test("speed physics changes have a separate engine version for ranking isolation", () => {
-  assert.equal(ENGINE_VERSION, "2026-core-v2");
+  assert.equal(ENGINE_VERSION, "2026-core-v3");
 });
