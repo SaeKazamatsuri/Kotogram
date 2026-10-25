@@ -36,7 +36,9 @@
       "id": "door-4",
       "type": "door",
       "position": 780,
-      "autoCloseTicks": 150
+      "autoCloseTicks": 150,
+      "breakable": true,
+      "vaultable": true
     },
     {
       "id": "trap-5",
@@ -64,7 +66,9 @@
       "id": "door-8",
       "type": "door",
       "position": 1540,
-      "autoCloseTicks": 150
+      "autoCloseTicks": 150,
+      "breakable": true,
+      "vaultable": true
     },
     {
       "id": "belt-1",

@@ -34,7 +34,9 @@
     {
       "id": "door-1",
       "type": "door",
-      "position": 850
+      "position": 850,
+      "breakable": true,
+      "vaultable": true
     },
     {
       "id": "trap-2",
@@ -61,7 +63,9 @@
     {
       "id": "door-2",
       "type": "door",
-      "position": 1540
+      "position": 1540,
+      "breakable": true,
+      "vaultable": true
     }
   ],
   "meta": {
