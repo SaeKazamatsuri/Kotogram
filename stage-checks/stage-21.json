@@ -12,7 +12,7 @@
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべ1かいすごいとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
+      "source": "かべとぶ\nてきかがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 670
     },
@@ -45,7 +45,7 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nおばけしゃがむ\nこいんとる\nかぎとる\nたからばこあける",
+      "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
       "expect": "cleared",
       "expectedTicks": 383
     },
@@ -66,6 +66,20 @@
       "role": "regression",
       "source": "かべとぶ\nおばけしゃがむ\nこいんとる\nたからばこあける",
       "expect": "cleared"
+    },
+    {
+      "name": "p2-all-bonus-compact-walk",
+      "role": "regression",
+      "source": "かべとぶ\nてきかがむ\nこいんとる\nかぎとる\nたからばこあける",
+      "expect": "cleared",
+      "expectedTicks": 670
+    },
+    {
+      "name": "p2-short-partial-sprint",
+      "role": "regression",
+      "source": "めっちゃはしる\nかべとぶ\nてきかがむ\nこいんとる",
+      "expect": "cleared",
+      "expectedTicks": 383
     }
   ]
 }
