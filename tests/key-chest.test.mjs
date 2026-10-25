@@ -78,7 +78,7 @@ test("stage21's full bonus and skipped chest routes are deterministic and versio
   assert.equal(report.find(x=>x.role==="short")?.chars,14);
   assert.equal(report.find(x=>x.role==="short")?.bp,4290);
   assert.equal(report.find(x=>x.role==="overall")?.bp,10000);
-  assert.equal(report.find(x=>x.name==="p2-full-bonus-compact-sprint")?.bp,5000);
+  assert.equal(report.find(x=>x.name==="p2-full-bonus-compact-sprint")?.bp,6600);
   assert.equal(getScoreReference("stage-21","2026-10-25-r2")?.timeTicks,670);
   assert.ok(getScoreReference("stage-21","2026-10-25-r3"));
 });
