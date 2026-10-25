@@ -28,7 +28,8 @@
     "preflight:frontend": "node scripts/preflight-frontend.mjs",
     "smoke:production": "node scripts/smoke-production.mjs",
     "analyze:pace": "node --experimental-strip-types scripts/analyze-pace.mjs",
-    "analyze:stages": "node --experimental-strip-types scripts/analyze-all-stages.mjs"
+    "analyze:stages": "node --experimental-strip-types scripts/analyze-all-stages.mjs",
+    "analyze:competition": "node --experimental-strip-types scripts/analyze-competition.mjs --markdown"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.9.0",
