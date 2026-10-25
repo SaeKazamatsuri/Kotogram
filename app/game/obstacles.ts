@@ -104,6 +104,30 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.font="bold 14px sans-serif";
     ctx.fillText("⇄",x+10,GAME.groundY-15);
   }
+  for (const platform of game.verticalPlatforms) {
+    const x=worldToScreenX(game,platform.x);
+    if(x>GAME.width || x+platform.w<0) continue;
+    const top=platform.y+GAME.epsilon;
+    ctx.save();
+    ctx.strokeStyle="#476475";
+    ctx.lineWidth=3;
+    ctx.setLineDash([5,5]);
+    ctx.beginPath();
+    ctx.moveTo(x+12,top-4);
+    ctx.lineTo(x+12,GAME.groundY);
+    ctx.moveTo(x+platform.w-12,top-4);
+    ctx.lineTo(x+platform.w-12,GAME.groundY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle="#cce1e8";
+    ctx.fillRect(x,top-9,platform.w,9);
+    ctx.strokeStyle="#36576c";
+    ctx.strokeRect(x,top-9,platform.w,9);
+    ctx.fillStyle="#243f53";
+    ctx.font="bold 14px sans-serif";
+    ctx.fillText("↕ のる",x+10,top-15);
+    ctx.restore();
+  }
   for (const floor of game.conveyors) {
     const x = worldToScreenX(game, floor.x);
     if (x > GAME.width || x + floor.w < 0) continue;
