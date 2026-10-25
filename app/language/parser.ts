@@ -201,38 +201,68 @@ function parseConditions(tokens: Token[], diagnostics: Diagnostic[]): Condition[
   if (meaningful.length >= 2 && meaningful[0].value === "ahead" && meaningful[1].kind === "condition") meaningful.shift();
   else if (meaningful.length === 2 && meaningful[0].kind === "condition" && meaningful[1].value === "ahead") meaningful.pop();
   const conditions: Condition[] = [];
-  let expectCondition = true;
-  let color: SwitchColor | null = null;
-  let shape: SwitchShape | null = null;
-  for (const token of meaningful) {
-    if (expectCondition && token.kind === "attribute") {
+  type AttributeGroup = { color: SwitchColor | null; shape: SwitchShape | null };
+  let groups: AttributeGroup[] = [{ color: null, shape: null }];
+  let hasAttributes = false;
+  let expectingItem = true;
+  for (const [index, token] of meaningful.entries()) {
+    const group = groups[groups.length - 1]!;
+    if (expectingItem && token.kind === "attribute") {
       const [kind, value] = token.value.split(":");
-      if ((kind === "color" && color !== null) || (kind === "shape" && shape !== null)) {
-        diagnostics.push(error("syntax", "いろや かたちは 1つずつ えらんでね", token));
+      if ((kind === "color" && group.color !== null) || (kind === "shape" && group.shape !== null)) {
+        diagnostics.push(error("syntax", "いろや かたちは『と』で つないでね", token));
         return null;
       }
-      if (kind === "color") color = value as SwitchColor;
-      else shape = value as SwitchShape;
-    } else if (expectCondition && token.kind === "condition") {
-      if ((color || shape) && token.value !== "switch") {
+      if (kind === "color") group.color = value as SwitchColor;
+      else group.shape = value as SwitchShape;
+      hasAttributes = true;
+      continue;
+    }
+    if (expectingItem && token.kind === "condition") {
+      if (hasAttributes && token.value !== "switch") {
         diagnostics.push(error("unsupported", "いろや かたちは ぼたんに つけてね", token));
         return null;
       }
-      const condition = color || shape
-        ? `switch:${color ?? "*"}:${shape ?? "*"}` as Condition
-        : token.value as Condition;
-      if (!conditions.includes(condition)) conditions.push(condition);
-      color = null;
-      shape = null;
-      expectCondition = false;
-    } else if (!expectCondition && token.kind === "or") {
-      expectCondition = true;
-    } else {
-      diagnostics.push(error("syntax", "じょうけんの つなぎかたを かくにんしてね", token));
-      return null;
+      if (hasAttributes) {
+        if (groups.some((entry) => !entry.color && !entry.shape)) {
+          diagnostics.push(error("syntax", "いろや かたちの あとに ことばを いれてね", token));
+          return null;
+        }
+        const colors = [...new Set(groups.map((entry) => entry.color).filter((item): item is SwitchColor => item !== null))];
+        const shapes = [...new Set(groups.map((entry) => entry.shape).filter((item): item is SwitchShape => item !== null))];
+        if ((colors.length > 1 && groups.some((entry) => !entry.color)) ||
+            (shapes.length > 1 && groups.some((entry) => !entry.shape))) {
+          diagnostics.push(error("syntax", "どの いろと かたちか わかるように かいてね", token));
+          return null;
+        }
+        for (const entry of groups) {
+          const condition = `switch:${entry.color ?? colors[0] ?? "*"}:${entry.shape ?? shapes[0] ?? "*"}` as Condition;
+          if (!conditions.includes(condition)) conditions.push(condition);
+        }
+      } else {
+        const condition = token.value as Condition;
+        if (!conditions.includes(condition)) conditions.push(condition);
+      }
+      groups = [{ color: null, shape: null }];
+      hasAttributes = false;
+      expectingItem = false;
+      continue;
     }
+    if (token.kind === "or") {
+      const next = meaningful[index + 1];
+      if (expectingItem && hasAttributes && next?.kind === "attribute") {
+        groups.push({ color: null, shape: null });
+        continue;
+      }
+      if (!expectingItem && (next?.kind === "condition" || next?.kind === "attribute")) {
+        expectingItem = true;
+        continue;
+      }
+    }
+    diagnostics.push(error("syntax", "じょうけんの つなぎかたを かくにんしてね", token));
+    return null;
   }
-  if (expectCondition || conditions.length === 0) {
+  if (expectingItem || conditions.length === 0) {
     diagnostics.push(error("syntax", "じょうけんを かいてね", tokens.at(-1) ?? { line: 1, column: 1 }));
     return null;
   }
