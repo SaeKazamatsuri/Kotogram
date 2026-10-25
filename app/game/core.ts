@@ -40,11 +40,11 @@ export type GameStage = {
 export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
-export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean };
+export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
 export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
-export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape };
+export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape; sequenceStep: number | null };
 export type GameState = {
   status: GameStatus;
   failureReason?: GameFailReason;
@@ -181,7 +181,7 @@ function makeCoins(stage: GameStage): Coin[] {
 
 function makeDoors(stage: GameStage): Door[] {
   return fromStage(stage, "door")
-    .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true, autoCloseTicks: typeof object.autoCloseTicks === "number" ? object.autoCloseTicks : 0, openedUntilTick: null, passed: false }))
+    .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true, autoCloseTicks: typeof object.autoCloseTicks === "number" ? object.autoCloseTicks : 0, openedUntilTick: null, passed: false, sequenceLength: 0, nextSequenceStep: 1 }))
     .sort((a, b) => a.x - b.x);
 }
 
@@ -194,6 +194,7 @@ function makeSwitches(stage: GameStage): Switch[] {
       activated: false,
       skipped: false,
       trap: object.trap === true,
+      sequenceStep: Number.isSafeInteger(object.sequenceStep) ? object.sequenceStep as number : null,
       ...switchAppearance({ trap: object.trap === true, color: object.color as SwitchColor | undefined, shape: object.shape as SwitchShape | undefined }),
     }))
     .sort((a, b) => a.x - b.x);
@@ -234,6 +235,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const coins = makeCoins(stage);
   const doors = makeDoors(stage);
   const switches = makeSwitches(stage);
+  for (const door of doors) door.sequenceLength = switches.filter(item => item.targetDoorId === door.id && item.sequenceStep !== null).length;
   const conveyors = makeConveyors(stage);
   const winds = makeWinds(stage);
   const fragileFloors = makeFragileFloors(stage);
@@ -398,7 +400,17 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
       fail(game, "trap");
       return true;
     }
-    target.activated = true;
+    if (door.sequenceLength > 0) {
+      if (target.sequenceStep !== door.nextSequenceStep) {
+        fail(game, "trap");
+        return true;
+      }
+      target.activated = true;
+      door.nextSequenceStep++;
+      if (door.nextSequenceStep <= door.sequenceLength) return true;
+    } else {
+      target.activated = true;
+    }
     door.open = true;
     door.openedUntilTick = door.autoCloseTicks ? game.elapsedTicks + door.autoCloseTicks : null;
     return true;
