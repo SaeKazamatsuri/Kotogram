@@ -38,7 +38,7 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "めっちゃはしる\nすいっちみおくる\nこいんとる\nとびらをやぶる",
       "expect": "cleared",
       "expectedTicks": 362
     },
@@ -89,7 +89,8 @@
       "name": "sprint-bonus-secret-break",
       "role": "regression",
       "source": "めっちゃはしる\nすいっちみおくる\nこいんとる\nとびらをやぶる",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 362
     }
   ]
 }
