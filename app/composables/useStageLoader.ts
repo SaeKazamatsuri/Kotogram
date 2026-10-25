@@ -30,6 +30,7 @@ export type LaserStageObject = { type: "laser"; position: number; id: string; pe
 export type BridgeStageObject = { type: "bridge"; position: number; id: string; width: number; targetDoorId: string };
 export type KeyStageObject = { type: "key"; position: number; id: string };
 export type ChestStageObject = { type: "chest"; position: number; id: string; keyId: string };
+export type PortalStageObject = { type: "portal"; position: number; id: string; targetPosition: number };
 export type StageObject =
   | WallStageObject
   | GhostStageObject
@@ -47,6 +48,7 @@ export type StageObject =
   | BridgeStageObject
   | KeyStageObject
   | ChestStageObject
+  | PortalStageObject
   | { type: string; [key: string]: unknown };
 export type StageData = {
   id?: string;

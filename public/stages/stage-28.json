@@ -5,9 +5,9 @@
   "requiredCoins": 4,
   "requiredSkips": 4,
   "learningObjectives": [
-    "色と形を 見て ボタンを えらぼう",
-    "うごくゆかと 時間のある門を すすもう",
-    "こわれるゆかは ジャンプで こえよう"
+    "4つの門を 色と形で 見分けて すすめよう",
+    "こわれる床を ジャンプで こえよう",
+    "ワープの 近道は コインとボタンを とばしてしまうよ"
   ],
   "objects": [
     {
@@ -142,12 +142,18 @@
       "position": 3170,
       "width": 84,
       "breakAfterTicks": 16
+    },
+    {
+      "id": "violet-portal",
+      "type": "portal",
+      "position": 885,
+      "targetPosition": 1610
     }
   ],
   "meta": {
-    "title": "しかけが かわる 4つの門",
+    "title": "4つの門と 近道ワープ",
     "bg": "twilight",
-    "hint": "門のちがいを 見ながら じゅんばんを 工夫しよう",
+    "hint": "ワープで 門をとばすと 早いけれど 点数が 下がるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "こわれるゆかは 早めに ジャンプしよう",

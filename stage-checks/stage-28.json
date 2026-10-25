@@ -54,6 +54,13 @@
       "role": "regression",
       "source": "もろいゆかとぶ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\nとびらをやぶる",
       "expect": "cleared"
+    },
+    {
+      "name": "portal-tradeoff-skips-one-coin-and-gate",
+      "role": "regression",
+      "source": "わーぷにはいる\nもろいゆかとぶ\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 906
     }
   ]
 }

@@ -20,11 +20,11 @@ const controlGroups = Object.entries(CONTROL_WORDS.reduce<Record<string, string[
   return result;
 }, {}));
 const actionLabels: Record<string, string> = {
-  jump: "ジャンプ", powerJump: "強いジャンプ", crouch: "しゃがむ", collect: "拾う", openChest: "開ける",
+  jump: "ジャンプ", powerJump: "強いジャンプ", crouch: "しゃがむ", collect: "拾う", openChest: "開ける", enterPortal: "入る",
   run: "走る", sprint: "高速走行", walk: "歩く", press: "押す", skip: "見送る", breakDoor: "扉を破る",
 };
 const conditionLabels: Record<string, string> = {
-  wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ", door: "扉", conveyor: "動く床", fragileFloor: "こわれる床", wind: "風", pressurePlate: "ふむ床", movingPlatform: "動く足場", laser: "ひかり", bridge: "橋", key: "かぎ", chest: "宝箱",
+  wall: "かべ", enemy: "おばけ", hole: "あな", ahead: "前", coin: "コイン", switch: "スイッチ", door: "扉", conveyor: "動く床", fragileFloor: "こわれる床", wind: "風", pressurePlate: "ふむ床", movingPlatform: "動く足場", laser: "ひかり", bridge: "橋", key: "かぎ", chest: "宝箱", portal: "ワープ",
 };
 const grammarLabels: Record<string, string> = {
   repeat: "繰り返し", end: "終わり", if: "もし", then: "条件のつなぎ", or: "または", count: "回数", particle: "助詞",

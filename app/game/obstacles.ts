@@ -153,6 +153,25 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.restore();
   }
 
+  for (const portal of game.portals) {
+    const x=worldToScreenX(game,portal.x);
+    const destination=worldToScreenX(game,portal.targetX);
+    ctx.save();
+    for(const [px,entrance] of [[x,true],[destination,false]] as const) {
+      if(px<-45 || px>GAME.width+45)continue;
+      ctx.strokeStyle=portal.used?"#91a49b":entrance?"#8a67bb":"#31a8a0";
+      ctx.lineWidth=5;
+      if(portal.used)ctx.setLineDash([5,6]);
+      ctx.beginPath();
+      ctx.ellipse(px,GAME.groundY-46,18,42,0,0,Math.PI*2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle="#23354c";
+      ctx.font="bold 15px sans-serif";
+      ctx.fillText(entrance?"→":"○",px-7,GAME.groundY-52);
+    }
+    ctx.restore();
+  }
   for (const key of game.keys) {
     if (key.collected) continue;
     const x = worldToScreenX(game,key.x);
