@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -22,7 +22,7 @@ export type ExecutionTrace = { kind: "watcher" | "step" | "repeat"; index: numbe
 export type TraceObserver = (trace: ExecutionTrace) => void;
 export type LoopFrame = { start: number; remaining: number };
 export type GameStatus = "ready" | "running" | "cleared" | "failed" | "timeout";
-export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "skip" | "void";
+export type GameFailReason = "hole" | "wall" | "enemy" | "coin" | "door" | "trap" | "skip" | "void" | "laser";
 
 export type GameStage = {
   goal?: number;
@@ -45,6 +45,7 @@ export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
 export type PressurePlate = { id: string; x: number; w: number; holdTicks: number; heldTicks: number; targetDoorId: string; activated: boolean };
 export type MovingPlatform = { id: string; x: number; originX: number; w: number; travel: number; period: number };
+export type Laser = { id: string; x: number; period: number; activeTicks: number; phaseOffset: number; passed: boolean };
 export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
 export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape; sequenceStep: number | null };
 export type GameState = {
@@ -70,6 +71,7 @@ export type GameState = {
   winds: WindZone[];
   pressurePlates: PressurePlate[];
   movingPlatforms: MovingPlatform[];
+  lasers: Laser[];
   fragileFloors: FragileFloor[];
   requiredCoins: number;
   requiredSkips: number;
@@ -256,6 +258,18 @@ function makeMovingPlatforms(stage: GameStage): MovingPlatform[] {
     w:item.width as number,travel:item.travel as number,period:item.period as number
   })).sort((a,b)=>a.x-b.x);
 }
+function makeLasers(stage: GameStage): Laser[] {
+  return fromStage(stage,"laser").map((item,index)=>({
+    id:typeof item.id==="string"?item.id:"laser:"+index,
+    x:item.position as number, period:item.period as number,
+    activeTicks:item.activeTicks as number,
+    phaseOffset:typeof item.phaseOffset==="number"?item.phaseOffset:0,
+    passed:false,
+  })).sort((a,b)=>a.x-b.x);
+}
+export function isLaserActive(laser: Pick<Laser,"period"|"activeTicks"|"phaseOffset">,tick:number): boolean {
+  return (tick+laser.phaseOffset)%laser.period < laser.activeTicks;
+}
 function makeFragileFloors(stage: GameStage): FragileFloor[] {
   return fromStage(stage, "fragileFloor").map((item, i) => ({
     id: typeof item.id === "string" ? item.id : "fragileFloor:" + i,
@@ -279,9 +293,10 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const winds = makeWinds(stage);
   const pressurePlates = makePressurePlates(stage);
   const movingPlatforms = makeMovingPlatforms(stage);
+  const lasers = makeLasers(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -308,6 +323,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     winds,
     pressurePlates,
     movingPlatforms,
+    lasers,
     fragileFloors,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
@@ -368,6 +384,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     if (condition === "pressurePlate") {
       const target = nextTarget(game.pressurePlates.filter(item=>!item.activated),game.px);
       if (target && target.x - game.px <= range) found.set(target.id,target);
+      continue;
+    }
+    if (condition === "laser") {
+      const target=nextTarget(game.lasers.filter(x=>!x.passed),game.px);
+      if(target && target.x-game.px<=range) found.set(target.id,target);
       continue;
     }
     if (condition === "movingPlatform") {
@@ -684,6 +705,14 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   }
   for (const item of game.doors) {
     if (game.px > item.x + GAME.doorWidth) item.passed = true;
+  }
+  const laser=game.lasers.find(item=>!item.passed && front>=item.x);
+  if(laser){
+    if(isLaserActive(laser,game.elapsedTicks) && !isCrouching(game)){
+      fail(game,"laser");
+      return game.status;
+    }
+    laser.passed=true;
   }
   const ghost = game.ghosts.find((g) => !g.cleared && front >= g.x);
   if (ghost) {
