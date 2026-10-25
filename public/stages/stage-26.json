@@ -1,11 +1,12 @@
 {
   "id": "stage-26",
-  "goal": 2620,
+  "goal": 3000,
   "scrollSpeed": 3,
   "requiredCoins": 1,
   "learningObjectives": [
-    "2つの動きを 同時に 使おう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "かべと おばけで 上下の動きを かえよう",
+    "あなを こえたら 青い□と 緑の○を 順番に おそう",
+    "コインを わすれずに 取ろう"
   ],
   "objects": [
     {
@@ -38,19 +39,42 @@
       "type": "hole",
       "position": 2140,
       "width": 80
+    },
+    {
+      "id": "order-blue",
+      "type": "switch",
+      "position": 2300,
+      "targetDoorId": "order-door",
+      "color": "blue",
+      "shape": "square",
+      "sequenceStep": 1
+    },
+    {
+      "id": "order-green",
+      "type": "switch",
+      "position": 2450,
+      "targetDoorId": "order-door",
+      "color": "green",
+      "shape": "circle",
+      "sequenceStep": 2
+    },
+    {
+      "id": "order-door",
+      "type": "door",
+      "position": 2690
     }
   ],
   "meta": {
-    "title": "上下の かけひき",
+    "title": "上下と 2つのボタン",
     "bg": "twilight",
-    "hint": "2つの動きを 同時に 使おう",
+    "hint": "とぶ・しゃがむ のあとも ボタンを 順に おそう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
-      "door": "門の 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
+      "door": "青い□、緑の○の順で おそう",
+      "trap": "青い□から おすと 門があくよ",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
   }
