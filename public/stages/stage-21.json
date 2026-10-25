@@ -1,12 +1,12 @@
 {
   "id": "stage-21",
-  "goal": 2020,
+  "goal": 2440,
   "scrollSpeed": 3,
   "requiredCoins": 2,
   "learningObjectives": [
-    "2つのかべを ジャンプで こえよう",
+    "2つのかべと おばけを こえよう",
     "かぎを とって 宝箱を あけよう",
-    "宝箱を 見おくると コードは 短くなるけれど 点数が 下がるよ"
+    "ごーるを みおくると 奥のごほうびに いけるよ"
   ],
   "objects": [
     {
@@ -46,12 +46,24 @@
       "type": "chest",
       "position": 1270,
       "keyId": "silver-key"
+    },
+    {
+      "id": "short-goal",
+      "type": "goal",
+      "position": 2020,
+      "bonusBp": 5000
+    },
+    {
+      "id": "treasure-goal",
+      "type": "goal",
+      "position": 2440,
+      "bonusBp": 10000
     }
   ],
   "meta": {
-    "title": "かぎと 宝箱の 得点",
+    "title": "かぎと 宝箱と 2つのゴール",
     "bg": "sunset",
-    "hint": "かぎを とって、宝箱を 開けると 点数がふえるよ",
+    "hint": "手前で クリアしても いいよ。ごーるを みおくると 奥のゴールに いけるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
