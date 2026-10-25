@@ -175,9 +175,9 @@ export function drawCharacterArtwork(ctx: CanvasRenderingContext2D, motion: Char
   }
 }
 
-export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks, idle = false, failureProgress = 1): void {
+export function drawAnimatedCharacter(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks, idle = false, failureProgress = 1, screenOffsetX = 0): void {
   const motion = resolveCharacterMotion(game, visualTick, idle, failureProgress);
-  const x = GAME.playerScreenX + GAME.playerWidth / 2;
+  const x = GAME.playerScreenX + GAME.playerWidth / 2 + screenOffsetX;
   const airborne = motion.pose === "jumping" || motion.pose === "crouch-jumping";
   ctx.save();
   ctx.globalAlpha = motion.fade;
