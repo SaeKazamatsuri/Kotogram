@@ -13,7 +13,9 @@ test("Competition audit replays all 30 ranked stages and respects actual score s
  assert.equal(summary.stageCount,30);
  assert.equal(summary.registeredRoutes,stages.reduce((sum,x)=>sum+x.registered,0));
  assert.ok(summary.successfulRoutes>=30*4);
- assert.ok(stages.every(x=>x.frontierCount>=1));
+ assert.ok(stages.every(x=>x.frontierCount>=2),"every published stage must preserve at least two verified speed/length choices");
+ assert.equal(summary.multiParetoStages.length,30);
+ assert.equal(summary.multiObjectiveStages.length,30);
  assert.deepEqual(summary.registeredOverallMismatch,[],"official overall must be consistent with measured runs");
  console.log("COMPETITION_AUDIT_REPORT "+JSON.stringify({summary,rows:stages.map(r=>({
    id:r.stageId,time:r.best.time.ticks,chars:r.best.chars.characters,overall:r.best.overall.score,
