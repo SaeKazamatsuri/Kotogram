@@ -48,11 +48,11 @@ test("stage 21 makes saving code vs collecting chest rewards a meaningful scored
   const overall=run(lookup("overall").source);
   assert.equal(short.elapsedTicks,670);
   assert.equal(overall.elapsedTicks,463);
-  assert.equal(objectiveProgress(short).completionBp,3250);
+  assert.equal(objectiveProgress(short).completionBp,4290);
   assert.equal(objectiveProgress(overall).completionBp,10000);
   const fullBonus=run(checks.cases.find((item)=>item.name==="p2-full-bonus-compact-sprint").source);
   assert.equal(fullBonus.elapsedTicks,383);
-  assert.equal(objectiveProgress(fullBonus).completionBp,5000);
+  assert.equal(objectiveProgress(fullBonus).completionBp,6600);
   const scored=(source,result)=>({source,runId:source,elapsedTicks:result.elapsedTicks,charCount:countSourceCharacters(source),completionBp:objectiveProgress(result).completionBp});
   const partial=scored(lookup("overall").source,overall);
   const full=scored(checks.cases.find((item)=>item.name==="p2-full-bonus-compact-sprint").source,fullBonus);
