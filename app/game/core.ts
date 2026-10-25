@@ -579,7 +579,9 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[], ac
         ? game.holes.find(hole => hole.id === target?.id)?.w ?? GAME.defaultHoleWidth
         : GAME.wallWidth;
       const jumping = action === "jump" || action === "powerJump";
-      const triggerRange = jumping && (objects === game.walls || (objects === game.holes && game.jumpSensorProfile === "centered-holes"))
+      const pairedGhost = objects === game.walls && game.ghosts.some(ghost => ghost.x === target?.x);
+      const safeToAim = game.winds.length === 0 && !pairedGhost;
+      const triggerRange = jumping && safeToAim && (objects === game.walls || (objects === game.holes && game.jumpSensorProfile === "centered-holes"))
         ? aimedJumpRange(game.vx, holeWidth, action === "powerJump")
         : game.jumpSensorProfile === "centered-holes" && objects === game.holes
           ? Math.max(0, range - Math.max(0, (holeWidth - GAME.wallWidth) / 2))
