@@ -36,8 +36,8 @@
       "expect": "cleared"
     },
     {
-      "name": "overall-known-best",
-      "role": "overall",
+      "name": "fast-loop-route",
+      "role": "regression",
       "source": "めっちゃはしる\n1かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 228
@@ -49,10 +49,11 @@
       "expect": "cleared"
     },
     {
-      "name": "secret-break-low-score",
-      "role": "regression",
+      "name": "overall-secret-break",
+      "role": "overall",
       "source": "とびらをやぶる",
-      "expect": "cleared"
+      "expect": "cleared",
+      "expectedTicks": 399
     },
     {
       "name": "secret-vault-low-score",
