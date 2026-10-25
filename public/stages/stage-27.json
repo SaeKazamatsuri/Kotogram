@@ -4,8 +4,9 @@
   "scrollSpeed": 3,
   "requiredSkips": 3,
   "learningObjectives": [
-    "とぶ方法と 見おくる方法を 考えよう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "3組の ボタンを 色と形で 見わけよう",
+    "時間がある 門も あるよ",
+    "速さが かわる床で すすめるかな"
   ],
   "objects": [
     {
@@ -13,13 +14,17 @@
       "type": "switch",
       "position": 340,
       "targetDoorId": "door-4",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "safe-2",
       "type": "switch",
       "position": 570,
-      "targetDoorId": "door-4"
+      "targetDoorId": "door-4",
+      "color": "green",
+      "shape": "circle"
     },
     {
       "id": "door-4",
@@ -31,18 +36,23 @@
       "type": "switch",
       "position": 1100,
       "targetDoorId": "door-7",
-      "trap": true
+      "trap": true,
+      "color": "purple",
+      "shape": "triangle"
     },
     {
       "id": "safe-5",
       "type": "switch",
       "position": 1330,
-      "targetDoorId": "door-7"
+      "targetDoorId": "door-7",
+      "color": "blue",
+      "shape": "star"
     },
     {
       "id": "door-7",
       "type": "door",
-      "position": 1540
+      "position": 1540,
+      "autoCloseTicks": 155
     },
     {
       "id": "wall-7",
@@ -54,32 +64,45 @@
       "type": "switch",
       "position": 2460,
       "targetDoorId": "door-11",
-      "trap": true
+      "trap": true,
+      "color": "yellow",
+      "shape": "square"
     },
     {
       "id": "safe-9",
       "type": "switch",
       "position": 2690,
-      "targetDoorId": "door-11"
+      "targetDoorId": "door-11",
+      "color": "purple",
+      "shape": "circle"
     },
     {
       "id": "door-11",
       "type": "door",
-      "position": 2900
+      "position": 2900,
+      "breakable": true
+    },
+    {
+      "id": "conveyor-choice",
+      "type": "conveyor",
+      "position": 1990,
+      "width": 160,
+      "multiplier": 1.4
     }
   ],
   "meta": {
-    "title": "スイッチの えらび方",
+    "title": "3つの 門と 色のせんたく",
     "bg": "twilight",
-    "hint": "とぶ方法と 見おくる方法を 考えよう",
+    "hint": "それぞれの色を 見て 正しいボタンを えらぼう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
-      "door": "門の 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
-      "skip": "あかいスイッチを どうやって こえたかな"
+      "door": "門を あけるボタンを さがしてみよう",
+      "trap": "色と形が ちがう ボタンを おさないでね",
+      "skip": "見おくりで てんすうを あげよう"
     }
-  }
+  },
+  "optionalObjectives": true
 }

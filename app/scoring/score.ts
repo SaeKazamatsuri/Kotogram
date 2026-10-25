@@ -77,6 +77,7 @@ const knownReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-19": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 41, product: 26732 },
   "stage-2": { ...knownReferences["stage-2"]!, stageVersion: "2026-10-20-r1" },
   "stage-3": { stageVersion: "2026-10-20-r1", scoringVersion: SCORING_VERSION, timeTicks: 834, characters: 14, product: 11676 },
   "stage-5": { ...knownReferences["stage-5"]!, stageVersion: "2026-10-20-r1" },
@@ -84,6 +85,9 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-14": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 25, product: 16300 },
+  "stage-19": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 662, characters: 41, product: 27142 },
+  "stage-27": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 1090, characters: 29, product: 31610 },
   "stage-30": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 1438, characters: 60, product: 86280 },
   "stage-11": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 852, characters: 27, product: 23004 },
   "stage-15": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 877, characters: 13, product: 11401 },
@@ -92,7 +96,7 @@ const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-8": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 592, characters: 30, product: 17760 },
   "stage-9": { ...knownReferences["stage-9"]!, stageVersion: "2026-10-25-r3" },
   "stage-10": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 632, characters: 30, product: 18960 },
-  "stage-19": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 41, product: 26732 },
+
   "stage-18": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 9, product: 5868 },
   "stage-13": { ...knownReferences["stage-13"]!, stageVersion: "2026-10-25-r2" },
   "stage-25": { ...knownReferences["stage-25"]!, stageVersion: "2026-10-25-r2" },

@@ -77,9 +77,9 @@
     },
     {
       "id": "stage-14",
-      "title": "みおくるか とぶか",
+      "title": "色と形の 二つの門",
       "file": "/stages/stage-14.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-15",
@@ -107,9 +107,9 @@
     },
     {
       "id": "stage-19",
-      "title": "おつかいと おばけの道",
+      "title": "色と おばけの えらぶ道",
       "file": "/stages/stage-19.json",
-      "version": "2026-10-25-r2"
+      "version": "2026-10-25-r3"
     },
     {
       "id": "stage-20",
@@ -155,9 +155,9 @@
     },
     {
       "id": "stage-27",
-      "title": "スイッチの えらび方",
+      "title": "3つの 門と 色のせんたく",
       "file": "/stages/stage-27.json",
-      "version": "2026-10-20-r1"
+      "version": "2026-10-25-r2"
     },
     {
       "id": "stage-28",

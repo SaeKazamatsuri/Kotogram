@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "おばけしゃがむ\nかべとぶ\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 662
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "おばけしゃがむ\nかべとぶ\n2かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 662
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "おばけしゃがむ\nかべとぶ\nめっちゃはしる\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 373
+      "expectedTicks": 378
     },
     {
       "name": "missing-actions",
@@ -40,7 +40,7 @@
       "role": "overall",
       "source": "おばけしゃがむ\nかべとぶ\nめっちゃはしる\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 373
+      "expectedTicks": 378
     },
     {
       "name": "without-crouch-hits-ghost",
@@ -55,6 +55,18 @@
       "source": "おばけしゃがむ\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "failed",
       "failureReason": "wall"
+    },
+    {
+      "name": "optional-coin-route",
+      "role": "regression",
+      "source": "おばけしゃがむ\nかべとぶ\n2かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
+      "expect": "cleared"
+    },
+    {
+      "name": "color-attribute-selectors",
+      "role": "regression",
+      "source": "おばけしゃがむ\nかべとぶ\nあかいぼたんみおくる\nきいろいぼたんみおくる\nみどりのぼたんおす\nあおいぼたんおす\nこいんとる",
+      "expect": "cleared"
     }
   ]
 }

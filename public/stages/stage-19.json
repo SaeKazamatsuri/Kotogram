@@ -5,8 +5,9 @@
   "requiredCoins": 2,
   "requiredSkips": 2,
   "learningObjectives": [
-    "2回のおつかいと おばけ・かべに ちがう動きで こたえよう",
-    "くりかえしながら べつの動きも 使おう"
+    "2つの ボタンの組を 見わけよう",
+    "おばけの前で 速さが かわるよ",
+    "コインと見おくりで 高得点を ねらおう"
   ],
   "objects": [
     {
@@ -14,7 +15,9 @@
       "type": "switch",
       "position": 340,
       "targetDoorId": "door-4",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "coin-2",
@@ -25,7 +28,9 @@
       "id": "safe-3",
       "type": "switch",
       "position": 570,
-      "targetDoorId": "door-4"
+      "targetDoorId": "door-4",
+      "color": "green",
+      "shape": "circle"
     },
     {
       "id": "door-4",
@@ -42,7 +47,9 @@
       "type": "switch",
       "position": 1100,
       "targetDoorId": "door-8",
-      "trap": true
+      "trap": true,
+      "color": "yellow",
+      "shape": "square"
     },
     {
       "id": "coin-6",
@@ -53,31 +60,42 @@
       "id": "safe-7",
       "type": "switch",
       "position": 1330,
-      "targetDoorId": "door-8"
+      "targetDoorId": "door-8",
+      "color": "blue",
+      "shape": "star"
     },
     {
       "id": "door-8",
       "type": "door",
-      "position": 1540
+      "position": 1540,
+      "vaultable": true
     },
     {
       "id": "wall-after-routines",
       "type": "wall",
       "position": 1740
+    },
+    {
+      "id": "slow-floor-between",
+      "type": "conveyor",
+      "position": 810,
+      "width": 110,
+      "multiplier": 0.8
     }
   ],
   "meta": {
-    "title": "おつかいと おばけの道",
+    "title": "色と おばけの えらぶ道",
     "bg": "sunset",
-    "hint": "2回のおつかいの あいだに おばけ、さいごに かべが あるよ",
+    "hint": "2組の ボタンの色と 速さのちがいを 見よう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
+      "coin": "コインを 取ると 点数があがるよ",
       "door": "門の 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
-      "skip": "あかいスイッチを どうやって こえたかな"
+      "trap": "×や□の ボタンに 気をつけよう",
+      "skip": "見おくりの せいこうで 点数があがるよ"
     }
-  }
+  },
+  "optionalObjectives": true
 }
