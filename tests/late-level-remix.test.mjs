@@ -24,7 +24,24 @@ for (const n of [22, 28]) {
         ticks: game.elapsedTicks, chars: [...item.source.replace(/\\s/g,"")].length, bp: objectiveProgress(game).completionBp,
         opened: game.doors.filter(d => d.open).length, broken: game.doors.filter(d => d.broken).length });
     }
-    console.log("LATE_LEVEL_REPORT " + JSON.stringify({ n, report }));
+    for (const [index, actual] of report.entries()) {
+      const expected = checks.cases[index];
+      assert.equal(actual.status, expected.expect, expected.name);
+      if (expected.expectedTicks !== undefined) assert.equal(actual.ticks, expected.expectedTicks, expected.name);
+      if (expected.failureReason !== undefined) assert.equal(actual.reason, expected.failureReason, expected.name);
+    }
+    assert.equal(report.find(item => item.role === "beginner").bp, 10000);
+    assert.equal(report.find(item => item.role === "overall").bp, 10000);
+    if (n === 22) {
+      assert.equal(report.find(item => item.name === "optional-last-gate-route").bp, 6133);
+      assert.equal(report.find(item => item.name === "optional-last-gate-route").broken, 1);
+      assert.equal(report.find(item => item.name === "color-shape-selectors").bp, 10000);
+    }
+    if (n === 28) {
+      assert.equal(report.find(item => item.name === "fragile-floor-required").reason, "hole");
+      assert.equal(report.find(item => item.name === "alternative-last-gate").broken, 1);
+      assert.equal(report.find(item => item.name === "alternative-last-gate").bp, 7013);
+    }
     assert.ok(getScoreReference(stage.id, "2026-10-25-r2"));
   });
 }
