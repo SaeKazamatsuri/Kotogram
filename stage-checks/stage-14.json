@@ -37,7 +37,7 @@
     },
     {
       "name": "overall-known-best",
-      "role": "overall",
+      "role": "regression",
       "source": "めっちゃはしる\n2かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 373
@@ -69,7 +69,7 @@
     },
     {
       "name": "mixed-attributes-sprint",
-      "role": "regression",
+      "role": "overall",
       "source": "めっちゃはしる\nあかとほしぼたんみおくる\nまるときいろぼたんおす",
       "expect": "cleared",
       "expectedTicks": 373
