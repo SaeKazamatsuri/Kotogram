@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "かべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 729
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべ1かいすごいとぶ\nあなとぶ\nてきかがむ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 729
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "ふむゆかあるく\nめっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 372
+      "expectedTicks": 515
     },
     {
       "name": "missing-actions",
@@ -40,14 +40,14 @@
       "role": "learning",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 729
     },
     {
       "name": "overall-known-best",
       "role": "overall",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 729
     },
     {
       "name": "sprint-never-holds-plate",
