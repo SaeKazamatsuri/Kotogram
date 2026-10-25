@@ -40,7 +40,7 @@ export type GameStage = {
 export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
-export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null };
+export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
 export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape };
@@ -179,7 +179,7 @@ function makeCoins(stage: GameStage): Coin[] {
 
 function makeDoors(stage: GameStage): Door[] {
   return fromStage(stage, "door")
-    .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true, autoCloseTicks: typeof object.autoCloseTicks === "number" ? object.autoCloseTicks : 0, openedUntilTick: null }))
+    .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true, autoCloseTicks: typeof object.autoCloseTicks === "number" ? object.autoCloseTicks : 0, openedUntilTick: null, passed: false }))
     .sort((a, b) => a.x - b.x);
 }
 
@@ -543,7 +543,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     }
     wall.cleared = true;
   }
-  const door = game.doors.find((item) => !item.open && !item.vaulted && front >= item.x);
+  const door = game.doors.find((item) => !item.open && !item.vaulted && !item.passed && front >= item.x);
   if (door) {
     if (door.vaultable && game.powerJumpActive && game.py <= GAME.groundY - GAME.doorHeight - 4) {
       door.vaulted = true;
@@ -551,6 +551,9 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
       fail(game, "door");
       return game.status;
     }
+  }
+  for (const item of game.doors) {
+    if (game.px > item.x + GAME.doorWidth) item.passed = true;
   }
   const ghost = game.ghosts.find((g) => !g.cleared && front >= g.x);
   if (ghost) {
