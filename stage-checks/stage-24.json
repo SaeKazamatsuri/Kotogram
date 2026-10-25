@@ -19,7 +19,7 @@
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
+      "source": "ふむゆかあるく\nめっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
       "expectedTicks": 372
     },
@@ -48,6 +48,19 @@
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
       "expectedTicks": 652
+    },
+    {
+      "name": "sprint-never-holds-plate",
+      "role": "negative",
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
+      "expect": "failed",
+      "failureReason": "door"
+    },
+    {
+      "name": "pace-switch-opens-plate",
+      "role": "regression",
+      "source": "ふむゆかあるく\nめっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
+      "expect": "cleared"
     }
   ]
 }
