@@ -8,6 +8,8 @@ export type GameAudioSnapshot = {
   clearedGhosts: Set<string>;
   collectedCoins: Set<string>;
   openDoors: Set<string>;
+  brokenDoors: Set<string>;
+  vaultedDoors: Set<string>;
 };
 
 export function snapshotGameAudio(game: GameState): GameAudioSnapshot {
@@ -18,6 +20,8 @@ export function snapshotGameAudio(game: GameState): GameAudioSnapshot {
     clearedGhosts: new Set(game.ghosts.filter((ghost) => ghost.cleared).map((ghost) => ghost.id)),
     collectedCoins: new Set(game.coins.filter((coin) => coin.collected).map((coin) => coin.id)),
     openDoors: new Set(game.doors.filter((door) => door.open).map((door) => door.id)),
+    brokenDoors: new Set(game.doors.filter((door) => door.broken).map((door) => door.id)),
+    vaultedDoors: new Set(game.doors.filter((door) => door.vaulted).map((door) => door.id)),
   };
 }
 
@@ -30,6 +34,8 @@ export function gameAudioEvents(before: GameAudioSnapshot, after: GameState): So
   if (after.coins.some((coin) => coin.collected && !before.collectedCoins.has(coin.id))) sounds.push("score");
   if (after.walls.some((wall) => wall.cleared && !before.clearedWalls.has(wall.id))
     || after.ghosts.some((ghost) => ghost.cleared && !before.clearedGhosts.has(ghost.id))) sounds.push("avoid");
-  if (after.doors.some((door) => door.open && !before.openDoors.has(door.id))) sounds.push("confirm");
+  if (after.doors.some((door) => door.broken && !before.brokenDoors.has(door.id))) sounds.push("door_break");
+  if (after.doors.some((door) => door.vaulted && !before.vaultedDoors.has(door.id))) sounds.push("door_vault");
+  if (after.doors.some((door) => door.open && !door.broken && !before.openDoors.has(door.id))) sounds.push("confirm");
   return sounds;
 }
