@@ -48,6 +48,12 @@
       "source": "かべとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 652
+    },
+    {
+      "name": "optional-coin-low-score",
+      "role": "regression",
+      "source": "かべ1かいすごいじゃんぷ\nおばけしゃがむ",
+      "expect": "cleared"
     }
   ]
 }
