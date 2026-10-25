@@ -8,7 +8,6 @@ const summary=summarizeCompetition(rows);
 if (rows.length!==30) throw new Error("Expected 30 verified stages");
 if(process.argv.includes("--markdown")){
   const list = values=>values.length?values.map(x=>x.replace("stage-","")).join(", "):"なし";
-  const line=(name,r)=>name+"："+r.ticks+"tick / "+r.characters+"文字 / 得点"+r.score.toFixed(1);
   console.log("# 全30ステージ・競技ルート比較評価");
   console.log("");
   console.log("データ：`stage-checks/stage-*.json` に登録された "+summary.registeredRoutes+" 経路を固定60Hzのゲームエンジンで再実行。成功 "+summary.successfulRoutes+" 経路。");
