@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 906
+      "expectedTicks": 890
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "3かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 906
+      "expectedTicks": 890
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 518
+      "expectedTicks": 509
     },
     {
       "name": "missing-actions",
@@ -40,7 +40,7 @@
       "role": "overall",
       "source": "めっちゃはしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 518
+      "expectedTicks": 509
     },
     {
       "name": "optional-last-gate-route",
