@@ -5,30 +5,29 @@
     {
       "name": "beginner-explicit-decision",
       "role": "beginner",
-      "source": "1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\n1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 846
+      "expectedTicks": 592
     },
     {
       "name": "short-explicit-decision",
       "role": "short",
-      "source": "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 846
+      "expectedTicks": 592
     },
     {
       "name": "fast-explicit-decision",
       "role": "fast",
-      "source": "はしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "はしる\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 651
+      "expectedTicks": 456
     },
     {
-      "name": "old-implicit-bypass-no-longer-clears",
-      "role": "negative",
-      "source": "3かいくりかえす\nこいんとる\nすいっちおす\nおわり",
-      "expect": "failed",
-      "failureReason": "skip"
+      "name": "optional-coin-without-deliberate-skip",
+      "role": "regression",
+      "source": "2かいくりかえす\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared"
     },
     {
       "name": "watchers-press-dangerous-switch",
@@ -52,18 +51,24 @@
       "failureReason": "trap"
     },
     {
-      "name": "only-two-deliveries",
+      "name": "only-one-delivery",
       "role": "negative",
-      "source": "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "1かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "failed",
       "failureReason": "door"
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "はしる\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "source": "はしる\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 651
+      "expectedTicks": 456
+    },
+    {
+      "name": "color-shape-switches",
+      "role": "regression",
+      "source": "あかいぼたんみおくる\nむらさきのぼたんみおくる\nまるのぼたんおす\nしかくのぼたんおす\nこいんとる",
+      "expect": "cleared"
     }
   ]
 }
