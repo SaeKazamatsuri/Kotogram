@@ -90,5 +90,6 @@
       "trap": "△と×の あぶないボタンは おさないでね"
     }
   },
-  "optionalObjectives": true
+  "optionalObjectives": true,
+  "secretDoorRiskBp": 8300
 }
