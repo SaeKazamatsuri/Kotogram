@@ -61,6 +61,13 @@
       "source": "わーぷにはいる\nもろいゆかとぶ\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 906
+    },
+    {
+      "name": "p2-medium-pace",
+      "role": "regression",
+      "source": "はしる\nもろいゆかとぶ\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 895
     }
   ]
 }
