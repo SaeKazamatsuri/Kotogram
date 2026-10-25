@@ -95,7 +95,8 @@ test("whitespace, tab and digits normalize without indentation semantics", () =>
   assert.equal(normalizeLine("かべ３かいとぶ"), "かべ3かいとぶ");
   assert.deepEqual(valid("　かべ　とぶ　").rules, valid("かべとぶ").rules);
   assert.deepEqual(valid("かべ\tとぶ").rules, valid("かべとぶ").rules);
-  assert.equal(analyzeProgram("カベとぶ").diagnostics[0].code, "unknown");
+  assert.deepEqual(valid("カベとぶ").rules, valid("かべとぶ").rules);
+  assert.equal(analyzeProgram("カベのようななにかをとぶ").diagnostics[0].code, "unknown");
 });
 
 test("vocabulary extensions work without substring guessing", () => {
@@ -223,4 +224,19 @@ test("hints can be expressed using alternative obstacle names", () => {
   assert.deepEqual(valid("もんをすごいじゃんぷ").rules[0].conds, ["door"]);
   assert.deepEqual(valid("おそいゆかをあるく").rules[0].conds, ["conveyor"]);
   assert.deepEqual(valid("ひびがみえたらとぶ").rules[0].conds, ["fragileFloor"]);
+});
+
+test("mixed hiragana, katakana, kanji and printed symbols share the same switch rule", () => {
+  const base = valid("みどりとあかのぼたんをおす").rules;
+  for (const source of [
+    "みどりとあかのボタンをおす",
+    "緑と赤のボタンを押す".replace("押す", "おす"),
+    "ミドリとアカのボタンをオス",
+  ]) {
+    assert.deepEqual(valid(source).rules, base, source);
+  }
+  assert.deepEqual(valid("あおい☆のボタンをおす").rules, valid("あおいほしのぼたんをおす").rules);
+  assert.deepEqual(valid("赤い×のボタンをみおくる").rules, valid("あかいばつのぼたんをみおくる").rules);
+  assert.deepEqual(valid("門をすごいジャンプ").rules, valid("とびらをすごいじゃんぷ").rules);
+  assert.deepEqual(valid("壁があったらジャンプ").rules, valid("かべがあったらじゃんぷ").rules);
 });
