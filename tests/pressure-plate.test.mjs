@@ -9,7 +9,7 @@ import { suggestedStageWords } from "../app/stage/vocabulary.ts";
 const read=p=>JSON.parse(readFileSync(new URL("../"+p,import.meta.url),"utf8"));
 const basic={goal:800,scrollSpeed:3,objects:[
  {id:"plate",type:"pressurePlate",position:300,width:95,holdTicks:24,targetDoorId:"gate"},
- {id:"gate",type:"door",position:480},
+ {id:"gate",type:"door",position:540},
 ]};
 const replay=(stage,source)=>{
  const parsed=analyzeProgram(source);
