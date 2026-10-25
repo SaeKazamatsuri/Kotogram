@@ -148,7 +148,7 @@ function makeBarriers(stage: GameStage, type: "wall" | "ghost", legacy: unknown)
       const movingGhost = type === "ghost" && source && isFiniteNumber(source.patrolRange) &&
         isFiniteNumber(source.patrolPeriod) && source.patrolRange > 0 && source.patrolPeriod >= 40;
       return {
-        id: typeof source?.id === "string" ? source.id : type + ":" + i,
+        id: type + ":" + i,
         x,
         cleared: false,
         ...(movingGhost ? {
