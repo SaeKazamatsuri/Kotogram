@@ -112,7 +112,7 @@ test("every publicly listed stage has a matching replay configuration", () => {
     ["stage-5", stage5, "かべとあなとぶ\nおばけしゃがむ"],
     ["stage-6", stage6, "こいんとる\nかべとぶ"],
     ["stage-7", stage7, "すいっちおす\nかべとぶ"],
-    ["stage-8", stage8, "3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり"],
+    ["stage-8", stage8, "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり"],
   ]) {
     const run = runToCompletion(createGame(stage, analyzeProgram(source).program));
     assert.equal(run.status, "cleared");
@@ -176,5 +176,5 @@ test("eighth stage now permits implicit low-score objectives but preserves old r
   const implicit = "3かいくりかえす\nこいんとる\nすいっちおす\nおわり";
   const oldGame = runToCompletion(createGame(stage8, analyzeProgram(implicit).program));
   assert.equal(oldGame.status, "cleared");
-  assert.equal(verifyRunResult({ stageId: "stage-8", source: implicit, elapsedTicks: oldGame.elapsedTicks }), oldGame.elapsedTicks);
+  assert.equal(verifyRunResult({ stageId: "stage-8", source: implicit, elapsedTicks: oldGame.elapsedTicks, completionBp: 4000 }), oldGame.elapsedTicks);
 });
