@@ -132,6 +132,7 @@ const secretDoorReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const riskBalancedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-14": { stageVersion: "2026-10-26-r1", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 25, product: 16300 },
   "stage-8": { stageVersion: "2026-10-25-r5", scoringVersion: SCORING_VERSION, timeTicks: 592, characters: 30, product: 17760 },
   "stage-10": { stageVersion: "2026-10-25-r5", scoringVersion: SCORING_VERSION, timeTicks: 632, characters: 30, product: 18960 },
 };
