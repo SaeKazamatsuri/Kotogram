@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -9,7 +9,7 @@ export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triang
 export function switchAppearance(input: { trap: boolean; color?: SwitchColor; shape?: SwitchShape }): { color: SwitchColor; shape: SwitchShape } {
   return { color: input.color ?? (input.trap ? "red" : "green"), shape: input.shape ?? (input.trap ? "cross" : "circle") };
 }
-export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip";
+export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
 export type GameInstruction =
@@ -39,7 +39,7 @@ export type GameStage = {
 export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
-export type Door = { id: string; x: number; open: boolean };
+export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean };
 export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape };
 export type GameState = {
   status: GameStatus;
@@ -53,6 +53,7 @@ export type GameState = {
   jumpSensorProfile: "legacy" | "centered-holes";
   crouchUntilTick: number;
   jumpReadyTick: number;
+  powerJumpActive: boolean;
   walls: Barrier[];
   ghosts: Barrier[];
   holes: Hole[];
@@ -103,6 +104,7 @@ export const GAME = {
   switchPressRange: 48,
   doorWidth: 30,
   doorHeight: 112,
+  doorBreakRange: 60,
   coinRadius: 13,
   defaultHoleWidth: 80,
   defaultGoal: 800,
@@ -171,7 +173,7 @@ function makeCoins(stage: GameStage): Coin[] {
 
 function makeDoors(stage: GameStage): Door[] {
   return fromStage(stage, "door")
-    .map((object) => ({ id: object.id as string, x: object.position as number, open: false }))
+    .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true }))
     .sort((a, b) => a.x - b.x);
 }
 
@@ -215,6 +217,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     jumpSensorProfile: stage.jumpSensorProfile === "centered-holes" ? "centered-holes" : "legacy",
     crouchUntilTick: -1,
     jumpReadyTick: 0,
+    powerJumpActive: false,
     walls,
     ghosts,
     holes,
@@ -271,6 +274,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       if (target && target.x - game.px <= GAME.switchPressRange) found.set(target.id, target);
       continue;
     }
+    if (condition === "door") {
+      const target = nextTarget(game.doors.filter((door) => !door.open && !door.vaulted), game.px);
+      if (target && target.x - game.px <= GAME.doorBreakRange) found.set(target.id, target);
+      continue;
+    }
     if (condition === "coin") {
       const target = nextTarget(game.coins.filter((coin) => !coin.collected), game.px);
       if (target && target.x - game.px <= GAME.coinPickupRange) found.set(target.id, target);
@@ -297,6 +305,7 @@ function issueCrouch(game: GameState) {
 function issueJump(game: GameState, velocity: number = GAME.jumpVelocity): boolean {
   if (game.elapsedTicks < game.jumpReadyTick || game.vy !== 0 || Math.abs(game.py - (GAME.groundY - GAME.epsilon)) > 0.1) return false;
   game.vy = velocity;
+  game.powerJumpActive = velocity === GAME.powerJumpVelocity;
   game.jumpReadyTick = game.elapsedTicks + GAME.jumpCooldownTicks;
   return true;
 }
@@ -340,6 +349,18 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
     }
     target.activated = true;
     door.open = true;
+    return true;
+  }
+  if (action === "breakDoor") {
+    const target = game.doors.find((door) =>
+      door.breakable && !door.open && !door.vaulted &&
+      (sensedTargetId === undefined || door.id === sensedTargetId) &&
+      door.x + GAME.pad >= game.px &&
+      door.x - game.px <= GAME.doorBreakRange
+    );
+    if (!target) return false;
+    target.broken = true;
+    target.open = true;
     return true;
   }
   if (action === "collect") {
@@ -446,6 +467,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   if (game.py > GAME.groundY - GAME.epsilon && !overHole(game, front)) {
     game.py = GAME.groundY - GAME.epsilon;
     game.vy = 0;
+    game.powerJumpActive = false;
   }
   game.elapsedTicks += 1;
   if (game.py < GAME.groundY - GAME.epsilon - 8) {
@@ -469,10 +491,14 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     }
     wall.cleared = true;
   }
-  const door = game.doors.find((item) => !item.open && front >= item.x);
+  const door = game.doors.find((item) => !item.open && !item.vaulted && front >= item.x);
   if (door) {
-    fail(game, "door");
-    return game.status;
+    if (door.vaultable && game.powerJumpActive && game.py <= GAME.groundY - GAME.doorHeight - 4) {
+      door.vaulted = true;
+    } else {
+      fail(game, "door");
+      return game.status;
+    }
   }
   const ghost = game.ghosts.find((g) => !g.cleared && front >= g.x);
   if (ghost) {
