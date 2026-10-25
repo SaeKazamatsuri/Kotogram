@@ -118,7 +118,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     const chestLinks: { path:string; keyId:string; x:number }[] = [];
     let coinCount = 0;
     let trapSwitchCount = 0;
-    let explicitGoalCount = 0;
+    const explicitGoals: { x: number; bonusBp: unknown; id: unknown; path: string }[] = [];
     let furthestObstacle = 0;
     for (const [i, obj] of value.objects.entries()) {
       const path = `objects[${i}]`;
@@ -220,10 +220,11 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         if (obj.type === "fragileFloor" && (!Number.isSafeInteger(obj.breakAfterTicks) || (obj.breakAfterTicks as number) < 5 || (obj.breakAfterTicks as number) > 600)) issues.push({ path: path + ".breakAfterTicks", message: "fragile floor timeout must be between 5 and 600 ticks" });
       }
       if (obj.type === "coin") coinCount++;
-      if (obj.type === "goal") {
-        explicitGoalCount++;
-        if (value.goal !== undefined && obj.position !== value.goal) issues.push({ path, message: "goal position disagrees with stage.goal" });
+      if (obj.type === "goal" && isNonnegativeFinite(obj.position)) {
+        explicitGoals.push({ x: obj.position, bonusBp: obj.bonusBp, id: obj.id, path });
       }
+      if (obj.bonusBp !== undefined && obj.type !== "goal")
+        issues.push({ path: path + ".bonusBp", message: "bonusBp is only supported for goals" });
       if (obj.type === "hole") {
         if (obj.width !== undefined && !isPositiveFinite(obj.width)) issues.push({ path: path + ".width", message: "hole width must be positive" });
       } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate" && obj.type !== "movingPlatform" && obj.type !== "bridge") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
@@ -273,7 +274,25 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     }
     if (Number.isSafeInteger(value.requiredCoins) && (value.requiredCoins as number) > coinCount) issues.push({ path: "requiredCoins", message: "requiredCoins exceeds available coins" });
     if (Number.isSafeInteger(value.requiredSkips) && (value.requiredSkips as number) > trapSwitchCount) issues.push({ path: "requiredSkips", message: "requiredSkips exceeds available trap switches" });
-    if (explicitGoalCount > 1) issues.push({ path: "objects", message: "multiple goals" });
+    if (explicitGoals.length > 2) issues.push({ path: "objects", message: "at most two goals are supported" });
+    if (explicitGoals.length === 1) {
+      const only = explicitGoals[0]!;
+      if (only.x !== value.goal) issues.push({ path: only.path, message: "goal position disagrees with stage.goal" });
+      if (only.bonusBp !== undefined) issues.push({ path: only.path + ".bonusBp", message: "single-goal stages cannot set bonusBp" });
+    }
+    if (explicitGoals.length === 2) {
+      const [near, far] = [...explicitGoals].sort((a,b)=>a.x-b.x);
+      if (near.x < GAME.playerScreenX + GAME.approachBase + 160)
+        issues.push({ path: near.path + ".position", message: "near goal needs a clear starting approach" });
+      if (far.x - near.x < 240) issues.push({ path: far.path + ".position", message: "goals must be at least 240 units apart" });
+      if (far.x !== value.goal) issues.push({ path: far.path, message: "far goal must match stage.goal" });
+      if (typeof near.id !== "string" || !near.id.trim() || typeof far.id !== "string" || !far.id.trim())
+        issues.push({ path: "objects", message: "two goals require unique explicit IDs" });
+      if (!Number.isSafeInteger(near.bonusBp) || (near.bonusBp as number) < 5000 || (near.bonusBp as number) > 9500)
+        issues.push({ path: near.path + ".bonusBp", message: "near goal bonusBp must be 5000..9500" });
+      if (far.bonusBp !== 10000)
+        issues.push({ path: far.path + ".bonusBp", message: "far goal bonusBp must be 10000" });
+    }
     if (isPositiveFinite(value.goal) && value.goal < furthestObstacle + GAME.approachBase + 160) {
       issues.push({ path: "goal", message: "goal is too close to final obstacle; engine would silently move it" });
     }
