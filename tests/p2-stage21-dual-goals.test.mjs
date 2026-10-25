@@ -26,7 +26,7 @@ test("published stage21 offers quick and treasure finish while keeping all legac
  assert.equal(far.selectedGoalId,"treasure-goal");
  assert.equal(near.elapsedTicks,670);
  assert.equal(far.elapsedTicks,463);
- assert.equal(objectiveProgress(near).completionBp,5000);
+ assert.equal(objectiveProgress(near).completionBp,6600);
  assert.equal(objectiveProgress(far).completionBp,10000);
  for(const target of [near,far]){
    const source=target===near?checks.cases.find(x=>x.role==="beginner").source:checks.cases.find(x=>x.role==="overall").source;
