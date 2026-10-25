@@ -66,6 +66,13 @@
       "source": "とびらじゃんぷ",
       "expect": "failed",
       "failureReason": "door"
+    },
+    {
+      "name": "mixed-attributes-sprint",
+      "role": "regression",
+      "source": "めっちゃはしる\nあかとほしぼたんみおくる\nまるときいろぼたんおす",
+      "expect": "cleared",
+      "expectedTicks": 373
     }
   ]
 }
