@@ -48,7 +48,7 @@ test("ステージ8の実行画面にはくりかえしの進行状況を描く"
   });
   renderGameFrame(ctx, game, resolveScenePalette("sunset"));
   assert.ok(calls.some(([method, label]) => method === "fillText" && label === "くりかえし 0 / 3"));
-  assert.ok(calls.some(([method, label]) => method === "fillText" && label === "こいん 0 / 3"));
+  assert.ok(calls.some(([method, label]) => method === "fillText" && label === "こいん 0 / 2"));
 });
 
 test("idle preview clouds keep stable coordinates across clock changes", () => {

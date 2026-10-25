@@ -1,12 +1,12 @@
 {
   "id": "stage-8",
-  "goal": 2600,
+  "goal": 1840,
   "scrollSpeed": 3,
-  "requiredCoins": 3,
+  "requiredCoins": 2,
   "learningObjectives": [
-    "スイッチを見送る命令を使う",
-    "みおくる・とる・おすを順番に実行する",
-    "同じ手順を3回くりかえして短く書く"
+    "色や形で ボタンを見分けよう",
+    "2つの道で みおくる・おすを考えよう",
+    "コインは とるほど てんすうが上がる"
   ],
   "objects": [
     {
@@ -14,7 +14,9 @@
       "type": "switch",
       "position": 350,
       "targetDoorId": "door-1",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "coin-1",
@@ -25,7 +27,9 @@
       "id": "safe-1",
       "type": "switch",
       "position": 650,
-      "targetDoorId": "door-1"
+      "targetDoorId": "door-1",
+      "color": "green",
+      "shape": "circle"
     },
     {
       "id": "door-1",
@@ -37,7 +41,9 @@
       "type": "switch",
       "position": 1040,
       "targetDoorId": "door-2",
-      "trap": true
+      "trap": true,
+      "color": "purple",
+      "shape": "star"
     },
     {
       "id": "coin-2",
@@ -48,47 +54,25 @@
       "id": "safe-2",
       "type": "switch",
       "position": 1340,
-      "targetDoorId": "door-2"
+      "targetDoorId": "door-2",
+      "color": "yellow",
+      "shape": "square"
     },
     {
       "id": "door-2",
       "type": "door",
       "position": 1540
-    },
-    {
-      "id": "trap-3",
-      "type": "switch",
-      "position": 1730,
-      "targetDoorId": "door-3",
-      "trap": true
-    },
-    {
-      "id": "coin-3",
-      "type": "coin",
-      "position": 1890
-    },
-    {
-      "id": "safe-3",
-      "type": "switch",
-      "position": 2030,
-      "targetDoorId": "door-3"
-    },
-    {
-      "id": "door-3",
-      "type": "door",
-      "position": 2230
     }
   ],
   "meta": {
-    "title": "3回のおつかい",
+    "title": "色と 形のボタン",
     "bg": "sunset",
-    "hint": "あかいスイッチは『すいっちをみおくる』で見送ろう。つぎにコインをとって、みどりのスイッチをおす。これを3回くりかえそう。",
+    "hint": "○や×を 見て、ボタンをえらぼう。コインも とってみよう",
     "failHints": {
-      "trap": "あかいスイッチをおすと失敗。『すいっちみおくる』で見送ってね",
-      "door": "みどりのスイッチをおすためには、先にあかいスイッチを見送ってコインを取ろう",
-      "coin": "3まいの コインを あつめよう",
-      "skip": "3つのあかいスイッチを『みおくる』で見送ってね"
+      "trap": "×や☆の あぶないボタンに きをつけよう",
+      "door": "あけられる ボタンを さがそう"
     }
   },
-  "requiredSkips": 3
+  "requiredSkips": 2,
+  "optionalObjectives": true
 }

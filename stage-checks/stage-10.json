@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 632
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "2かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 632
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 373
+      "expectedTicks": 362
     },
     {
       "name": "missing-actions",
@@ -40,7 +40,19 @@
       "role": "overall",
       "source": "めっちゃはしる\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 373
+      "expectedTicks": 362
+    },
+    {
+      "name": "nonsecret-color-route",
+      "role": "regression",
+      "source": "むらさきのぼたんみおくる\nあかいぼたんみおくる\nあおいほしのぼたんおす\nみどりのぼたんおす\nこいんとる",
+      "expect": "cleared"
+    },
+    {
+      "name": "skip-optional-bonus-route",
+      "role": "regression",
+      "source": "あおいほしのぼたんおす\nみどりのぼたんおす",
+      "expect": "cleared"
     }
   ]
 }
