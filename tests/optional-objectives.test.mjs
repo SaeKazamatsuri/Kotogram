@@ -30,7 +30,7 @@ test("optional objectives permit clears with none, some or all collected", () =>
   assert.equal(all.status, "cleared");
   assert.deepEqual(objectiveProgress(empty), { collected: 0, coinTarget: 2, skipped: 0, skipTarget: 2, completionBp: 1200 });
   assert.deepEqual(objectiveProgress(all), { collected: 2, coinTarget: 2, skipped: 2, skipTarget: 2, completionBp: 10000 });
-  assert.equal(objectiveProgress(play("こいんとる")).completionBp, 3000);
+  assert.equal(objectiveProgress(play("こいんとる")).completionBp, 4000);
 });
 test("legacy-required objectives still fail; trap and unopened door remain fatal", () => {
   const old = play("あるく", { ...noDoorStage, optionalObjectives: false });
@@ -51,9 +51,9 @@ test("all 3 scores use same rate and adjusted bests rank progress rather than ra
   assert.equal(scores.time, 480);
   assert.equal(scores.chars, 600);
   assert.equal(scores.overall, 2400);
-  assert.ok(compareRuns("time", complete, shortcut) > 0);
-  assert.equal(selectBestRuns([complete, shortcut]).time?.runId, "shortcut");
-  assert.equal(selectBestRuns([complete, shortcut]).chars?.runId, "shortcut");
+  assert.ok(compareRuns("time", complete, shortcut) < 0);
+  assert.equal(selectBestRuns([complete, shortcut]).time?.runId, "complete");
+  assert.equal(selectBestRuns([complete, shortcut]).chars?.runId, "complete");
   const reference = { ...shortcut, completionBp: 10000 };
   assert.ok(calculateScores(ref, reference).overall > scores.overall);
 });
