@@ -11,7 +11,7 @@ import { verifyRunResult } from "../worker/validation.mjs";
 
 const read = (path) => JSON.parse(readFileSync(new URL("../"+path,import.meta.url),"utf8"));
 const manifest = read("public/stages/manifest.json");
-const expectedFrontier = new Map([["stage-21",4],["stage-22",3],["stage-27",3],["stage-28",3]]);
+const expectedFrontier = new Map([["stage-21",3],["stage-22",3],["stage-27",3],["stage-28",3]]);
 
 test("P2 promotion registers at least 3 objectively distinct choices in four advanced stages", () => {
   for (const [stageId, expected] of expectedFrontier) {
@@ -47,16 +47,16 @@ test("stage 21 makes saving code vs collecting chest rewards a meaningful scored
   const short=run(lookup("short").source);
   const overall=run(lookup("overall").source);
   assert.equal(short.elapsedTicks,670);
-  assert.equal(overall.elapsedTicks,383);
-  assert.equal(objectiveProgress(short).completionBp,6500);
-  assert.equal(objectiveProgress(overall).completionBp,6500);
+  assert.equal(overall.elapsedTicks,463);
+  assert.equal(objectiveProgress(short).completionBp,4290);
+  assert.equal(objectiveProgress(overall).completionBp,10000);
   const fullBonus=run(checks.cases.find((item)=>item.name==="p2-full-bonus-compact-sprint").source);
   assert.equal(fullBonus.elapsedTicks,383);
-  assert.equal(objectiveProgress(fullBonus).completionBp,10000);
+  assert.equal(objectiveProgress(fullBonus).completionBp,6600);
   const scored=(source,result)=>({source,runId:source,elapsedTicks:result.elapsedTicks,charCount:countSourceCharacters(source),completionBp:objectiveProgress(result).completionBp});
   const partial=scored(lookup("overall").source,overall);
   const full=scored(checks.cases.find((item)=>item.name==="p2-full-bonus-compact-sprint").source,fullBonus);
-  assert.ok(compareRuns("time",full,partial)<0);
+  assert.ok(compareRuns("time",partial,full)<0);
   assert.ok(compareRuns("overall",partial,full)<0);
 
 });

@@ -69,16 +69,16 @@ test("stage21's full bonus and skipped chest routes are deterministic and versio
     if(expected.expectedTicks!==undefined) assert.equal(actual.ticks,expected.expectedTicks,expected.name);
     if(expected.failureReason) assert.equal(actual.reason,expected.failureReason,expected.name);
   }
-  assert.equal(report.find(x=>x.role==="beginner")?.bp,10000);
-  assert.equal(report.find(x=>x.name==="key-without-opening-chest")?.bp,6500);
-  assert.equal(report.find(x=>x.name==="chest-without-picking-up-key")?.bp,6500);
-  assert.equal(report.find(x=>x.name==="optional-coin-low-score")?.bp,3000);
+  assert.equal(report.find(x=>x.role==="beginner")?.bp,6600);
+  assert.equal(report.find(x=>x.name==="key-without-opening-chest")?.bp,4290);
+  assert.equal(report.find(x=>x.name==="chest-without-picking-up-key")?.bp,4290);
+  assert.equal(report.find(x=>x.name==="optional-coin-low-score")?.bp,1980);
   assert.equal(report.find(x=>x.role==="fast")?.ticks,383);
-  assert.equal(report.find(x=>x.role==="overall")?.ticks,383);
+  assert.equal(report.find(x=>x.role==="overall")?.ticks,463);
   assert.equal(report.find(x=>x.role==="short")?.chars,14);
-  assert.equal(report.find(x=>x.role==="short")?.bp,6500);
-  assert.equal(report.find(x=>x.role==="overall")?.bp,6500);
-  assert.equal(report.find(x=>x.name==="p2-full-bonus-compact-sprint")?.bp,10000);
+  assert.equal(report.find(x=>x.role==="short")?.bp,4290);
+  assert.equal(report.find(x=>x.role==="overall")?.bp,10000);
+  assert.equal(report.find(x=>x.name==="p2-full-bonus-compact-sprint")?.bp,6600);
   assert.equal(getScoreReference("stage-21","2026-10-25-r2")?.timeTicks,670);
   assert.ok(getScoreReference("stage-21","2026-10-25-r3"));
 });

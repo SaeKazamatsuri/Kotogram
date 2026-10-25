@@ -119,9 +119,9 @@
     },
     {
       "id": "stage-21",
-      "title": "かぎと 宝箱の 得点",
+      "title": "かぎと 宝箱と 2つのゴール",
       "file": "/stages/stage-21.json",
-      "version": "2026-10-25-r3"
+      "version": "2026-10-25-r4"
     },
     {
       "id": "stage-22",
@@ -131,9 +131,9 @@
     },
     {
       "id": "stage-23",
-      "title": "7つのしれんと 動く足場",
+      "title": "7つのしれんと 上下する台",
       "file": "/stages/stage-23.json",
-      "version": "2026-10-25-r3"
+      "version": "2026-10-25-r4"
     },
     {
       "id": "stage-24",
