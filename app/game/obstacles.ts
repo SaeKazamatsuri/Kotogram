@@ -47,6 +47,17 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
       ctx.fillText(breeze, x + offset, GAME.groundY - 55 - ((Math.floor(offset / 44) + Math.floor(visualTick / 15)) % 3) * 27);
     }
   }
+  for (const plate of game.pressurePlates) {
+    const x=worldToScreenX(game,plate.x);
+    if(x > GAME.width || x+plate.w < 0) continue;
+    ctx.fillStyle=plate.activated ? "#47ad85" : "#6e81a4";
+    ctx.fillRect(x,GAME.groundY-10,plate.w,10);
+    ctx.fillStyle=plate.activated ? "#c0f8dc" : "#f8df99";
+    ctx.fillRect(x,GAME.groundY-18,plate.w * Math.min(1,plate.heldTicks/plate.holdTicks),5);
+    ctx.fillStyle="#26334b";
+    ctx.font="bold 15px sans-serif";
+    ctx.fillText(plate.activated ? "○" : "ふむ",x+8,GAME.groundY-21);
+  }
   for (const floor of game.conveyors) {
     const x = worldToScreenX(game, floor.x);
     if (x > GAME.width || x + floor.w < 0) continue;
