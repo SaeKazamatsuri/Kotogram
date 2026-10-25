@@ -35,6 +35,12 @@
       "source": "かべとあなとぶ\nてきかがむ",
       "expect": "cleared",
       "expectedTicks": 1446
+    },
+    {
+      "name": "bridge-replaces-third-jump",
+      "role": "regression",
+      "source": "かべとぶ\nおばけしゃがむ\n2かいくりかえす\nあなとぶ\nおわり",
+      "expect": "cleared"
     }
   ]
 }
