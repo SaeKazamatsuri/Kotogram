@@ -232,7 +232,7 @@ defineExpose({ getText });
           </div>
         </div>
       <div v-if="!composing" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
-        <pre class="m-0 box-border w-full whitespace-pre-wrap break-all p-4 text-[18px] font-bold leading-[1.7]" :style="{ transform: 'translateY(-' + taScrollTop + 'px)' }"><template v-for="(line, index) in highlightedLines" :key="index"><span v-for="(piece, pieceIndex) in line" :key="pieceIndex" :class="TOKEN_CLASS[piece.kind]">{{ piece.text }}</span><span v-if="index < highlightedLines.length - 1">{{ '\n' }}</span></template></pre>
+        <pre class="m-0 box-border w-full whitespace-pre-wrap break-all p-4 font-[inherit] text-[18px] font-bold leading-[1.7]" :style="{ transform: 'translateY(-' + taScrollTop + 'px)' }"><template v-for="(line, index) in highlightedLines" :key="index"><span v-for="(piece, pieceIndex) in line" :key="pieceIndex" :class="TOKEN_CLASS[piece.kind]">{{ piece.text }}</span><span v-if="index < highlightedLines.length - 1">{{ '\n' }}</span></template></pre>
       </div>
       <textarea
         ref="textarea"
