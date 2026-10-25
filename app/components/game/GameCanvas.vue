@@ -11,6 +11,7 @@ import { worldPaletteForStage } from "~/stage/world-map";
 import { renderGameFrame } from "~/game/renderer";
 import { failureAnimationDuration } from "~/game/character";
 import { gameAudioEvents, snapshotGameAudio } from "~/game/audio-events";
+import { objectiveProgress, type ObjectiveProgress } from "~/scoring/objectives";
 import { playSe, setGameBgmRate } from "~/game/audio";
 
 const props = defineProps<{
@@ -20,7 +21,7 @@ const props = defineProps<{
   sourceMap?: SourceMap;
 }>();
 const emit = defineEmits<{
-  (e: "clear", result: { elapsedTicks: number; seconds: number }): void;
+  (e: "clear", result: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress }): void;
   (e: "fail", payload: FailPayload & { lastExecutedLine: number | null }): void;
   (e: "trace", payload: { active: number[]; sustained: SustainedHighlight[]; monitoring: number[]; waiting: number | null; repeat: number | null; progress: string | null }): void;
 }>();
@@ -136,7 +137,7 @@ function loop(timestamp: number) {
 
   if (game.status === "cleared") {
     stop();
-    emit("clear", { elapsedTicks: game.elapsedTicks, seconds: elapsedSeconds(game) });
+    emit("clear", { elapsedTicks: game.elapsedTicks, seconds: elapsedSeconds(game), objectives: objectiveProgress(game) });
   } else if (game.status === "failed") {
     frame = requestAnimationFrame(animateFailure);
   } else {

@@ -94,6 +94,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
   )) issues.push({ path: "learningObjectives", message: "provide up to five short learning objectives" });
   if (value.requiredCoins !== undefined && (!Number.isSafeInteger(value.requiredCoins) || (value.requiredCoins as number) < 0)) issues.push({ path: "requiredCoins", message: "requiredCoins must be a nonnegative integer" });
   if (value.requiredSkips !== undefined && (!Number.isSafeInteger(value.requiredSkips) || (value.requiredSkips as number) < 0)) issues.push({ path: "requiredSkips", message: "requiredSkips must be a nonnegative integer" });
+  if (value.optionalObjectives !== undefined && typeof value.optionalObjectives !== "boolean") issues.push({ path: "optionalObjectives", message: "optionalObjectives must be a boolean" });
   if (isObject(value.meta) && value.meta.dictionary !== undefined) {
     const guide = value.meta.dictionary;
     if (!isObject(guide) || ["conditions", "actions", "examples"].some((key) =>

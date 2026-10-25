@@ -1,6 +1,7 @@
 import { normalizeLine } from "../language/parser.ts";
 
-export const SCORING_VERSION = "2026-v1";
+export const SCORING_VERSION = "2026-v2";
+export const PREVIOUS_SCORING_VERSION = "2026-v1";
 export const ENGINE_VERSION = "2026-core-v3";
 export const PREVIOUS_ENGINE_VERSION = "2026-core-v2";
 export const LANGUAGE_VERSION = "2026-language-v5";
@@ -33,6 +34,7 @@ export type ScoredRun = {
   elapsedTicks: number;
   charCount: number;
   source: string;
+  completionBp?: number;
 };
 
 export type BestRuns<T extends ScoredRun = ScoredRun> = {
@@ -89,10 +91,10 @@ const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-5": { ...revisedReferences["stage-5"]!, stageVersion: "2026-10-20-r2" },
 };
 
-export function getScoreReference(stageId: string, stageVersion: string): ScoreReference | null {
+export function getScoreReference(stageId: string, stageVersion: string, scoringVersion = SCORING_VERSION): ScoreReference | null {
   const value = [latestReferences[stageId], revisedReferences[stageId], knownReferences[stageId]]
     .find((reference) => reference?.stageVersion === stageVersion);
-  return value ? { stageId, ...value } : null;
+  return value && [SCORING_VERSION, PREVIOUS_SCORING_VERSION].includes(scoringVersion) ? { stageId, ...value, scoringVersion } : null;
 }
 
 export function countSourceCharacters(source: string): number {
@@ -113,24 +115,33 @@ export function runProduct(run: Pick<ScoredRun, "elapsedTicks" | "charCount">): 
   return product;
 }
 
-export function calculateScores(reference: ScoreReference, run: Pick<ScoredRun, "elapsedTicks" | "charCount">) {
+export function calculateScores(reference: ScoreReference, run: Pick<ScoredRun, "elapsedTicks" | "charCount" | "completionBp">) {
   positiveInteger(reference.timeTicks, "timeTicks");
   positiveInteger(reference.characters, "characters");
   positiveInteger(reference.product, "reference product");
   const product = runProduct(run);
+  const rate = normalizedCompletionBp(run) / 10000;
   return {
-    time: 1000 * reference.timeTicks / run.elapsedTicks,
-    chars: 1000 * reference.characters / run.charCount,
-    overall: 1000 * reference.product / product,
+    time: 1000 * reference.timeTicks / run.elapsedTicks * rate,
+    chars: 1000 * reference.characters / run.charCount * rate,
+    overall: 1000 * reference.product / product * rate,
   };
+}
+
+export function normalizedCompletionBp(run: { completionBp?: number }): number {
+  const bp = run.completionBp ?? 10000;
+  if (!Number.isSafeInteger(bp) || bp < 1200 || bp > 10000) throw new RangeError("completionBp must be between 1200 and 10000");
+  return bp;
 }
 
 export function compareRuns(kind: ScoreKind, a: ScoredRun, b: ScoredRun): number {
   const leftProduct = runProduct(a);
   const rightProduct = runProduct(b);
-  if (kind === "time") return a.elapsedTicks - b.elapsedTicks || a.charCount - b.charCount;
-  if (kind === "chars") return a.charCount - b.charCount || a.elapsedTicks - b.elapsedTicks;
-  return leftProduct - rightProduct || a.elapsedTicks - b.elapsedTicks || a.charCount - b.charCount;
+  const leftBp = normalizedCompletionBp(a);
+  const rightBp = normalizedCompletionBp(b);
+  if (kind === "time") return a.elapsedTicks * rightBp - b.elapsedTicks * leftBp || a.charCount - b.charCount;
+  if (kind === "chars") return a.charCount * rightBp - b.charCount * leftBp || a.elapsedTicks - b.elapsedTicks;
+  return leftProduct * rightBp - rightProduct * leftBp || a.elapsedTicks - b.elapsedTicks || a.charCount - b.charCount;
 }
 
 export function selectBestRuns<T extends ScoredRun>(runs: readonly T[]): BestRuns<T> {

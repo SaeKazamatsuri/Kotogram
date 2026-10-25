@@ -13,6 +13,7 @@ import type { GameProgram } from "~/game/core";
 import type { SourceMap } from "~/language/parser";
 import type { SustainedHighlight } from "~/game/action-highlights";
 import { stageMastery, type MasteryResult } from "~/stage/mastery";
+import type { ObjectiveProgress } from "~/scoring/objectives";
 import type { StageData, StageListItem } from "~/composables/useStageLoader";
 import { canPlayStage, nextStageId } from "~/stage/progression";
 import {
@@ -60,10 +61,11 @@ const failInfo = ref<{ reason: FailReason; hint: string } | null>(null);
 const lastSeconds = ref(0);
 const lastChars = ref(0);
 const scoreValues = ref<{ time: number; chars: number; overall: number } | null>(null);
+const lastObjectives = ref<ObjectiveProgress | null>(null);
 const bests = ref<BestRuns<ScoredRun>>({});
 const stageVersion = ref("2025-10-26");
 const unlocked = ref(true);
-const lastRun = ref<{ source: string; elapsedTicks: number; charCount: number } | null>(null);
+const lastRun = ref<{ source: string; elapsedTicks: number; charCount: number; completionBp: number } | null>(null);
 const runningSource = ref("");
 const saving = ref(false);
 const savedName = ref("");
@@ -130,6 +132,7 @@ async function loadCurrentStage() {
   runningSource.value = "";
   saving.value = false;
   scoreValues.value = null;
+  lastObjectives.value = null;
   bests.value = {};
   program.value = undefined;
   sourceMap.value = undefined;
@@ -202,7 +205,7 @@ function onRun() {
   focusSmallScreenPanel(gamePanel.value);
 }
 
-function onClear(timing: { elapsedTicks: number; seconds: number }) {
+function onClear(timing: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress }) {
   running.value = false;
   failed.value = false;
   failInfo.value = null;
@@ -210,7 +213,7 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   mastery.value = stageMastery(stageId.value, rawText);
   const chars = countSourceCharacters(rawText);
   const reference = getScoreReference(stageId.value, stageVersion.value);
-  const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks, rawText, stageVersion.value);
+  const result = stageClear(stageId.value, chars, timing.seconds, timing.elapsedTicks, rawText, stageVersion.value, timing.objectives.completionBp);
   lastSeconds.value = result.seconds;
   lastChars.value = chars;
   try {
@@ -218,8 +221,9 @@ function onClear(timing: { elapsedTicks: number; seconds: number }) {
   } catch {
     if (import.meta.dev) console.warn("Could not retain recent stage clear for map feedback");
   }
-  lastRun.value = { source: rawText, elapsedTicks: timing.elapsedTicks, charCount: chars };
-  scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars }) : null;
+  lastObjectives.value = timing.objectives;
+  lastRun.value = { source: rawText, elapsedTicks: timing.elapsedTicks, charCount: chars, completionBp: timing.objectives.completionBp };
+  scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars, completionBp: timing.objectives.completionBp }) : null;
   bests.value = getBestRecords(stageId.value, stageVersion.value);
   setBgm("clear_loop");
   playSe("clear_fanfare");
@@ -349,6 +353,7 @@ watch(stageId, () => {
       :ranking-refresh="rankingRefresh"
       :chars="lastChars"
       :scores="scoreValues"
+      :objectives="lastObjectives"
       :bests="bests"
       :mastery="mastery"
       @close="closeClear"

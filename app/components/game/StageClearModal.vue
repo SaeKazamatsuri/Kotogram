@@ -4,6 +4,7 @@ import { formatBestScore } from "~/scoring/display";
 import { classifyStrategy } from "~/scoring/score";
 import type { BestRuns, ScoredRun } from "~/scoring/score";
 import type { MasteryResult } from "~/stage/mastery";
+import type { ObjectiveProgress } from "~/scoring/objectives";
 import RankingPanel from "./RankingPanel.vue";
 
 const props = defineProps<{
@@ -13,6 +14,7 @@ const props = defineProps<{
   hasNext: boolean;
   chars: number;
   mastery?: MasteryResult | null;
+  objectives?: ObjectiveProgress | null;
   scores?: { time: number; chars: number; overall: number } | null;
   bests?: BestRuns<ScoredRun>;
   apiBase?: string;
@@ -70,6 +72,11 @@ function bestScore(kind: "time" | "chars" | "overall") {
         <span v-if="mastery.loopChallenge && mastery.repeatUsed" class="rounded-full bg-[#c9eedd] px-3 py-2 text-[#17503f]"><Icon name="lucide:repeat" class="game-icon" aria-hidden="true" /> くりかえしで クリア！</span>
         <span v-else-if="mastery.loopChallenge" class="rounded-full bg-[#e7edf2] px-3 py-2 text-[#38556a]">次は くりかえしでも クリアしてみよう</span>
         <span v-if="mastery.secretFound" class="rounded-full bg-[#fff0c6] px-3 py-2 text-[#67451c]"><Icon name="lucide:sparkles" class="game-icon" aria-hidden="true" /> ひみつの 近道を みつけた！</span>
+      </div>
+      <div v-if="objectives && (objectives.coinTarget || objectives.skipTarget)" class="mb-4 rounded-xl border border-[#bbd6e1] bg-[#eaf4f7] px-3 py-2 text-sm font-black text-[#244254]" aria-label="おつかいの達成">
+        <p v-if="objectives.coinTarget">コイン {{ objectives.collected }}/{{ objectives.coinTarget }}</p>
+        <p v-if="objectives.skipTarget">見送った ボタン {{ objectives.skipped }}/{{ objectives.skipTarget }}</p>
+        <p v-if="objectives.completionBp < 10000" class="text-[#994c22]">おつかいが のこったので 点数が {{ Math.round(objectives.completionBp / 100) }}%に なったよ</p>
       </div>
       <div v-if="scores" class="mb-4 rounded-2xl bg-[#fff0c6] p-3">
         <div class="grid grid-cols-3 gap-2" aria-label="3つの点数">

@@ -29,6 +29,7 @@ export type GameStage = {
   scrollSpeed?: number;
   requiredCoins?: number;
   requiredSkips?: number;
+  optionalObjectives?: boolean;
   jumpSensorProfile?: "centered-holes";
   objects?: unknown;
   walls?: unknown;
@@ -62,6 +63,7 @@ export type GameState = {
   switches: Switch[];
   requiredCoins: number;
   requiredSkips: number;
+  optionalObjectives: boolean;
   goalX: number;
   program: GameRule[];
   fired: Set<string>[];
@@ -226,6 +228,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     switches,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
+    optionalObjectives: stage.optionalObjectives === true,
     goalX,
     program: watchers.map((rule) => ({ ...rule, conds: rule.conds ? [...rule.conds] : undefined })),
     fired: watchers.map(() => new Set<string>()),
@@ -509,8 +512,8 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     }
   }
   if (game.px >= game.goalX) {
-    if (game.coins.filter((coin) => coin.collected).length < game.requiredCoins) fail(game, "coin");
-    else if (game.switches.filter((item) => item.skipped && item.trap).length < game.requiredSkips) fail(game, "skip");
+    if (!game.optionalObjectives && game.coins.filter((coin) => coin.collected).length < game.requiredCoins) fail(game, "coin");
+    else if (!game.optionalObjectives && game.switches.filter((item) => item.skipped && item.trap).length < game.requiredSkips) fail(game, "skip");
     else game.status = "cleared";
   }
   return game.status;

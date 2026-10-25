@@ -50,7 +50,7 @@ export function useStats() {
 
   function stageClear(
     id: string, chars: number, gameSeconds?: number,
-    elapsedTicks?: number, source = "", stageVersion = "2025-10-26",
+    elapsedTicks?: number, source = "", stageVersion = "2025-10-26", completionBp = 10000,
   ): Stat {
     const start = startMap.get(id) ?? performance.now();
     const isOfficial = Number.isSafeInteger(elapsedTicks) && elapsedTicks !== undefined && elapsedTicks > 0;
@@ -77,6 +77,7 @@ export function useStats() {
           elapsedTicks: elapsedTicks!,
           charCount: chars,
           source,
+          completionBp,
         };
         allBests[key] = selectBestRuns([...Object.values(previous), run].filter(
           (item): item is ScoredRun => !!item && typeof item.runId === "string",
