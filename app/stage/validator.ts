@@ -109,7 +109,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser", "bridge", "key", "chest"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser", "bridge", "key", "chest", "portal"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
@@ -130,6 +130,14 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         else if (objectIds.has(obj.id)) issues.push({ path: path + ".id", message: "duplicate object ID" });
         else objectIds.add(obj.id);
       } else if (requireIds) issues.push({ path: path + ".id", message: "explicit object ID required" });
+      if (obj.type === "portal") {
+        if (!isNonnegativeFinite(obj.targetPosition) || (obj.targetPosition as number) < (Number(obj.position) + 240) ||
+          (obj.targetPosition as number) > (Number(obj.position) + 1200))
+          issues.push({path:path+".targetPosition",message:"portal must move forward 240..1200 units"});
+        if (isNonnegativeFinite(obj.targetPosition) && isNonnegativeFinite(value.goal) &&
+          (obj.targetPosition as number) > (value.goal as number) - 120)
+          issues.push({path:path+".targetPosition",message:"portal exit must leave at least 120 units to the goal"});
+      }
       if (obj.type === "key" && typeof obj.id === "string" && isNonnegativeFinite(obj.position))
         keyLocations.set(obj.id,obj.position);
       if (obj.type === "chest") {
