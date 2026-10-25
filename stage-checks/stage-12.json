@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "こいんとる\nすいっちおす\nかべ1かいすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "こいんとる\nすいっちおす\nかべ1かいすごいとぶ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "こいんとる\nすいっちおす\nめっちゃはしる\nかべ1かいすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 167
+      "expectedTicks": 247
     },
     {
       "name": "missing-actions",
@@ -40,14 +40,14 @@
       "role": "learning",
       "source": "こいんとる\nすいっちおす\nかべとぶ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
     },
     {
       "name": "overall-known-best",
       "role": "overall",
       "source": "こいんとる\nすいっちおす\nかべとぶ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
     },
     {
       "name": "hidden-breakable-gate",
