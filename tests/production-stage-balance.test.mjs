@@ -13,7 +13,7 @@ test("ステージ5のr2公開後も他のステージ版を維持する", () =>
   assert.deepEqual(validateManifest(manifest), []);
   assert.equal(manifest.version, "2025-10-26");
   for (const entry of manifest.stages) {
-    assert.equal(entry.version, ["stage-8", "stage-10"].includes(entry.id) ? "2026-10-25-r4" : ["stage-9", "stage-13", "stage-18", "stage-19", "stage-21", "stage-22", "stage-23", "stage-24", "stage-25", "stage-28", "stage-29"].includes(entry.id) ? "2026-10-25-r3" : ["stage-11", "stage-12", "stage-14", "stage-15", "stage-16", "stage-17", "stage-20", "stage-26", "stage-27", "stage-30"].includes(entry.id) ? "2026-10-25-r2" : ["stage-5"].includes(entry.id) ? "2026-10-20-r2" : ["stage-2", "stage-3"].includes(entry.id) || Number(entry.id.slice(6)) >= 9 ? "2026-10-20-r1" : undefined);
+    assert.equal(entry.version, ["stage-8", "stage-10", "stage-23"].includes(entry.id) ? "2026-10-25-r4" : ["stage-9", "stage-13", "stage-18", "stage-19", "stage-21", "stage-22", "stage-23", "stage-24", "stage-25", "stage-28", "stage-29"].includes(entry.id) ? "2026-10-25-r3" : ["stage-11", "stage-12", "stage-14", "stage-15", "stage-16", "stage-17", "stage-20", "stage-26", "stage-27", "stage-30"].includes(entry.id) ? "2026-10-25-r2" : ["stage-5"].includes(entry.id) ? "2026-10-20-r2" : ["stage-2", "stage-3"].includes(entry.id) || Number(entry.id.slice(6)) >= 9 ? "2026-10-20-r1" : undefined);
     assert.ok(getScoreReference(entry.id, entry.version ?? manifest.version));
   }
   assert.ok(validateManifest({ ...manifest, stages: [{ ...manifest.stages[0], version: " " }, ...manifest.stages.slice(1)] }).length > 0);
