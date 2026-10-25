@@ -5,21 +5,21 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "もろいゆかとぶ\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 852
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべとあなとぶ\nてきかがむ\nこいんとる",
+      "source": "もろいゆかとぶ\nかべとあなとぶ\nてきかがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 852
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "もろいゆかとぶ\nめっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 487
     },
@@ -32,9 +32,16 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "もろいゆかとぶ\nめっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 487
+    },
+    {
+      "name": "first-fragile-floor-requires-reaction",
+      "role": "negative",
+      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "expect": "failed",
+      "failureReason": "hole"
     }
   ]
 }

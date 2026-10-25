@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "かべとぶ\nあなとぶ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 852
+      "expectedTicks": 877
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべとあなとぶ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 852
+      "expectedTicks": 877
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 487
+      "expectedTicks": 501
     },
     {
       "name": "missing-actions",
@@ -34,7 +34,13 @@
       "role": "overall",
       "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 487
+      "expectedTicks": 501
+    },
+    {
+      "name": "optional-coins-low-score",
+      "role": "regression",
+      "source": "かべとぶ\nあなとぶ",
+      "expect": "cleared"
     }
   ]
 }

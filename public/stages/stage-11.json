@@ -4,8 +4,9 @@
   "scrollSpeed": 3,
   "requiredCoins": 1,
   "learningObjectives": [
-    "かべ あな おばけ コインに ちがう動きを",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "こわれるゆかは 早めに ジャンプしよう",
+    "かべ・あな・おばけ・ゆかで 動きをかえよう",
+    "コインも 取りわすれないように しよう"
   ],
   "objects": [
     {
@@ -28,15 +29,22 @@
       "id": "coin-4",
       "type": "coin",
       "position": 2140
+    },
+    {
+      "id": "first-fragile-floor",
+      "type": "fragileFloor",
+      "position": 1770,
+      "width": 80,
+      "breakAfterTicks": 15
     }
   ],
   "meta": {
-    "title": "4つのじゅんび",
+    "title": "こわれるゆかの 道",
     "bg": "day",
-    "hint": "かべ あな おばけ コインに ちがう動きを",
+    "hint": "ゆかに ひびが 見えたら ジャンプしよう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
-      "hole": "あなを こえるために ジャンプしよう",
+      "hole": "あなや こわれるゆかを 早めに こえよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
       "door": "門の 前に スイッチが あるよ",
