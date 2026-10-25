@@ -37,24 +37,24 @@ for (const number of [8, 10]) {
     for (const source of ["すいっちみおくる\nこいんとる\nとびらをやぶる", "すいっちみおくる\nこいんとる\nとびらめっちゃとぶ"]) {
       const run = play(stage, source);
       assert.equal(run.status, "cleared", source);
-      assert.equal(objectiveProgress(run).completionBp, 10000, source);
-      assert.equal(verifyRunResult({stageId: `stage-${number}`, source, elapsedTicks: run.elapsedTicks, completionBp: 10000}), run.elapsedTicks);
+      assert.equal(objectiveProgress(run).completionBp, 6889, source);
+      assert.equal(verifyRunResult({stageId: `stage-${number}`, source, elapsedTicks: run.elapsedTicks, completionBp: 6889}), run.elapsedTicks);
       assert.throws(() => verifyRunResult({stageId: `stage-${number}`, source, elapsedTicks: run.elapsedTicks, completionBp: 1200}), /objective progress/);
     }
   });
 
-  test(`stage ${number} publishes r4 ranking without accepting r3 writes`, () => {
+  test(`stage ${number} publishes r5 ranking without accepting r4 writes`, () => {
     const stageId = `stage-${number}`;
     const entry = manifest.stages.find((item) => item.id === stageId);
-    assert.equal(entry.version, "2026-10-25-r4");
-    const oldScope = {seasonId: SEASON_ID, stageId, stageVersion: "2026-10-25-r3", engineVersion: ENGINE_VERSION, languageVersion: LANGUAGE_VERSION, scoringVersion: SCORING_VERSION};
+    assert.equal(entry.version, "2026-10-25-r5");
+    const oldScope = {seasonId: SEASON_ID, stageId, stageVersion: "2026-10-25-r4", engineVersion: ENGINE_VERSION, languageVersion: LANGUAGE_VERSION, scoringVersion: SCORING_VERSION};
     const scope = {...oldScope, stageVersion: entry.version};
     assert.deepEqual(validateScope(oldScope), oldScope);
     assert.deepEqual(validateScope(scope), scope);
     const source = "とびらをやぶる";
     const run = play(read(`public/stages/${stageId}.json`), source);
     const input = {...scope, runId: "00000000-0000-4000-8000-000000000001", playerId: "00000000-0000-4000-8000-000000000002", source, elapsedTicks: run.elapsedTicks, charCount: countSourceCharacters(source), completionBp: objectiveProgress(run).completionBp};
-    assert.equal(validateRunPayload(input).stageVersion, "2026-10-25-r4");
+    assert.equal(validateRunPayload(input).stageVersion, "2026-10-25-r5");
     assert.throws(() => validateRunPayload({...input, ...oldScope}), /read-only/);
     assert.equal(verifyRunResult(input), run.elapsedTicks);
   });
