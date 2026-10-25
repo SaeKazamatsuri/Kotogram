@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { analyzeProgram } from "../app/language/parser.ts";
-import { createGame, runToCompletion, stepGame, GAME } from "../app/game/core.ts";
+import { createGame, runToCompletion, stepGame } from "../app/game/core.ts";
 import { validateStage } from "../app/stage/validator.ts";
 import { suggestedStageWords } from "../app/stage/vocabulary.ts";
 import { PREVIOUS_ENGINE_VERSION, ENGINE_VERSION } from "../app/scoring/score.ts";
