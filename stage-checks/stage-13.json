@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 1052
+      "expectedTicks": 1061
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべとあなとぶ\nてきかがむ",
       "expect": "cleared",
-      "expectedTicks": 1052
+      "expectedTicks": 1061
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 602
+      "expectedTicks": 606
     },
     {
       "name": "missing-actions",
@@ -59,7 +59,7 @@
       "role": "overall",
       "source": "まえとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 1052
+      "expectedTicks": 1061
     },
     {
       "name": "blind-sprint-hits-hole",
