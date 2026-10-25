@@ -47,6 +47,18 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
       ctx.fillText(breeze, x + offset, GAME.groundY - 55 - ((Math.floor(offset / 44) + Math.floor(visualTick / 15)) % 3) * 27);
     }
   }
+  for (const platform of game.movingPlatforms) {
+    const x=worldToScreenX(game,platform.x);
+    if (x > GAME.width || x+platform.w < 0) continue;
+    ctx.fillStyle="#c4dbd2";
+    ctx.fillRect(x,GAME.groundY-10,platform.w,10);
+    ctx.strokeStyle="#315d65";
+    ctx.lineWidth=2;
+    ctx.strokeRect(x,GAME.groundY-10,platform.w,10);
+    ctx.fillStyle="#315d65";
+    ctx.font="bold 14px sans-serif";
+    ctx.fillText("⇄",x+10,GAME.groundY-15);
+  }
   for (const floor of game.conveyors) {
     const x = worldToScreenX(game, floor.x);
     if (x > GAME.width || x + floor.w < 0) continue;
