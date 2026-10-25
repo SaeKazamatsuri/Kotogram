@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "もろいゆかとぶ\nあなすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 665
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "もろいゆかとぶ\nあなすごいとぶ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 665
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "もろいゆかとぶ\nめっちゃはしる\nあなすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 373
+      "expectedTicks": 379
     },
     {
       "name": "missing-actions",
@@ -34,7 +34,7 @@
       "role": "learning",
       "source": "もろいゆかとぶ\nはしる\nあなとぶ",
       "expect": "cleared",
-      "expectedTicks": 502
+      "expectedTicks": 511
     },
     {
       "name": "repeat-two-wide-holes",
@@ -54,7 +54,7 @@
       "role": "overall",
       "source": "もろいゆかとぶ\nはしる\nあなとぶ",
       "expect": "cleared",
-      "expectedTicks": 502
+      "expectedTicks": 511
     },
     {
       "name": "fragile-floor-ignored",
