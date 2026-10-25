@@ -65,10 +65,12 @@ test("stage 19 keeps old ranking results readable but disallows posting to the p
   });
   assert.equal(getScoreReference("stage-19", "2026-10-20-r1")?.characters, 30);
   assert.equal(getScoreReference("stage-19", "2026-10-25-r2")?.characters, 41);
+  assert.equal(getScoreReference("stage-19", "2026-10-25-r3")?.characters, 41);
+  assert.equal(getScoreReference("stage-19", "2026-10-25-r3")?.timeTicks, 662);
   assert.equal(validateScope(scope("2026-10-20-r1")).stageVersion, "2026-10-20-r1");
   assert.throws(() => validateRunPayload(scope("2026-10-20-r1")), /old stage version is read-only/);
   const latest = read("stage-checks/stage-19.json").cases.find(x => x.role === "beginner");
-  assert.equal(verifyRunResult({ stageId: "stage-19", source: latest.source, elapsedTicks: latest.expectedTicks }), latest.expectedTicks);
+  assert.equal(verifyRunResult({ stageId: "stage-19", source: latest.source, elapsedTicks: latest.expectedTicks, completionBp: 10000 }), latest.expectedTicks);
 });
 
 test("blind secret sprint fails at close obstacles; correctly targeted fast programs clear", () => {
