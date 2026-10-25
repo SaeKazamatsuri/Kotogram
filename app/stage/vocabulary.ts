@@ -27,6 +27,7 @@ export function suggestedStageWords(stage?: StageWords | null) {
     ...(types.has("conveyor") ? ["conveyor"] : []),
     ...(types.has("fragileFloor") ? ["fragileFloor"] : []),
     ...(types.has("wind") ? ["wind"] : []),
+    ...(types.has("pressurePlate") ? ["pressurePlate"] : []),
     ...(obstacle ? ["ahead"] : []),
   ];
   const actions = [
