@@ -5,8 +5,9 @@
   "requiredCoins": 3,
   "requiredSkips": 3,
   "learningObjectives": [
-    "3回くりかえすと みじかくなるよ",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "ボタンの 色と形を 見分けよう",
+    "うごくゆかで 速さの へんかを ためそう",
+    "コインと 見おくりは 点数にも つながる"
   ],
   "objects": [
     {
@@ -14,7 +15,9 @@
       "type": "switch",
       "position": 340,
       "targetDoorId": "door-4",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "coin-2",
@@ -25,7 +28,9 @@
       "id": "safe-3",
       "type": "switch",
       "position": 570,
-      "targetDoorId": "door-4"
+      "targetDoorId": "door-4",
+      "color": "green",
+      "shape": "circle"
     },
     {
       "id": "door-4",
@@ -37,7 +42,9 @@
       "type": "switch",
       "position": 1100,
       "targetDoorId": "door-8",
-      "trap": true
+      "trap": true,
+      "color": "purple",
+      "shape": "star"
     },
     {
       "id": "coin-6",
@@ -48,7 +55,9 @@
       "id": "safe-7",
       "type": "switch",
       "position": 1330,
-      "targetDoorId": "door-8"
+      "targetDoorId": "door-8",
+      "color": "yellow",
+      "shape": "triangle"
     },
     {
       "id": "door-8",
@@ -60,7 +69,9 @@
       "type": "switch",
       "position": 1860,
       "targetDoorId": "door-12",
-      "trap": true
+      "trap": true,
+      "color": "blue",
+      "shape": "square"
     },
     {
       "id": "coin-10",
@@ -71,26 +82,35 @@
       "id": "safe-11",
       "type": "switch",
       "position": 2090,
-      "targetDoorId": "door-12"
+      "targetDoorId": "door-12",
+      "color": "green",
+      "shape": "star"
     },
     {
       "id": "door-12",
       "type": "door",
-      "position": 2300
+      "position": 2300,
+      "breakable": true
+    },
+    {
+      "id": "belt-challenge",
+      "type": "conveyor",
+      "position": 830,
+      "width": 180,
+      "multiplier": 1.35
     }
   ],
   "meta": {
-    "title": "3つの たから",
+    "title": "色がかわる たから道",
     "bg": "sunset",
-    "hint": "3回くりかえすと みじかくなるよ",
+    "hint": "色と形のちがいに 気づけるかな？",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
-      "door": "門の 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
-      "skip": "あかいスイッチを どうやって こえたかな"
+      "door": "次の ボタンと しかけを さがしてみよう",
+      "trap": "あぶない ボタンの 色と形を 見よう"
     }
-  }
+  },
+  "optionalObjectives": true
 }
