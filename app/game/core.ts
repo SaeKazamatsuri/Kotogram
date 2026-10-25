@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | "portal" | "goal" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | "portal" | "goal" | "verticalPlatform" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -9,7 +9,7 @@ export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triang
 export function switchAppearance(input: { trap: boolean; color?: SwitchColor; shape?: SwitchShape }): { color: SwitchColor; shape: SwitchShape } {
   return { color: input.color ?? (input.trap ? "red" : "green"), shape: input.shape ?? (input.trap ? "cross" : "circle") };
 }
-export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor" | "openChest" | "enterPortal";
+export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor" | "openChest" | "enterPortal" | "ridePlatform";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
 export type GameInstruction =
@@ -49,6 +49,7 @@ export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
 export type PressurePlate = { id: string; x: number; w: number; holdTicks: number; heldTicks: number; targetDoorId: string; activated: boolean };
 export type MovingPlatform = { id: string; x: number; originX: number; w: number; travel: number; period: number };
+export type VerticalPlatform = { id: string; x: number; w: number; y: number; originY: number; travelY: number; period: number; phaseOffset: number };
 export type Laser = { id: string; x: number; period: number; activeTicks: number; phaseOffset: number; passed: boolean };
 export type Bridge = { id: string; x: number; w: number; targetDoorId: string };
 export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
@@ -82,6 +83,9 @@ export type GameState = {
   winds: WindZone[];
   pressurePlates: PressurePlate[];
   movingPlatforms: MovingPlatform[];
+  verticalPlatforms: VerticalPlatform[];
+  boardingPlatformId: string | null;
+  standingPlatformId: string | null;
   lasers: Laser[];
   bridges: Bridge[];
   fragileFloors: FragileFloor[];
@@ -289,6 +293,20 @@ function makeMovingPlatforms(stage: GameStage): MovingPlatform[] {
     w:item.width as number,travel:item.travel as number,period:item.period as number
   })).sort((a,b)=>a.x-b.x);
 }
+export function verticalPlatformY(platform: Pick<VerticalPlatform,"originY"|"travelY"|"period"|"phaseOffset">, tick: number): number {
+  const phase = ((tick + platform.phaseOffset) % platform.period) / platform.period;
+  return platform.originY - platform.travelY * (phase <= 0.5 ? phase * 2 : 2 - phase * 2);
+}
+function makeVerticalPlatforms(stage: GameStage): VerticalPlatform[] {
+  return fromStage(stage,"verticalPlatform").map((item,index)=>({
+    id:typeof item.id==="string"?item.id:"verticalPlatform:"+index,
+    x:item.position as number,w:item.width as number,
+    y:typeof item.topY==="number"?item.topY:GAME.groundY-GAME.epsilon,
+    originY:typeof item.topY==="number"?item.topY:GAME.groundY-GAME.epsilon,
+    travelY:item.travelY as number,period:item.period as number,
+    phaseOffset:typeof item.phaseOffset==="number"?item.phaseOffset:0,
+  })).sort((a,b)=>a.x-b.x);
+}
 function makeLasers(stage: GameStage): Laser[] {
   return fromStage(stage,"laser").map((item,index)=>({
     id:typeof item.id==="string"?item.id:"laser:"+index,
@@ -341,11 +359,12 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const winds = makeWinds(stage);
   const pressurePlates = makePressurePlates(stage);
   const movingPlatforms = makeMovingPlatforms(stage);
+  const verticalPlatforms = makeVerticalPlatforms(stage);
   const lasers = makeLasers(stage);
   const bridges = makeBridges(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal").map((item) => item.position as number).sort((a, b) => a - b).at(-1);
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...portals.map((o) => o.targetX), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...portals.map((o) => o.targetX), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...verticalPlatforms.map((o) => o.x + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -384,6 +403,9 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     winds,
     pressurePlates,
     movingPlatforms,
+    verticalPlatforms,
+    boardingPlatformId: null,
+    standingPlatformId: null,
     lasers,
     bridges,
     fragileFloors,
@@ -463,6 +485,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       if(target && target.x-game.px<=range) found.set(target.id,target);
       continue;
     }
+    if (condition === "verticalPlatform") {
+      const target = nextTarget(game.verticalPlatforms,game.px);
+      if (target && target.x - game.px <= range) found.set(target.id,target);
+      continue;
+    }
     if (condition === "movingPlatform") {
       const target = nextTarget(game.movingPlatforms,game.px);
       if (target && target.x - game.px <= range) found.set(target.id,target);
@@ -517,7 +544,9 @@ function issueCrouch(game: GameState) {
 }
 
 function issueJump(game: GameState, velocity: number = GAME.jumpVelocity): boolean {
-  if (game.elapsedTicks < game.jumpReadyTick || game.vy !== 0 || Math.abs(game.py - (GAME.groundY - GAME.epsilon)) > 0.1) return false;
+  if (game.elapsedTicks < game.jumpReadyTick || game.vy !== 0 ||
+    (Math.abs(game.py - (GAME.groundY - GAME.epsilon)) > 0.1 && game.standingPlatformId === null)) return false;
+  game.standingPlatformId = null;
   game.vy = velocity;
   game.powerJumpActive = velocity === GAME.powerJumpVelocity;
   game.jumpReadyTick = game.elapsedTicks + GAME.jumpCooldownTicks;
@@ -535,6 +564,13 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
   }
   if (action === "walk") {
     game.vx = game.baseSpeed;
+    return true;
+  }
+  if (action === "ridePlatform") {
+    const target = game.verticalPlatforms.find(item=>(sensedTargetId===undefined||item.id===sensedTargetId) &&
+      item.x+item.w>=game.px && item.x-game.px<=GAME.approachBase+game.vx*GAME.reactionFrames);
+    if (!target) return false;
+    game.boardingPlatformId=target.id;
     return true;
   }
   if (action === "jump") return issueJump(game);
@@ -714,7 +750,8 @@ function overHole(game: GameState, x: number): boolean {
   if(!unsafe) return false;
   const supported=game.py<=GAME.groundY-GAME.epsilon+8 &&
     (game.movingPlatforms.some(platform=>x>=platform.x && x<=platform.x+platform.w) ||
-      game.bridges.some(bridge=>isBridgeOpen(bridge,game.doors) && x>=bridge.x && x<=bridge.x+bridge.w));
+      game.bridges.some(bridge=>isBridgeOpen(bridge,game.doors) && x>=bridge.x && x<=bridge.x+bridge.w) ||
+      game.verticalPlatforms.some(platform=>game.standingPlatformId===platform.id && x>=platform.x && x<=platform.x+platform.w));
   return !supported;
 }
 
@@ -740,6 +777,11 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   if (game.status !== "running") return game.status;
   applySequence(game, observe);
   if (game.status !== "running") return game.status;
+  for(const platform of game.verticalPlatforms){
+    const next=verticalPlatformY(platform,game.elapsedTicks+1);
+    if(game.standingPlatformId===platform.id) game.py+=next-platform.y;
+    platform.y=next;
+  }
   for(const platform of game.movingPlatforms){
     const next=movingPlatformX(platform,game.elapsedTicks+1);
     const midpoint=game.px+GAME.playerWidth/2;
@@ -756,10 +798,21 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   const airborne = game.vy !== 0 || Math.abs(game.py - (GAME.groundY - GAME.epsilon)) > 0.1;
   const gust = airborne ? game.winds.find(zone => game.px >= zone.x && game.px <= zone.x + zone.w) : undefined;
   game.px += game.vx * (movingFloor?.multiplier ?? 1) * (gust?.multiplier ?? 1);
-  game.vy += GAME.gravity;
-  game.py += game.vy;
+  if(game.standingPlatformId!==null){
+    const supporting=game.verticalPlatforms.find(platform=>platform.id===game.standingPlatformId &&
+      game.px+GAME.playerWidth/2>=platform.x && game.px+GAME.playerWidth/2<=platform.x+platform.w);
+    if(!supporting) game.standingPlatformId=null;
+  }
+  if(game.standingPlatformId===null){
+    game.vy += GAME.gravity;
+    game.py += game.vy;
+    const middle=game.px+GAME.playerWidth/2;
+    const platform=game.verticalPlatforms.find(item=>item.id===game.boardingPlatformId && middle>=item.x && middle<=item.x+item.w &&
+      game.vy>=0 && game.py>=item.y-3 && game.py<=item.y+Math.max(12,game.vy+6));
+    if(platform){game.py=platform.y;game.vy=0;game.standingPlatformId=platform.id;game.powerJumpActive=false;}
+  }
   const front = game.px + GAME.playerWidth;
-  if (game.py > GAME.groundY - GAME.epsilon && !overHole(game, front)) {
+  if (game.standingPlatformId===null && game.py > GAME.groundY - GAME.epsilon && !overHole(game, front)) {
     game.py = GAME.groundY - GAME.epsilon;
     game.vy = 0;
     game.powerJumpActive = false;

@@ -109,7 +109,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser", "bridge", "key", "chest", "portal"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "verticalPlatform", "laser", "bridge", "key", "chest", "portal"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
@@ -194,6 +194,25 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
           (typeof obj.period==="number" && (obj.phaseOffset as number)>=obj.period)))
           issues.push({path:path+".phaseOffset",message:"laser phaseOffset must be 0..period-1"});
       }
+      if (obj.type === "verticalPlatform") {
+        if (!isPositiveFinite(obj.width) || obj.width < 70 || obj.width > 240)
+          issues.push({path:path+".width",message:"vertical platform width must be 70..240"});
+        if (!Number.isSafeInteger(obj.travelY) || (obj.travelY as number)<20 || (obj.travelY as number)>120)
+          issues.push({path:path+".travelY",message:"vertical travelY must be 20..120"});
+        if (!Number.isSafeInteger(obj.period) || (obj.period as number)<60 || (obj.period as number)>600 || (obj.period as number)%2!==0)
+          issues.push({path:path+".period",message:"vertical platform period must be even and 60..600"});
+        if (!Number.isSafeInteger(obj.phaseOffset) || (obj.phaseOffset as number)<0 || (typeof obj.period==="number" && (obj.phaseOffset as number)>=obj.period))
+          issues.push({path:path+".phaseOffset",message:"vertical phaseOffset must be within period"});
+        if (obj.topY!==GAME.groundY-GAME.epsilon)
+          issues.push({path:path+".topY",message:"vertical platform starts at ground height"});
+        if (isNonnegativeFinite(obj.position) && typeof obj.width==="number") {
+          const spanStart=obj.position as number,spanEnd=spanStart+(obj.width as number);
+          const crossesGap=value.objects.some(other=>isObject(other) && other.type==="hole" &&
+            isNonnegativeFinite(other.position) && spanStart<=other.position &&
+            spanEnd>=other.position+(isPositiveFinite(other.width)?other.width as number:GAME.defaultHoleWidth));
+          if(!crossesGap) issues.push({path:path+".position",message:"vertical platform must bridge a full hole"});
+        }
+      }
       if (obj.type === "movingPlatform") {
         if (!isPositiveFinite(obj.width) || obj.width < 50 || obj.width > 240)
           issues.push({ path: path + ".width",message:"moving platform width must be 50..240" });
@@ -227,12 +246,12 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         issues.push({ path: path + ".bonusBp", message: "bonusBp is only supported for goals" });
       if (obj.type === "hole") {
         if (obj.width !== undefined && !isPositiveFinite(obj.width)) issues.push({ path: path + ".width", message: "hole width must be positive" });
-      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate" && obj.type !== "movingPlatform" && obj.type !== "bridge") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
+      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate" && obj.type !== "movingPlatform" && obj.type !== "verticalPlatform" && obj.type !== "bridge") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
       if (isNonnegativeFinite(obj.position) && obj.type !== "goal" && typeof obj.type === "string" && knownTypes.has(obj.type)) {
         const positionKey = `${obj.type}@${obj.position}`;
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
-        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate" || obj.type === "movingPlatform" || obj.type === "bridge") && typeof obj.width === "number" ? obj.width : 0));
+        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate" || obj.type === "movingPlatform" || obj.type === "verticalPlatform" || obj.type === "bridge") && typeof obj.width === "number" ? obj.width : 0));
       }
     }
     for (const chest of chestLinks) {
