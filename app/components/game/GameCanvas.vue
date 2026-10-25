@@ -21,7 +21,7 @@ const props = defineProps<{
   sourceMap?: SourceMap;
 }>();
 const emit = defineEmits<{
-  (e: "clear", result: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress }): void;
+  (e: "clear", result: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress; goalChoice: { label: string; bonusBp: number } | null }): void;
   (e: "fail", payload: FailPayload & { lastExecutedLine: number | null }): void;
   (e: "trace", payload: { active: number[]; sustained: SustainedHighlight[]; monitoring: number[]; waiting: number | null; repeat: number | null; progress: string | null }): void;
 }>();
@@ -137,7 +137,9 @@ function loop(timestamp: number) {
 
   if (game.status === "cleared") {
     stop();
-    emit("clear", { elapsedTicks: game.elapsedTicks, seconds: elapsedSeconds(game), objectives: objectiveProgress(game) });
+    const chosenGoal = game.goals.find((goal) => goal.id === game.selectedGoalId);
+    emit("clear", { elapsedTicks: game.elapsedTicks, seconds: elapsedSeconds(game), objectives: objectiveProgress(game),
+      goalChoice: game.goals.length === 2 && chosenGoal ? { label: chosenGoal.isFinal ? "ごほうび" : "ちかみち", bonusBp: chosenGoal.bonusBp } : null });
   } else if (game.status === "failed") {
     frame = requestAnimationFrame(animateFailure);
   } else {
