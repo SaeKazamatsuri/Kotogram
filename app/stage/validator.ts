@@ -109,7 +109,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
@@ -154,6 +154,16 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       if (obj.type === "door" && obj.breakable !== undefined && typeof obj.breakable !== "boolean") issues.push({ path: path + ".breakable", message: "breakable must be boolean" });
       if (obj.type === "door" && obj.vaultable !== undefined && typeof obj.vaultable !== "boolean") issues.push({ path: path + ".vaultable", message: "vaultable must be boolean" });
       if (obj.type === "door" && obj.autoCloseTicks !== undefined && (!Number.isSafeInteger(obj.autoCloseTicks) || (obj.autoCloseTicks as number) < 10 || (obj.autoCloseTicks as number) > 10000)) issues.push({ path: path + ".autoCloseTicks", message: "autoCloseTicks must be between 10 and 10000" });
+      if (obj.type === "movingPlatform") {
+        if (!isPositiveFinite(obj.width) || obj.width < 50 || obj.width > 240)
+          issues.push({ path: path + ".width",message:"moving platform width must be 50..240" });
+        if (!Number.isSafeInteger(obj.travel) || (obj.travel as number)<20 || (obj.travel as number)>220)
+          issues.push({ path: path + ".travel",message:"moving platform travel must be 20..220" });
+        if (!Number.isSafeInteger(obj.period) || (obj.period as number)<40 || (obj.period as number)>600 || (obj.period as number)%2!==0)
+          issues.push({ path: path + ".period",message:"moving platform period must be even and 40..600" });
+        if (isNonnegativeFinite(obj.position) && typeof obj.width==="number" && typeof obj.travel==="number")
+          furthestObstacle=Math.max(furthestObstacle,obj.position+obj.width+obj.travel);
+      }
       if (obj.type === "pressurePlate") {
         if (!isPositiveFinite(obj.width) || obj.width < 60 || obj.width > 500)
           issues.push({ path: path + ".width", message: "pressure plate width must be 60..500" });
@@ -176,12 +186,12 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       }
       if (obj.type === "hole") {
         if (obj.width !== undefined && !isPositiveFinite(obj.width)) issues.push({ path: path + ".width", message: "hole width must be positive" });
-      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
+      } else if (obj.width !== undefined && obj.type !== "conveyor" && obj.type !== "fragileFloor" && obj.type !== "wind" && obj.type !== "pressurePlate" && obj.type !== "movingPlatform") issues.push({ path: path + ".width", message: "width is only supported for holes and floor zones" });
       if (isNonnegativeFinite(obj.position) && obj.type !== "goal" && typeof obj.type === "string" && knownTypes.has(obj.type)) {
         const positionKey = `${obj.type}@${obj.position}`;
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
-        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate") && typeof obj.width === "number" ? obj.width : 0));
+        furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate" || obj.type === "movingPlatform") && typeof obj.width === "number" ? obj.width : 0));
       }
     }
     for (const plate of pressurePlates) {

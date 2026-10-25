@@ -3,9 +3,9 @@
   "goal": 4420,
   "scrollSpeed": 3,
   "learningObjectives": [
-    "ジャンプ中は 風で 進む速さが かわるよ",
-    "追い風の中で あなを こえよう",
-    "かべや おばけは 別のことばで 対応しよう"
+    "あな・かべ・おばけに 対応しよう",
+    "最後のあなには 行ったり来たりする足場があるよ",
+    "ジャンプしても 足場に乗っても よいよ"
   ],
   "objects": [
     {
@@ -52,12 +52,20 @@
       "position": 2070,
       "width": 180,
       "multiplier": 1.16
+    },
+    {
+      "id": "final-moving-bridge",
+      "type": "movingPlatform",
+      "position": 3900,
+      "width": 130,
+      "travel": 60,
+      "period": 180
     }
   ],
   "meta": {
-    "title": "風がふく 7つの しれん",
+    "title": "7つのしれんと 動く足場",
     "bg": "twilight",
-    "hint": "風のある あなは ジャンプが いつもと ちがうよ",
+    "hint": "最後のあなは 動く足場に乗って わたれるかな",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "風のむきに 気をつけて あなを こえよう",
