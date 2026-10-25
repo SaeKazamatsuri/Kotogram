@@ -19,7 +19,7 @@
       "type": "goal",
       "id": "quick-goal",
       "position": 540,
-      "bonusBp": 7000
+      "bonusBp": 5000
     },
     {
       "type": "coin",
