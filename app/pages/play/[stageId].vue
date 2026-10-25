@@ -62,6 +62,7 @@ const lastSeconds = ref(0);
 const lastChars = ref(0);
 const scoreValues = ref<{ time: number; chars: number; overall: number } | null>(null);
 const lastObjectives = ref<ObjectiveProgress | null>(null);
+const lastGoalChoice = ref<{ label: string; bonusBp: number } | null>(null);
 const bests = ref<BestRuns<ScoredRun>>({});
 const stageVersion = ref("2025-10-26");
 const unlocked = ref(true);
@@ -205,7 +206,7 @@ function onRun() {
   focusSmallScreenPanel(gamePanel.value);
 }
 
-function onClear(timing: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress }) {
+function onClear(timing: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress; goalChoice: { label: string; bonusBp: number } | null }) {
   running.value = false;
   failed.value = false;
   failInfo.value = null;
@@ -222,6 +223,7 @@ function onClear(timing: { elapsedTicks: number; seconds: number; objectives: Ob
     if (import.meta.dev) console.warn("Could not retain recent stage clear for map feedback");
   }
   lastObjectives.value = timing.objectives;
+  lastGoalChoice.value = timing.goalChoice;
   lastRun.value = { source: rawText, elapsedTicks: timing.elapsedTicks, charCount: chars, completionBp: timing.objectives.completionBp };
   scoreValues.value = reference ? calculateScores(reference, { elapsedTicks: timing.elapsedTicks, charCount: chars, completionBp: timing.objectives.completionBp }) : null;
   bests.value = getBestRecords(stageId.value, stageVersion.value);
@@ -354,6 +356,7 @@ watch(stageId, () => {
       :chars="lastChars"
       :scores="scoreValues"
       :objectives="lastObjectives"
+      :goal-choice="lastGoalChoice"
       :bests="bests"
       :mastery="mastery"
       @close="closeClear"
