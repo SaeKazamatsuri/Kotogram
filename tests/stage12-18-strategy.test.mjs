@@ -19,6 +19,21 @@ for(const n of [12,18]){
    return {name:c.name,role:c.role,status:g.status,reason:g.failureReason,ticks:g.elapsedTicks,
      chars:countSourceCharacters(c.source),bp:objectiveProgress(g).completionBp,broken:g.doors.filter(x=>x.broken).length};
   });
-  console.log("STRATEGY_STAGE_REPORT "+JSON.stringify({n,report}));
+  for (const [index, result] of report.entries()) {
+    const expected = checks.cases[index];
+    assert.equal(result.status, expected.expect, expected.name);
+    if (expected.expectedTicks !== undefined) assert.equal(result.ticks, expected.expectedTicks, expected.name);
+    if (expected.failureReason) assert.equal(result.reason, expected.failureReason, expected.name);
+  }
+  assert.equal(report.find(x=>x.role==="beginner")?.bp,10000);
+  if (n === 12) {
+    assert.equal(report.find(x=>x.name==="hidden-breakable-gate")?.broken,1);
+    assert.equal(report.find(x=>x.name==="optional-coin-missed")?.bp,3000);
+    assert.equal(report.find(x=>x.name==="closed-gate-still-fatal")?.reason,"door");
+  }
+  if (n === 18) {
+    assert.equal(report.find(x=>x.name==="fragile-floor-ignored")?.reason,"hole");
+    assert.equal(report.find(x=>x.name==="repeat-once-does-not-cross-second-hole")?.reason,"hole");
+  }
  });
 }
