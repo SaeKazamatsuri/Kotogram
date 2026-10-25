@@ -53,6 +53,43 @@
       "role": "regression",
       "source": "あおいほしのぼたんおす\nみどりのぼたんおす",
       "expect": "cleared"
+    },
+    {
+      "name": "secret-break-bypasses-both-gates",
+      "role": "regression",
+      "source": "とびらをやぶる",
+      "expect": "cleared"
+    },
+    {
+      "name": "secret-power-vault-bypasses-both-gates",
+      "role": "regression",
+      "source": "とびらめっちゃとぶ",
+      "expect": "cleared"
+    },
+    {
+      "name": "ordinary-vault-remains-blocked",
+      "role": "negative",
+      "source": "とびらとぶ",
+      "expect": "failed",
+      "failureReason": "door"
+    },
+    {
+      "name": "bonus-preserving-break-route",
+      "role": "regression",
+      "source": "すいっちみおくる\nこいんとる\nとびらをやぶる",
+      "expect": "cleared"
+    },
+    {
+      "name": "bonus-preserving-vault-route",
+      "role": "regression",
+      "source": "すいっちみおくる\nこいんとる\nとびらめっちゃとぶ",
+      "expect": "cleared"
+    },
+    {
+      "name": "sprint-bonus-secret-break",
+      "role": "regression",
+      "source": "めっちゃはしる\nすいっちみおくる\nこいんとる\nとびらをやぶる",
+      "expect": "cleared"
     }
   ]
 }
