@@ -3,8 +3,9 @@
   "goal": 3820,
   "scrollSpeed": 3,
   "learningObjectives": [
-    "2つの動きを 3回くりかえそう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "かべで とんで、おばけで しゃがもう",
+    "こわれるゆかは あとで 崩れるよ",
+    "3つのことばを 何回も つかってみよう"
   ],
   "objects": [
     {
@@ -36,15 +37,29 @@
       "id": "ghost-6",
       "type": "ghost",
       "position": 3340
+    },
+    {
+      "id": "fragile-between-1",
+      "type": "fragileFloor",
+      "position": 1250,
+      "width": 80,
+      "breakAfterTicks": 15
+    },
+    {
+      "id": "fragile-between-2",
+      "type": "fragileFloor",
+      "position": 2450,
+      "width": 80,
+      "breakAfterTicks": 15
     }
   ],
   "meta": {
-    "title": "3回の じゅんばん",
+    "title": "かべと おばけと こわれる床",
     "bg": "sunset",
-    "hint": "2つの動きを 3回くりかえそう",
+    "hint": "いつもの かべ・おばけの あいだにも ゆかのしかけが あるよ",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
-      "hole": "あなを こえるために ジャンプしよう",
+      "hole": "こわれる床に 乗りつづけると 落ちてしまうよ",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
       "door": "門の 前に スイッチが あるよ",
