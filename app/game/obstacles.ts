@@ -35,6 +35,31 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
 }
 
 export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks): void {
+  for (const floor of game.conveyors) {
+    const x = worldToScreenX(game, floor.x);
+    if (x > GAME.width || x + floor.w < 0) continue;
+    ctx.fillStyle = "#d4e0de";
+    ctx.fillRect(x, GAME.groundY - 10, floor.w, 10);
+    ctx.fillStyle = floor.multiplier >= 1 ? "#266d91" : "#9d683f";
+    for (let offset = 10; offset < floor.w; offset += 28) {
+      ctx.fillText(floor.multiplier >= 1 ? "→" : "←", x + offset, GAME.groundY - 13);
+    }
+  }
+  for (const floor of game.fragileFloors) {
+    const x = worldToScreenX(game, floor.x);
+    if (x > GAME.width || x + floor.w < 0) continue;
+    ctx.fillStyle = floor.collapsed ? "#18283d" : "#d8b38d";
+    ctx.fillRect(x, GAME.groundY - 9, floor.w, floor.collapsed ? 21 : 9);
+    if (!floor.collapsed) {
+      ctx.strokeStyle = "#805c46";
+      for (let offset = 10; offset < floor.w; offset += 20) {
+        ctx.beginPath();
+        ctx.moveTo(x + offset, GAME.groundY - 9);
+        ctx.lineTo(x + offset + 6, GAME.groundY);
+        ctx.stroke();
+      }
+    }
+  }
   for (const [index, coin] of game.coins.entries()) {
     if (coin.collected) continue;
     const x = worldToScreenX(game, coin.x);
@@ -119,6 +144,12 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
       ctx.moveTo(x + GAME.doorWidth - 5, y + 15);
       ctx.lineTo(x + GAME.doorWidth - 5, GAME.groundY - 6);
       ctx.stroke();
+    }
+    if (!door.open && door.autoCloseTicks > 0) {
+      ctx.fillStyle = "#ffe6a1";
+      const remaining = door.openedUntilTick === null ? 0 : Math.max(0, (door.openedUntilTick - game.elapsedTicks) / door.autoCloseTicks);
+      ctx.fillRect(x + 4, y + 3, GAME.doorWidth * remaining, 5);
+      ctx.fillText("⌛", x + 7, y - 9);
     }
     if (!door.open) {
       ctx.strokeStyle = "#cbb0dc";
