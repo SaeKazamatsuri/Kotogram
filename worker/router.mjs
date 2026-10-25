@@ -35,7 +35,8 @@ export async function handleApi(request, env) {
       const known = await stub.findRun(input.runId);
       if (known) {
         if (known.playerId !== input.playerId || known.elapsedTicks !== input.elapsedTicks ||
-            known.charCount !== input.charCount || known.source !== input.source) {
+            known.charCount !== input.charCount || known.source !== input.source ||
+            (known.completionBp ?? 10000) !== (input.completionBp ?? 10000)) {
           return json({ error: "run_id_conflict" }, 409, cors);
         }
         return json({ ok: true, runId: input.runId, nickname: known.nickname, duplicate: true }, 200, cors);
@@ -67,7 +68,7 @@ export async function handleApi(request, env) {
       const limit = Number(url.searchParams.get("limit") ?? 20);
       if (!Number.isSafeInteger(limit) || limit < 1 || limit > 50) return json({ error: "invalid_limit" }, 400, cors);
       const stub = env.RANKING.get(env.RANKING.idFromName(scopeObjectId(scope)));
-      const rows = await stub.rankings(type, limit);
+      const rows = await stub.rankings(type, limit, scope.scoringVersion);
       return json({ ok: true, type, stageId: scope.stageId, rows }, 200, cors);
     }
 
