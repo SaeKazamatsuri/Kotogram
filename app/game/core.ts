@@ -344,7 +344,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const lasers = makeLasers(stage);
   const bridges = makeBridges(stage);
   const fragileFloors = makeFragileFloors(stage);
-  const goal = fromStage(stage, "goal")[0]?.position;
+  const goal = fromStage(stage, "goal").map((item) => item.position as number).sort((a, b) => a - b).at(-1);
   const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...portals.map((o) => o.targetX), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
