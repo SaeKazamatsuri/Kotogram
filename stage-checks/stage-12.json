@@ -5,23 +5,23 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "かべ1かいすごいじゃんぷ",
+      "source": "こいんとる\nすいっちおす\nかべ1かいすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "かべ1かいすごいとぶ",
+      "source": "こいんとる\nすいっちおす\nかべ1かいすごいとぶ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ",
+      "source": "こいんとる\nすいっちおす\nめっちゃはしる\nかべ1かいすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 167
+      "expectedTicks": 247
     },
     {
       "name": "missing-actions",
@@ -38,16 +38,35 @@
     {
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
-      "source": "かべとぶ",
+      "source": "こいんとる\nすいっちおす\nかべとぶ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "かべとぶ",
+      "source": "こいんとる\nすいっちおす\nかべとぶ",
       "expect": "cleared",
-      "expectedTicks": 292
+      "expectedTicks": 432
+    },
+    {
+      "name": "hidden-breakable-gate",
+      "role": "regression",
+      "source": "かべ1かいすごいじゃんぷ\nこいんとる\nとびらをやぶる",
+      "expect": "cleared"
+    },
+    {
+      "name": "optional-coin-missed",
+      "role": "regression",
+      "source": "かべ1かいすごいじゃんぷ\nすいっちおす",
+      "expect": "cleared"
+    },
+    {
+      "name": "closed-gate-still-fatal",
+      "role": "negative",
+      "source": "かべ1かいすごいじゃんぷ\nこいんとる",
+      "expect": "failed",
+      "failureReason": "door"
     }
   ]
 }

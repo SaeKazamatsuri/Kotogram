@@ -77,6 +77,7 @@ const knownReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-18": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 9, product: 5868 },
   "stage-13": { ...knownReferences["stage-13"]!, stageVersion: "2026-10-25-r2" },
   "stage-25": { ...knownReferences["stage-25"]!, stageVersion: "2026-10-25-r2" },
   "stage-19": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 41, product: 26732 },
@@ -87,6 +88,8 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-12": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 432, characters: 23, product: 9936 },
+  "stage-18": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 665, characters: 16, product: 10640 },
   "stage-16": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 20, product: 13040 },
   "stage-13": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 1061, characters: 15, product: 15915 },
   "stage-17": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 1252, characters: 18, product: 22536 },
@@ -109,7 +112,7 @@ const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
   "stage-9": { ...knownReferences["stage-9"]!, stageVersion: "2026-10-25-r3" },
   "stage-10": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 632, characters: 30, product: 18960 },
 
-  "stage-18": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 9, product: 5868 },
+
 
 
   "stage-5": { ...revisedReferences["stage-5"]!, stageVersion: "2026-10-20-r2" },

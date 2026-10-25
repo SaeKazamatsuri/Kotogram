@@ -95,7 +95,8 @@ test("stage 18 is a longer two-hole loop puzzle with an isolated ranking version
   assert.equal(byName("repeat-two-wide-holes")?.outcome, "cleared");
   assert.equal(byName("repeat-once-does-not-cross-second-hole")?.failureReason, "hole");
   assert.ok(getScoreReference("stage-18", "2026-10-20-r1"));
-  const newReference = getScoreReference("stage-18", "2026-10-25-r2");
+  assert.equal(getScoreReference("stage-18", "2026-10-25-r2")?.timeTicks, 652);
+  const newReference = getScoreReference("stage-18", "2026-10-25-r3");
   assert.equal(newReference?.timeTicks, byName("beginner")?.elapsedTicks);
   assert.ok(newReference.timeTicks > 500);
 });

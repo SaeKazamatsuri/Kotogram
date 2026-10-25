@@ -5,23 +5,23 @@
     {
       "name": "beginner",
       "role": "beginner",
-      "source": "あなすごいじゃんぷ",
+      "source": "もろいゆかとぶ\nあなすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 665
     },
     {
       "name": "short-variant",
       "role": "short",
-      "source": "あなすごいとぶ",
+      "source": "もろいゆかとぶ\nあなすごいとぶ",
       "expect": "cleared",
-      "expectedTicks": 652
+      "expectedTicks": 665
     },
     {
       "name": "sprint-variant",
       "role": "fast",
-      "source": "めっちゃはしる\nあなすごいじゃんぷ",
+      "source": "もろいゆかとぶ\nめっちゃはしる\nあなすごいじゃんぷ",
       "expect": "cleared",
-      "expectedTicks": 373
+      "expectedTicks": 379
     },
     {
       "name": "missing-actions",
@@ -32,29 +32,36 @@
     {
       "name": "ordinary-actions-without-secret-command",
       "role": "learning",
-      "source": "はしる\nあなとぶ",
+      "source": "もろいゆかとぶ\nはしる\nあなとぶ",
       "expect": "cleared",
-      "expectedTicks": 502
+      "expectedTicks": 511
     },
     {
       "name": "repeat-two-wide-holes",
       "role": "regression",
-      "source": "はしる\n2かいくりかえす\nあなとぶ\nおわり",
+      "source": "もろいゆかとぶ\nはしる\n2かいくりかえす\nあなとぶ\nおわり",
       "expect": "cleared"
     },
     {
       "name": "repeat-once-does-not-cross-second-hole",
       "role": "negative",
-      "source": "はしる\n1かいくりかえす\nあなとぶ\nおわり",
+      "source": "もろいゆかとぶ\nはしる\n1かいくりかえす\nあなとぶ\nおわり",
       "expect": "failed",
       "failureReason": "hole"
     },
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "はしる\nあなとぶ",
+      "source": "もろいゆかとぶ\nはしる\nあなとぶ",
       "expect": "cleared",
-      "expectedTicks": 502
+      "expectedTicks": 511
+    },
+    {
+      "name": "fragile-floor-ignored",
+      "role": "negative",
+      "source": "あなすごいじゃんぷ",
+      "expect": "failed",
+      "failureReason": "hole"
     }
   ]
 }
