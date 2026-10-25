@@ -38,7 +38,7 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "めっちゃはしる\nかべとぶ\n3かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
+      "source": "めっちゃはしる\nかべとぶ\n3かいくりかえす\nぼたんみおくる\nぼたんおす\nおわり",
       "expect": "cleared",
       "expectedTicks": 624
     },
@@ -53,6 +53,13 @@
       "role": "regression",
       "source": "かべとぶ\n3かいくりかえす\nすいっちおす\nおわり",
       "expect": "failed"
+    },
+    {
+      "name": "p2-medium-pace",
+      "role": "regression",
+      "source": "はしる\nかべとぶ\n3かいくりかえす\nぼたんみおくる\nぼたんおす\nおわり",
+      "expect": "cleared",
+      "expectedTicks": 839
     }
   ]
 }
