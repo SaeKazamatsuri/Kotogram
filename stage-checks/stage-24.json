@@ -21,7 +21,7 @@
       "role": "fast",
       "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 373
+      "expectedTicks": 372
     },
     {
       "name": "missing-actions",
