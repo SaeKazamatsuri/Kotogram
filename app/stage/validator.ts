@@ -109,7 +109,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "laser"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
@@ -154,6 +154,16 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
       if (obj.type === "door" && obj.breakable !== undefined && typeof obj.breakable !== "boolean") issues.push({ path: path + ".breakable", message: "breakable must be boolean" });
       if (obj.type === "door" && obj.vaultable !== undefined && typeof obj.vaultable !== "boolean") issues.push({ path: path + ".vaultable", message: "vaultable must be boolean" });
       if (obj.type === "door" && obj.autoCloseTicks !== undefined && (!Number.isSafeInteger(obj.autoCloseTicks) || (obj.autoCloseTicks as number) < 10 || (obj.autoCloseTicks as number) > 10000)) issues.push({ path: path + ".autoCloseTicks", message: "autoCloseTicks must be between 10 and 10000" });
+      if (obj.type === "laser") {
+        if (!Number.isSafeInteger(obj.period) || (obj.period as number)<40 || (obj.period as number)>600)
+          issues.push({path:path+".period",message:"laser period must be 40..600 ticks"});
+        if (!Number.isSafeInteger(obj.activeTicks) || (obj.activeTicks as number)<1 ||
+          (typeof obj.period==="number" && (obj.activeTicks as number)>=obj.period))
+          issues.push({path:path+".activeTicks",message:"laser activeTicks must be 1..period-1"});
+        if(obj.phaseOffset!==undefined && (!Number.isSafeInteger(obj.phaseOffset) || (obj.phaseOffset as number)<0 ||
+          (typeof obj.period==="number" && (obj.phaseOffset as number)>=obj.period)))
+          issues.push({path:path+".phaseOffset",message:"laser phaseOffset must be 0..period-1"});
+      }
       if (obj.type === "movingPlatform") {
         if (!isPositiveFinite(obj.width) || obj.width < 50 || obj.width > 240)
           issues.push({ path: path + ".width",message:"moving platform width must be 50..240" });
