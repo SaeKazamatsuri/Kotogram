@@ -130,7 +130,7 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     }
   }
   for (const [index, coin] of game.coins.entries()) {
-    if (coin.collected) continue;
+    if (coin.collected || coin.chestId) continue;
     const x = worldToScreenX(game, coin.x);
     if (x < -32 || x > GAME.width + 32) continue;
     const bob = Math.sin(obstaclePhase(visualTick, index, 0.1)) * 3;
@@ -153,6 +153,47 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.restore();
   }
 
+  for (const key of game.keys) {
+    if (key.collected) continue;
+    const x = worldToScreenX(game,key.x);
+    if(x < -40 || x>GAME.width+40) continue;
+    const y=GAME.groundY-44+Math.sin(obstaclePhase(visualTick,0,0.08))*3;
+    ctx.save();
+    ctx.strokeStyle="#be842b";
+    ctx.lineWidth=5;
+    ctx.beginPath();
+    ctx.arc(x,y,10,0,Math.PI*2);
+    ctx.moveTo(x+10,y);
+    ctx.lineTo(x+29,y);
+    ctx.lineTo(x+29,y+8);
+    ctx.moveTo(x+21,y);
+    ctx.lineTo(x+21,y+7);
+    ctx.stroke();
+    ctx.fillStyle="#f9d77b";
+    ctx.font="bold 14px sans-serif";
+    ctx.fillText("かぎ",x-13,y-18);
+    ctx.restore();
+  }
+  for (const chest of game.chests) {
+    const x=worldToScreenX(game,chest.x);
+    if(x < -50 || x>GAME.width+50) continue;
+    const y=GAME.groundY-34;
+    const unlocked=game.keys.some(key=>key.id===chest.keyId&&key.collected);
+    ctx.save();
+    ctx.fillStyle=chest.opened?"#6faf90":"#855c43";
+    ctx.strokeStyle="#473c43";
+    ctx.lineWidth=3;
+    ctx.beginPath();
+    ctx.roundRect(x-22,y,44,33,5);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle=chest.opened?"#cbefc7":"#e1b858";
+    ctx.fillRect(x-18,y+8,36,5);
+    ctx.fillStyle="#34324c";
+    ctx.font="bold 17px sans-serif";
+    ctx.fillText(chest.opened?"○":unlocked?"！":"🔒",x-9,y-9);
+    ctx.restore();
+  }
   for (const item of game.switches) {
     const x = worldToScreenX(game, item.x);
     if (x < -40 || x > GAME.width + 40) continue;
