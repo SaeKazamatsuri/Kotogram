@@ -37,10 +37,17 @@
       "expectedTicks": 1446
     },
     {
-      "name": "bridge-replaces-third-jump",
+      "name": "vertical-lift-replaces-third-jump",
       "role": "regression",
-      "source": "かべとぶ\nおばけしゃがむ\n2かいくりかえす\nあなとぶ\nおわり",
+      "source": "かべとぶ\nおばけしゃがむ\n2かいくりかえす\nあなとぶ\nおわり\nのぼりだいのる",
       "expect": "cleared"
+    },
+    {
+      "name": "vertical-lift-missing-board",
+      "role": "negative",
+      "source": "かべとぶ\nおばけしゃがむ\n2かいくりかえす\nあなとぶ\nおわり",
+      "expect": "failed",
+      "failureReason": "hole"
     }
   ]
 }
