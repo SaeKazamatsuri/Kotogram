@@ -1,4 +1,4 @@
-import { GAME, isLaserActive, worldToScreenX, type GameState, type SwitchColor, type SwitchShape } from "./core.ts";
+import { GAME, isBridgeOpen, isLaserActive, worldToScreenX, type GameState, type SwitchColor, type SwitchShape } from "./core.ts";
 
 const SWITCH_PALETTE: Record<SwitchColor, string> = { red: "#b83250", green: "#278a74", blue: "#255caf", yellow: "#b47b16", purple: "#7e4aa0" };
 const SWITCH_SYMBOLS: Record<SwitchShape, string> = { circle: "○", cross: "×", triangle: "△", square: "□", star: "☆" };
@@ -35,6 +35,23 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
 }
 
 export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks): void {
+  for (const bridge of game.bridges) {
+    const x = worldToScreenX(game,bridge.x);
+    if(x > GAME.width || x+bridge.w<0) continue;
+    const active = isBridgeOpen(bridge,game.doors);
+    ctx.save();
+    ctx.fillStyle = active ? "#bdcdbb" : "rgba(213,225,227,0.20)";
+    if(active)ctx.fillRect(x,GAME.groundY-12,bridge.w,12);
+    ctx.strokeStyle = active ? "#456e65" : "#aeb7b8";
+    ctx.lineWidth = 3;
+    if(!active)ctx.setLineDash([9,7]);
+    ctx.strokeRect(x,GAME.groundY-12,bridge.w,12);
+    ctx.setLineDash([]);
+    ctx.fillStyle = active ? "#213f47" : "#a3afb1";
+    ctx.font = "bold 16px sans-serif";
+    ctx.fillText(active ? "━ ○ ━" : "×  とじる",x+10,GAME.groundY-18);
+    ctx.restore();
+  }
   for(const laser of game.lasers){
     const x=worldToScreenX(game,laser.x);
     if(x < -28 || x > GAME.width+28)continue;
