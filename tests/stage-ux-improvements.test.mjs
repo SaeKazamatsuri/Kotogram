@@ -61,7 +61,7 @@ test("hover hitboxes follow scrolling and distinguish wall, hole, switch, and gh
   assert.equal(inspectGameObject(game, 114, 230)?.name, "かべ");
   assert.equal(inspectGameObject(game, 330, 310)?.name, "あな");
   assert.equal(inspectGameObject(game, 20, 250)?.name, "あかのばつボタン");
-  assert.equal(inspectGameObject(game, 200, 125)?.name, "おばけ");
+  assert.equal(inspectGameObject(game, 200, 180)?.name, "おばけ");
   assert.equal(inspectGameObject(game, 700, 0), null);
   assert.equal(inspectGameObject(game, Number.NaN, 200), null);
 });
