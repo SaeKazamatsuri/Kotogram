@@ -1,0 +1,37 @@
+{
+  "id": "experiment-mirror-returns",
+  "goal": 1550,
+  "scrollSpeed": 3,
+  "requiredCoins": 1,
+  "optionalObjectives": true,
+  "learningObjectives": [
+    "かがみで はんたいの むきに もどろう",
+    "もどる ときだけ でてくる コインを とろう",
+    "もう一つの かがみで 前にすすもう"
+  ],
+  "objects": [
+    {
+      "id": "mirror-left",
+      "type": "mirror",
+      "position": 420,
+      "fromDirection": "left"
+    },
+    {
+      "id": "mirror-right",
+      "type": "mirror",
+      "position": 940,
+      "fromDirection": "right"
+    },
+    {
+      "id": "mirror-coin",
+      "type": "coin",
+      "position": 670,
+      "revealAfterMirrorId": "mirror-right"
+    }
+  ],
+  "meta": {
+    "title": "かがみで もどって コインを とる",
+    "bg": "twilight",
+    "hint": "かがみにうつる と すすむむきが はんたいに なるよ"
+  }
+}

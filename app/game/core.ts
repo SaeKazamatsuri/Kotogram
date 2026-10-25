@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | "portal" | "goal" | "verticalPlatform" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | "portal" | "goal" | "verticalPlatform" | "mirror" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -9,7 +9,7 @@ export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triang
 export function switchAppearance(input: { trap: boolean; color?: SwitchColor; shape?: SwitchShape }): { color: SwitchColor; shape: SwitchShape } {
   return { color: input.color ?? (input.trap ? "red" : "green"), shape: input.shape ?? (input.trap ? "cross" : "circle") };
 }
-export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor" | "openChest" | "enterPortal" | "ridePlatform";
+export type GameAction = "jump" | "powerJump" | "crouch" | "collect" | "run" | "sprint" | "walk" | "press" | "skip" | "breakDoor" | "openChest" | "enterPortal" | "ridePlatform" | "reflect";
 export type GameRule = { cond?: GameCondition; conds?: GameCondition[]; maxFires?: number; action: GameAction };
 
 export type GameInstruction =
@@ -40,10 +40,11 @@ export type GameStage = {
 
 export type Barrier = { id: string; x: number; cleared: boolean; originX?: number; patrolRange?: number; patrolPeriod?: number };
 export type Hole = { id: string; x: number; w: number };
-export type Coin = { id: string; x: number; collected: boolean; chestId?: string };
+export type Coin = { id: string; x: number; collected: boolean; chestId?: string; revealAfterMirrorId?: string };
 export type KeyItem = { id: string; x: number; collected: boolean };
 export type Chest = { id: string; x: number; keyId: string; opened: boolean; rewardId: string };
 export type Portal = { id: string; x: number; targetX: number; used: boolean };
+export type Mirror = { id: string; x: number; fromDirection: 1 | -1; used: boolean };
 export type GoalChoice = { id: string; x: number; bonusBp: number; isFinal: boolean; skipped: boolean; reached: boolean };
 export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
@@ -63,6 +64,7 @@ export type GameState = {
   py: number;
   vy: number;
   vx: number;
+  direction: 1 | -1;
   baseSpeed: number;
   jumpSensorProfile: "legacy" | "centered-holes";
   crouchUntilTick: number;
@@ -75,6 +77,7 @@ export type GameState = {
   keys: KeyItem[];
   chests: Chest[];
   portals: Portal[];
+  mirrors: Mirror[];
   goals: GoalChoice[];
   goalBonusBp: number;
   selectedGoalId: string | null;
@@ -212,6 +215,7 @@ function makeCoins(stage: GameStage): Coin[] {
       id: typeof object.id === "string" && object.id ? object.id : "coin:" + index,
       x: object.position as number,
       collected: false,
+      ...(typeof object.revealAfterMirrorId === "string" ? { revealAfterMirrorId: object.revealAfterMirrorId } : {}),
     }))
     .sort((a, b) => a.x - b.x);
 }
@@ -234,6 +238,14 @@ function makePortals(stage: GameStage): Portal[] {
     id:typeof item.id==="string"?item.id:"portal:"+index,
     x:item.position as number,targetX:item.targetPosition as number,used:false
   })).sort((a,b)=>a.x-b.x);
+}
+function makeMirrors(stage: GameStage): Mirror[] {
+  return fromStage(stage, "mirror").map((item, index) => ({
+    id: typeof item.id === "string" ? item.id : "mirror:" + index,
+    x: item.position as number,
+    fromDirection: item.fromDirection === "left" ? -1 as const : 1 as const,
+    used: false,
+  })).sort((a, b) => a.x - b.x);
 }
 function makeDoors(stage: GameStage): Door[] {
   return fromStage(stage, "door")
@@ -349,6 +361,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const chests = makeChests(stage);
   const keys = makeKeys(stage);
   const portals = makePortals(stage);
+  const mirrors = makeMirrors(stage);
   // Opening a chest yields exactly one coin-equivalent reward. The existing
   // score and Worker replay validation remain authoritative for its value.
   const coins = [...makeCoins(stage), ...chests.map(chest=>({
@@ -366,7 +379,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const bridges = makeBridges(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal").map((item) => item.position as number).sort((a, b) => a - b).at(-1);
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...portals.map((o) => o.targetX), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...verticalPlatforms.map((o) => o.x + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...keys.map((o) => o.x), ...chests.map((o) => o.x), ...portals.map((o) => o.targetX), ...mirrors.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...verticalPlatforms.map((o) => o.x + o.w), ...lasers.map((o) => o.x), ...bridges.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -384,6 +397,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     py: GAME.groundY - GAME.epsilon,
     vy: 0,
     vx: isFiniteNumber(stage.scrollSpeed) && stage.scrollSpeed > 0 ? stage.scrollSpeed : 3,
+    direction: 1,
     baseSpeed: isFiniteNumber(stage.scrollSpeed) && stage.scrollSpeed > 0 ? stage.scrollSpeed : 3,
     jumpSensorProfile: stage.jumpSensorProfile === "centered-holes" ? "centered-holes" : "legacy",
     crouchUntilTick: -1,
@@ -396,6 +410,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     keys,
     chests,
     portals,
+    mirrors,
     goals,
     goalBonusBp: 10000,
     selectedGoalId: null,
@@ -449,10 +464,29 @@ function nextTarget(objects: readonly { id: string; x: number }[], px: number): 
   return objects.find((obj) => obj.x + GAME.pad >= px);
 }
 
+export function isCoinRevealed(game: GameState, coin: Coin): boolean {
+  return !coin.revealAfterMirrorId || game.mirrors.some(mirror => mirror.id === coin.revealAfterMirrorId && mirror.used);
+}
+function directionalCoinInRange(game: GameState, coin: Coin): boolean {
+  return game.direction === 1
+    ? coin.x + GAME.pad >= game.px && coin.x - game.px <= GAME.coinPickupRange
+    : coin.x <= game.px + GAME.playerWidth && game.px - coin.x <= GAME.coinPickupRange;
+}
 function sensedTargets(game: GameState, conditions: readonly GameCondition[]): { id: string; x: number }[] {
   const range = GAME.approachBase + game.vx * GAME.reactionFrames;
   const found = new Map<string, { id: string; x: number }>();
   for (const condition of conditions) {
+    if (condition === "mirror") {
+      const target = game.mirrors.find(mirror =>
+        !mirror.used && mirror.fromDirection === game.direction &&
+        (game.direction === 1
+          ? mirror.x + GAME.pad >= game.px && mirror.x - game.px <= GAME.switchPressRange
+          : mirror.x <= game.px + GAME.playerWidth && game.px - mirror.x <= GAME.switchPressRange)
+      );
+      if (target) found.set(target.id, target);
+      continue;
+    }
+    if (game.direction === -1 && condition !== "coin") continue;
     if (condition === "switch" || condition.startsWith("switch:")) {
       const [, color, shape] = condition.split(":");
       const target = nextTarget(game.switches.filter((item) =>
@@ -524,8 +558,10 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       continue;
     }
     if (condition === "coin") {
-      const target = nextTarget(game.coins.filter((coin) => !coin.collected && !coin.chestId), game.px);
-      if (target && target.x - game.px <= GAME.coinPickupRange) found.set(target.id, target);
+      const target = game.coins.filter(coin => !coin.collected && !coin.chestId &&
+        isCoinRevealed(game, coin) && directionalCoinInRange(game, coin))
+        .sort((a, b) => game.direction === 1 ? a.x - b.x : b.x - a.x)[0];
+      if (target) found.set(target.id, target);
       continue;
     }
     const groups = condition === "ahead" ? [game.walls, game.ghosts, game.holes, game.doors.filter((door) => !door.open)]
@@ -539,7 +575,8 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       if (target && target.x - game.px <= triggerRange) found.set(target.id, target);
     }
   }
-  return [...found.values()].sort((a, b) => a.x - b.x || a.id.localeCompare(b.id));
+  return [...found.values()].sort((a, b) =>
+    game.direction * (a.x - b.x) || a.id.localeCompare(b.id));
 }
 
 function issueCrouch(game: GameState) {
@@ -557,6 +594,19 @@ function issueJump(game: GameState, velocity: number = GAME.jumpVelocity): boole
 }
 
 function acceptAction(game: GameState, action: GameAction, sensedTargetId?: string): boolean {
+  if (action === "reflect") {
+    const target = game.mirrors.find(mirror =>
+      !mirror.used && mirror.fromDirection === game.direction &&
+      (sensedTargetId === undefined || mirror.id === sensedTargetId) &&
+      (game.direction === 1
+        ? mirror.x + GAME.pad >= game.px && mirror.x - game.px <= GAME.switchPressRange
+        : mirror.x <= game.px + GAME.playerWidth && game.px - mirror.x <= GAME.switchPressRange)
+    );
+    if (!target) return false;
+    target.used = true;
+    game.direction = game.direction === 1 ? -1 : 1;
+    return true;
+  }
   if (action === "run") {
     game.vx = game.baseSpeed * GAME.runMultiplier;
     return true;
@@ -666,9 +716,8 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
       item.x+GAME.pad>=game.px && item.x-game.px<=GAME.coinPickupRange);
     if(key){key.collected=true;return true;}
     const target = game.coins.find((coin) =>
-      !coin.collected && !coin.chestId &&
-      (sensedTargetId === undefined || coin.id === sensedTargetId) && coin.x + GAME.pad >= game.px &&
-      coin.x - game.px <= GAME.coinPickupRange
+      !coin.collected && !coin.chestId && isCoinRevealed(game, coin) &&
+      (sensedTargetId === undefined || coin.id === sensedTargetId) && directionalCoinInRange(game, coin)
     );
     if (!target) return false;
     target.collected = true;
@@ -800,7 +849,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   // Grounded movement and existing stages without wind stay bit-for-bit identical.
   const airborne = game.vy !== 0 || Math.abs(game.py - (GAME.groundY - GAME.epsilon)) > 0.1;
   const gust = airborne ? game.winds.find(zone => game.px >= zone.x && game.px <= zone.x + zone.w) : undefined;
-  game.px += game.vx * (movingFloor?.multiplier ?? 1) * (gust?.multiplier ?? 1);
+  game.px += game.direction * game.vx * (movingFloor?.multiplier ?? 1) * (gust?.multiplier ?? 1);
   if(game.standingPlatformId!==null){
     const supporting=game.verticalPlatforms.find(platform=>platform.id===game.standingPlatformId &&
       game.px+GAME.playerWidth/2>=platform.x && game.px+GAME.playerWidth/2<=platform.x+platform.w);
@@ -814,7 +863,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
       game.vy>=0 && game.py>=item.y-3 && game.py<=item.y+Math.max(12,game.vy+6));
     if(platform){game.py=platform.y;game.vy=0;game.standingPlatformId=platform.id;game.powerJumpActive=false;}
   }
-  const front = game.px + GAME.playerWidth;
+  const front = game.direction === 1 ? game.px + GAME.playerWidth : game.px;
   if (game.standingPlatformId===null && game.py > GAME.groundY - GAME.epsilon && !overHole(game, front)) {
     game.py = GAME.groundY - GAME.epsilon;
     game.vy = 0;
@@ -855,7 +904,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
       }
     }
   }
-  if (game.py < GAME.groundY - GAME.epsilon - 8) {
+  if (game.direction === 1 && game.py < GAME.groundY - GAME.epsilon - 8) {
     for (const item of game.switches) {
       if (!item.activated && !item.skipped && front >= item.x && game.px <= item.x + GAME.pad) {
         item.skipped = true;
@@ -866,7 +915,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     fail(game, "hole");
     return game.status;
   }
-  const wall = game.walls.find((w) => !w.cleared && front >= w.x);
+  const wall = game.direction === 1 ? game.walls.find((w) => !w.cleared && front >= w.x) : undefined;
   if (wall) {
     const playerHeight = isCrouching(game) ? GAME.crouchHeight : GAME.playerHeight;
     const top = game.py - playerHeight;
@@ -876,7 +925,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     }
     wall.cleared = true;
   }
-  const door = game.doors.find((item) => !item.open && !item.vaulted && !item.passed && front >= item.x);
+  const door = game.direction === 1 ? game.doors.find((item) => !item.open && !item.vaulted && !item.passed && front >= item.x) : undefined;
   if (door) {
     if (door.vaultable && game.powerJumpActive && game.py <= GAME.groundY - GAME.doorHeight - 4) {
       door.vaulted = true;
@@ -888,7 +937,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   for (const item of game.doors) {
     if (game.px > item.x + GAME.doorWidth) item.passed = true;
   }
-  const laser=game.lasers.find(item=>!item.passed && front>=item.x);
+  const laser=game.direction === 1 ? game.lasers.find(item=>!item.passed && front>=item.x) : undefined;
   if(laser){
     if(isLaserActive(laser,game.elapsedTicks) && !isCrouching(game)){
       fail(game,"laser");
@@ -896,7 +945,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     }
     laser.passed=true;
   }
-  const ghost = game.ghosts.find((g) => !g.cleared && front >= g.x);
+  const ghost = game.direction === 1 ? game.ghosts.find((g) => !g.cleared && front >= g.x) : undefined;
   if (ghost) {
     if (isCrouching(game)) ghost.cleared = true;
     else {
@@ -904,7 +953,7 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
       return game.status;
     }
   }
-  const reachedGoal = game.goals.find((item) => !item.skipped && !item.reached && game.px >= item.x);
+  const reachedGoal = game.direction === 1 ? game.goals.find((item) => !item.skipped && !item.reached && game.px >= item.x) : undefined;
   if (reachedGoal) {
     if (!game.optionalObjectives && game.coins.filter((coin) => coin.collected).length < game.requiredCoins) fail(game, "coin");
     else if (!game.optionalObjectives && game.switches.filter((item) => item.skipped && item.trap).length < game.requiredSkips) fail(game, "skip");

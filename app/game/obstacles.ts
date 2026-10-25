@@ -177,6 +177,28 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.restore();
   }
 
+  for (const mirror of game.mirrors) {
+    const x=worldToScreenX(game,mirror.x);
+    if(x < -45 || x > GAME.width+45) continue;
+    const top=GAME.groundY - 105;
+    ctx.save();
+    ctx.shadowColor=mirror.used ? "#8ba3ac" : "#8b6bcc";
+    ctx.shadowBlur=mirror.used ? 0 : 13;
+    ctx.strokeStyle=mirror.used ? "#8298a5" : "#7254b9";
+    ctx.lineWidth=6;
+    ctx.beginPath();
+    ctx.roundRect(x-17,top,34,90,15);
+    ctx.stroke();
+    ctx.fillStyle=mirror.used ? "#dce3e7" : "#d9eaff";
+    ctx.fill();
+    ctx.shadowBlur=0;
+    ctx.fillStyle="#28344d";
+    ctx.font="bold 15px sans-serif";
+    ctx.fillText(mirror.used ? "○" : mirror.fromDirection===1 ? "←" : "→",x-8,top+45);
+    ctx.font="bold 12px sans-serif";
+    ctx.fillText("かがみ",x-24,top-9);
+    ctx.restore();
+  }
   for (const portal of game.portals) {
     const x=worldToScreenX(game,portal.x);
     const destination=worldToScreenX(game,portal.targetX);

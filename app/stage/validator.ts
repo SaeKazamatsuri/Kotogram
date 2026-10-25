@@ -110,11 +110,13 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
     if (value.objects.length > MAX_STAGE_OBJECTS) issues.push({ path: "objects", message: "too many objects" });
     const objectIds = new Set<string>();
     const placements = new Set<string>();
-    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "verticalPlatform", "laser", "bridge", "key", "chest", "portal"]);
+    const knownTypes = new Set(["wall", "ghost", "hole", "goal", "coin", "switch", "door", "conveyor", "fragileFloor", "wind", "pressurePlate", "movingPlatform", "verticalPlatform", "laser", "bridge", "key", "chest", "portal", "mirror"]);
     const doors = new Map<string, number>();
     const switches: { x: number; target: string; path: string; trap: boolean; sequenceStep?: number }[] = [];
     const pressurePlates: { x: number; width: number; target: string; path: string }[] = [];
     const bridges: { x: number; width: number; target: string; path: string }[] = [];
+    const mirrors: { id: string; x: number; fromDirection: string; path: string }[] = [];
+    const revealCoins: { mirrorId: string; x: number; path: string }[] = [];
     const keyLocations = new Map<string, number>();
     const chestLinks: { path:string; keyId:string; x:number }[] = [];
     let coinCount = 0;
@@ -131,6 +133,19 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         else if (objectIds.has(obj.id)) issues.push({ path: path + ".id", message: "duplicate object ID" });
         else objectIds.add(obj.id);
       } else if (requireIds) issues.push({ path: path + ".id", message: "explicit object ID required" });
+      if (obj.type === "mirror") {
+        if (typeof obj.id !== "string" || !obj.id.trim()) issues.push({path:path+".id",message:"mirror ID required"});
+        if (obj.fromDirection !== "left" && obj.fromDirection !== "right")
+          issues.push({path:path+".fromDirection",message:"mirror fromDirection must be left or right"});
+        if (isNonnegativeFinite(obj.position) && typeof obj.id === "string")
+          mirrors.push({id:obj.id,x:obj.position,fromDirection:obj.fromDirection as string,path});
+      }
+      if (obj.revealAfterMirrorId !== undefined) {
+        if (obj.type !== "coin" || typeof obj.revealAfterMirrorId !== "string" || !obj.revealAfterMirrorId.trim())
+          issues.push({path:path+".revealAfterMirrorId",message:"revealAfterMirrorId requires a coin and mirror ID"});
+        else if (isNonnegativeFinite(obj.position))
+          revealCoins.push({mirrorId:obj.revealAfterMirrorId,x:obj.position,path});
+      }
       if (obj.type === "portal") {
         if (!isNonnegativeFinite(obj.targetPosition) || (obj.targetPosition as number) < (Number(obj.position) + 240) ||
           (obj.targetPosition as number) > (Number(obj.position) + 1200))
@@ -253,6 +268,41 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
         if (placements.has(positionKey)) issues.push({ path, message: "duplicate type and position" });
         placements.add(positionKey);
         furthestObstacle = Math.max(furthestObstacle, obj.position + ((obj.type === "conveyor" || obj.type === "fragileFloor" || obj.type === "wind" || obj.type === "pressurePlate" || obj.type === "movingPlatform" || obj.type === "verticalPlatform" || obj.type === "bridge") && typeof obj.width === "number" ? obj.width : 0));
+      }
+    }
+    if (mirrors.length !== 0 && mirrors.length !== 2)
+      issues.push({path:"objects",message:"mirror stage needs exactly two paired mirrors"});
+    if (revealCoins.length && mirrors.length !== 2)
+      issues.push({path:"objects",message:"delayed coin requires a paired mirror route"});
+    if (mirrors.length === 2) {
+      const [left, right] = [...mirrors].sort((a,b)=>a.x-b.x);
+      if (left.fromDirection !== "left" || right.fromDirection !== "right")
+        issues.push({path:"objects",message:"left mirror must face left and right mirror must face right"});
+      if (left.x < GAME.playerScreenX + GAME.approachBase + 160)
+        issues.push({path:left.path+".position",message:"left mirror must have a clear starting approach"});
+      if (right.x-left.x < 320 || right.x-left.x > 1200)
+        issues.push({path:right.path+".position",message:"mirrors must be 320..1200 apart"});
+      if (isPositiveFinite(value.goal) && right.x > (value.goal as number)-240)
+        issues.push({path:right.path+".position",message:"right mirror needs 240 units before goal"});
+      for(const [i,obj] of value.objects.entries()) {
+        if (!isObject(obj) || !isNonnegativeFinite(obj.position) || obj.type === "mirror") continue;
+        if (obj.type === "coin") {
+          if (obj.position > left.x-64 && obj.position < right.x+64 &&
+              !revealCoins.some(item=>item.path===`objects[${i}]`))
+            issues.push({path:`objects[${i}].position`,message:"coins in mirror corridor must wait for reflection"});
+          continue;
+        }
+        const spanEnd=obj.position+(isPositiveFinite(obj.width)?obj.width as number:0);
+        if(spanEnd>=left.x-64 && obj.position<=right.x+64)
+          issues.push({path:`objects[${i}].position`,message:"mirror corridor must be clear of other hazards"});
+      }
+      if (!revealCoins.length) issues.push({path:"objects",message:"mirror route requires at least one revealed coin"});
+      if (value.optionalObjectives !== true) issues.push({path:"optionalObjectives",message:"mirror route rewards must be optional"});
+      for(const coin of revealCoins){
+        if(coin.mirrorId !== right.id)
+          issues.push({path:coin.path+".revealAfterMirrorId",message:"coin must unlock at the right mirror"});
+        if(coin.x < left.x+90 || coin.x > right.x-90)
+          issues.push({path:coin.path+".position",message:"revealed coin must sit inside mirror corridor"});
       }
     }
     for (const chest of chestLinks) {

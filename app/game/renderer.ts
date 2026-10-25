@@ -176,7 +176,7 @@ export function renderGameFrame(ctx: CanvasRenderingContext2D, game: GameState, 
   ctx.fillRect(12, 12, 180, 32);
   ctx.fillStyle = "#0f172a";
   ctx.font = "bold 15px sans-serif";
-  ctx.fillText(game.status === "failed" ? "あっ！" : actionLabels[pose], 22, 34);
+  ctx.fillText(game.status === "failed" ? "あっ！" : game.direction === -1 ? "← もどる" : actionLabels[pose], 22, 34);
 
   const repeat = getRepeatProgress(game);
   if (repeat) {
