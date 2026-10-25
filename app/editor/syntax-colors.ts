@@ -18,9 +18,9 @@ export function syntaxPieces(line: string, tokens: readonly Token[]): SyntaxPiec
 
 export const TOKEN_CLASS: Record<TokenKind | "plain", string> = {
   condition: "text-[#155e75] underline decoration-2 decoration-[#155e75]",
-  action: "text-[#6d28d9] font-black",
+  action: "text-[#6d28d9] font-bold",
   attribute: "text-[#92400e] bg-[#ffedca] underline decoration-dotted decoration-2",
-  number: "text-[#9a3412] font-black",
+  number: "text-[#9a3412] font-bold",
   count: "text-[#1d4ed8]",
   repeat: "text-[#1d4ed8] underline decoration-dashed",
   end: "text-[#1d4ed8] underline decoration-dashed",
