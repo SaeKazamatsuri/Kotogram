@@ -67,6 +67,12 @@
       "role": "regression",
       "source": "もろいゆかとぶ\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared"
+    },
+    {
+      "name": "hidden-last-gate-shortcut",
+      "role": "regression",
+      "source": "もろいゆかとぶ\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\n2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり\nとびらをやぶる",
+      "expect": "cleared"
     }
   ]
 }
