@@ -2,7 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { validateStageCases, usesSecretAction } from "../app/stage/validator.ts";
-import { getScoreReference, countSourceCharacters, ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID } from "../app/scoring/score.ts";
+import { getScoreReference, countSourceCharacters, compareRuns, ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID } from "../app/scoring/score.ts";
+import { analyzeProgram } from "../app/language/parser.ts";
+import { createGame, runToCompletion } from "../app/game/core.ts";
+import { objectiveProgress } from "../app/scoring/objectives.ts";
 import { validateScope, validateRunPayload, verifyRunResult } from "../worker/validation.mjs";
 
 const read = (path) => JSON.parse(readFileSync(new URL("../" + path, import.meta.url), "utf8"));
@@ -23,8 +26,16 @@ test("thirty stages freeze beginner, short, fast and independently registered ov
     }
     const allClears = report.cases.filter(x => x.outcome === "cleared");
     const overall = report.cases.find(x => x.role === "overall");
-    // Optional objectives are weighted by completion; raw time*chars no longer defines best overall.
-    if (!stage.optionalObjectives) assert.equal(overall.product, Math.min(...allClears.map(x => x.product)), entry.id + ": best-known product");
+    if (stage.optionalObjectives) {
+      const adjusted = allClears.map(entryCase => {
+        const game = runToCompletion(createGame(stage, analyzeProgram(entryCase.source).program));
+        return { ...entryCase, completionBp: objectiveProgress(game).completionBp };
+      });
+      const best = adjusted.reduce((winner, candidate) => compareRuns("overall", candidate, winner) < 0 ? candidate : winner);
+      assert.equal(overall.source, best.source, entry.id + ": best adjusted overall source");
+    } else {
+      assert.equal(overall.product, Math.min(...allClears.map(x => x.product)), entry.id + ": best-known product");
+    }
     const base = report.cases.find(x => x.role === "beginner");
     const reference = getScoreReference(entry.id, entry.version ?? manifest.version);
     assert.equal(base.elapsedTicks, reference.timeTicks, entry.id);
