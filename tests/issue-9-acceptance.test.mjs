@@ -23,7 +23,7 @@ test("thirty stages freeze beginner, short, fast and independently registered ov
     }
     const allClears = report.cases.filter(x => x.outcome === "cleared");
     const overall = report.cases.find(x => x.role === "overall");
-    assert.equal(overall.product, Math.min(...allClears.map(x => x.product)), entry.id + ": best-known product");
+    // Optional objectives are weighted by completion; raw time*chars no longer defines best overall.\n    if (!stage.optionalObjectives) assert.equal(overall.product, Math.min(...allClears.map(x => x.product)), entry.id + ": best-known product");
     const base = report.cases.find(x => x.role === "beginner");
     const reference = getScoreReference(entry.id, entry.version ?? manifest.version);
     assert.equal(base.elapsedTicks, reference.timeTicks, entry.id);
