@@ -6,7 +6,7 @@ import { validateStageCases } from "../app/stage/validator.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
 import { createGame, runToCompletion } from "../app/game/core.ts";
 import { objectiveProgress } from "../app/scoring/objectives.ts";
-import { getScoreReference } from "../app/scoring/score.ts";
+import { getScoreReference, compareRuns, countSourceCharacters } from "../app/scoring/score.ts";
 import { verifyRunResult } from "../worker/validation.mjs";
 
 const read = (path) => JSON.parse(readFileSync(new URL("../"+path,import.meta.url),"utf8"));
@@ -49,7 +49,16 @@ test("stage 21 makes saving code vs collecting chest rewards a meaningful scored
   assert.equal(short.elapsedTicks,670);
   assert.equal(overall.elapsedTicks,383);
   assert.equal(objectiveProgress(short).completionBp,6500);
-  assert.equal(objectiveProgress(overall).completionBp,10000);
+  assert.equal(objectiveProgress(overall).completionBp,6500);
+  const fullBonus=run(checks.cases.find((item)=>item.name==="p2-full-bonus-compact-sprint").source);
+  assert.equal(fullBonus.elapsedTicks,383);
+  assert.equal(objectiveProgress(fullBonus).completionBp,10000);
+  const scored=(source,result)=>({source,runId:source,elapsedTicks:result.elapsedTicks,charCount:countSourceCharacters(source),completionBp:objectiveProgress(result).completionBp});
+  const partial=scored(lookup("overall").source,overall);
+  const full=scored(checks.cases.find((item)=>item.name==="p2-full-bonus-compact-sprint").source,fullBonus);
+  assert.ok(compareRuns("time",full,partial)<0);
+  assert.ok(compareRuns("overall",partial,full)<0);
+
 });
 
 test("stage 22, 27, 28 medium pace routes beat walk while preserving shortest code choice",()=>{
