@@ -36,6 +36,29 @@ test("ステージ画面の描画が見え、画面の横はみ出しがない",
   await canvas.screenshot({ path: `test-artifacts/visual-${testInfo.project.name}.png`, animations: "disabled" });
 });
 
+test("失敗後も開始地点を下見でき、オブジェクト名と色分けが見える", async ({ page }) => {
+  test.setTimeout(45000);
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("かべをみつけたらじゃんぷする");
+  await expect(page.locator("pre").first()).toContainText("かべをみつけたらじゃんぷする");
+  await expect(page.locator("pre span").filter({ hasText: "かべ" }).first()).toHaveClass(/underline/);
+  await expect(page.locator("pre span").filter({ hasText: "じゃんぷ" }).first()).toHaveClass(/font-black/);
+  const canvas = page.locator("canvas");
+  const hoverWall = async () => {
+    const bounds = await canvas.boundingBox();
+    if (!bounds) throw new Error("Missing canvas bounds");
+    await page.mouse.move(bounds.x + bounds.width * 610 / 720, bounds.y + bounds.height * 234 / 360);
+    await expect(page.getByRole("tooltip")).toHaveText("かべ");
+  };
+  await hoverWall();
+  await editor.fill("あるく");
+  await page.getByRole("button", { name: "動かす" }).click();
+  await expect(page.getByRole("dialog", { name: "ステージしっぱい" })).toBeVisible({ timeout: 20000 });
+  await page.getByRole("button", { name: "コードを直す" }).click();
+  await hoverWall();
+});
+
 test("ステージの通信失敗後に画面から再読みこみできる", async ({ page }) => {
   let failedOnce = false;
   await page.route("**/stages/stage-1.json", async (route) => {
