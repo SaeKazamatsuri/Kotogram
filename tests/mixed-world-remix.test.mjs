@@ -19,6 +19,14 @@ for(const n of [13,17,21,24]){
    return {name:c.name,role:c.role,status:first.status,reason:first.failureReason,ticks:first.elapsedTicks,
       chars:countSourceCharacters(c.source),bp:objectiveProgress(first).completionBp};
   });
-  console.log("MIXED_WORLD_REPORT "+JSON.stringify({n,results}));
+  for (const [index, actual] of results.entries()) {
+    const expected = cases[index];
+    assert.equal(actual.status, expected.expect, expected.name);
+    if (expected.failureReason) assert.equal(actual.reason, expected.failureReason, expected.name);
+    if (expected.expectedTicks !== undefined) assert.equal(actual.ticks, expected.expectedTicks, expected.name);
+  }
+  assert.equal(results.find(x=>x.role==="beginner")?.bp,10000);
+  if(n===17)assert.equal(results.find(x=>x.name==="fragile-floor-ignored")?.reason,"hole");
+  if(n===21)assert.equal(results.find(x=>x.name==="optional-coin-low-score")?.bp,3000);
  });
 }
