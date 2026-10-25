@@ -39,7 +39,7 @@ test("visible scenes omit English and stage titles use elementary kanji", () => 
   assert.match(manifest.stages[3].title, /4回/);
   assert.match(manifest.stages[5].title, /とる/);
   assert.match(manifest.stages[6].title, /おす/);
-  assert.match(manifest.stages[7].title, /3回/);
+  assert.match(manifest.stages[7].title, /色と 形/);
 });
 
 test("devtools launcher is not visible in the public game UI", () => {
