@@ -65,3 +65,18 @@ test("hover hitboxes follow scrolling and distinguish wall, hole, switch, and gh
   assert.equal(inspectGameObject(game, 700, 0), null);
   assert.equal(inspectGameObject(game, Number.NaN, 200), null);
 });
+
+test("inspection follows rendered coin, key, wind and vertical-platform geometry", () => {
+  const game = createGame({ goal: 2500, objects: [
+    { type: "coin", position: 600 },
+    { type: "key", position: 700 },
+    { type: "wind", position: 900, width: 100, multiplier: 0.8 },
+    { type: "verticalPlatform", position: 1100, width: 80, topY: 170, travelY: 30, period: 120 },
+  ] });
+  game.px = GAME.playerScreenX + 500;
+  assert.equal(inspectGameObject(game, 100, 258)?.name, "コイン");
+  assert.equal(inspectGameObject(game, 222, 241)?.name, "かぎ");
+  assert.equal(inspectGameObject(game, 450, 135)?.name, "風");
+  assert.equal(inspectGameObject(game, 640, 170)?.name, "上下する足場");
+  assert.equal(inspectGameObject(game, 450, 125), null);
+});
