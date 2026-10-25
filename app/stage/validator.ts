@@ -141,6 +141,14 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
           switches.push({ x: obj.position, target: obj.targetDoorId, path, trap: obj.trap === true, sequenceStep: typeof obj.sequenceStep === "number" ? obj.sequenceStep : undefined });
         }
       }
+      if (obj.type === "ghost" && (obj.patrolRange !== undefined || obj.patrolPeriod !== undefined)) {
+        if (!Number.isSafeInteger(obj.patrolRange) || (obj.patrolRange as number) < 20 || (obj.patrolRange as number) > 180)
+          issues.push({ path: path + ".patrolRange", message: "ghost patrolRange must be an integer between 20 and 180" });
+        if (!Number.isSafeInteger(obj.patrolPeriod) || (obj.patrolPeriod as number) < 40 || (obj.patrolPeriod as number) > 600 || (obj.patrolPeriod as number) % 2 !== 0)
+          issues.push({ path: path + ".patrolPeriod", message: "ghost patrolPeriod must be an even integer between 40 and 600" });
+        if (isNonnegativeFinite(obj.position) && typeof obj.patrolRange === "number" && obj.position - obj.patrolRange < GAME.playerScreenX + 80)
+          issues.push({ path: path + ".patrolRange", message: "ghost patrol must leave a safe starting approach" });
+      }
       if (obj.type === "door" && (typeof obj.id !== "string" || !obj.id.trim())) issues.push({ path: path + ".id", message: "door ID required" });
       if (obj.type === "door" && obj.breakable !== undefined && typeof obj.breakable !== "boolean") issues.push({ path: path + ".breakable", message: "breakable must be boolean" });
       if (obj.type === "door" && obj.vaultable !== undefined && typeof obj.vaultable !== "boolean") issues.push({ path: path + ".vaultable", message: "vaultable must be boolean" });
