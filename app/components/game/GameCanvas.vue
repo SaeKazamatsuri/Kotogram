@@ -64,8 +64,8 @@ function draw(visualTick = props.running ? game.elapsedTicks : Math.floor(lastId
   const ctx = canvas.value?.getContext("2d");
   if (!ctx) return;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const view = !props.running && previewX > 0 ? { ...game, px: previewX } : game;
-  renderGameFrame(ctx, view, resolveScenePalette(props.stage.id ? worldPaletteForStage(props.stage.id) : props.stage.meta?.bg), visualTick, !props.running, failureProgress, reducedMotion);
+  const view = !props.running && previewX > 0 ? { ...game, px: game.px + previewX } : game;
+  renderGameFrame(ctx, view, resolveScenePalette(props.stage.id ? worldPaletteForStage(props.stage.id) : props.stage.meta?.bg), visualTick, !props.running, failureProgress, reducedMotion, props.running ? 0 : -previewX);
 }
 
 function stop() {
@@ -179,7 +179,7 @@ watch(() => props.program, () => {
 }, { deep: true });
 
 function previewLimit(): number {
-  return Math.max(0, game.goalX - 100);
+  return Math.max(0, game.goalX - GAME.width + 150);
 }
 
 function previewMove(position: number) {
