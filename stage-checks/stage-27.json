@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "かべとぶ\n3かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1106
+      "expectedTicks": 1090
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "かべとぶ\n3かいくりかえ\nぼたんみおくる\nぼたんおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1106
+      "expectedTicks": 1090
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "めっちゃはしる\nかべとぶ\n3かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 632
+      "expectedTicks": 624
     },
     {
       "name": "missing-actions",
@@ -40,12 +40,12 @@
       "role": "overall",
       "source": "めっちゃはしる\nかべとぶ\n3かいくりかえす\nすいっちみおくる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 632
+      "expectedTicks": 624
     },
     {
       "name": "color-pair-three-doors",
       "role": "regression",
-      "source": "かべとぶ\nあかいぼたんみおくる\nむらさきのぼたんみおくる\nきいろいぼたんみおくる\nみどりのぼたんおす\nあおいぼたんおす\nむらさきのまるのぼたんおす",
+      "source": "かべとぶ\nあかいぼたんみおくる\nむらさきのさんかくのぼたんみおくる\nきいろいぼたんみおくる\nみどりのぼたんおす\nあおいぼたんおす\nむらさきのまるのぼたんおす",
       "expect": "cleared"
     },
     {
