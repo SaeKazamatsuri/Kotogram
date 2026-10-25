@@ -47,6 +47,12 @@
       "role": "regression",
       "source": "むらさきのぼたんみおくる\nあかいぼたんみおくる\nあおいほしのぼたんおす\nみどりのぼたんおす\nこいんとる",
       "expect": "cleared"
+    },
+    {
+      "name": "skip-optional-bonus-route",
+      "role": "regression",
+      "source": "あおいほしのぼたんおす\nみどりのぼたんおす",
+      "expect": "cleared"
     }
   ]
 }
