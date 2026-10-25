@@ -509,8 +509,10 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[], ac
       continue;
     }
     if (condition === "door") {
-      const target = nextTarget(game.doors.filter((door) => !door.open && !door.vaulted), game.px);
-      if (target && target.x - game.px <= range) found.set(target.id, target);
+      const target = game.doors.find(door => !door.open && !door.vaulted && door.x + GAME.pad >= game.px);
+      const triggerRange = action === "powerJump" && target?.vaultable && game.winds.length === 0
+        ? aimedJumpRange(game.vx, GAME.doorWidth, true) : range;
+      if (target && target.x - game.px <= triggerRange) found.set(target.id, target);
       continue;
     }
     if (condition === "pressurePlate") {
