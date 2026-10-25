@@ -38,9 +38,9 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "もろいゆかとぶ\nかべとぶ\nてきかがむ",
+      "source": "もろいゆかとぶ\nめっちゃはしる\nかべとぶ\nおばけしゃがむ",
       "expect": "cleared",
-      "expectedTicks": 1252
+      "expectedTicks": 716
     },
     {
       "name": "fragile-floor-ignored",
