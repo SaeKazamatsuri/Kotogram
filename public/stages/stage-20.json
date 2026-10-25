@@ -4,8 +4,9 @@
   "scrollSpeed": 3,
   "requiredSkips": 1,
   "learningObjectives": [
-    "ちがう ギミックを 見て動こう",
-    "いつもの動きと ちがう方法を ためしてみよう"
+    "青い△を おしてから 黄色い☆を おそう",
+    "先に あぶない×を 見おくろう",
+    "2つの ボタンを おすと 門が あくよ"
   ],
   "objects": [
     {
@@ -18,13 +19,18 @@
       "type": "switch",
       "position": 940,
       "targetDoorId": "door-5",
-      "trap": true
+      "trap": true,
+      "color": "red",
+      "shape": "cross"
     },
     {
       "id": "safe-3",
       "type": "switch",
       "position": 1170,
-      "targetDoorId": "door-5"
+      "targetDoorId": "door-5",
+      "color": "blue",
+      "shape": "triangle",
+      "sequenceStep": 1
     },
     {
       "id": "door-5",
@@ -35,19 +41,28 @@
       "id": "ghost-5",
       "type": "ghost",
       "position": 1700
+    },
+    {
+      "id": "safe-order-2",
+      "type": "switch",
+      "position": 1250,
+      "targetDoorId": "door-5",
+      "color": "yellow",
+      "shape": "star",
+      "sequenceStep": 2
     }
   ],
   "meta": {
-    "title": "かべの先の スイッチ",
+    "title": "2つを順番に おす門",
     "bg": "sunset",
-    "hint": "ちがう ギミックを 見て動こう",
+    "hint": "青い△の あとで 黄色い☆を おそう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "あなを こえるために ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
       "coin": "コインを ぜんぶ とろう",
-      "door": "門の 前に スイッチが あるよ",
-      "trap": "あかいスイッチは おさないでね",
+      "door": "2つのボタンを 順に おすと門が あくよ",
+      "trap": "正しいボタンを 正しい順で おしてみよう",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
   }
