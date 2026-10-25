@@ -37,8 +37,8 @@ for (const number of [8, 10]) {
     for (const source of ["すいっちみおくる\nこいんとる\nとびらをやぶる", "すいっちみおくる\nこいんとる\nとびらめっちゃとぶ"]) {
       const run = play(stage, source);
       assert.equal(run.status, "cleared", source);
-      assert.equal(objectiveProgress(run).completionBp, 6889, source);
-      assert.equal(verifyRunResult({stageId: `stage-${number}`, source, elapsedTicks: run.elapsedTicks, completionBp: 6889}), run.elapsedTicks);
+      assert.equal(objectiveProgress(run).completionBp, 7396, source);
+      assert.equal(verifyRunResult({stageId: `stage-${number}`, source, elapsedTicks: run.elapsedTicks, completionBp: 7396}), run.elapsedTicks);
       assert.throws(() => verifyRunResult({stageId: `stage-${number}`, source, elapsedTicks: run.elapsedTicks, completionBp: 1200}), /objective progress/);
     }
   });
