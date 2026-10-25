@@ -56,16 +56,16 @@ test("quick goal rewards speed while treasure goal rewards completion", () => {
   assert.equal(near.status, "cleared");
   assert.equal(far.status, "cleared");
   assert.equal(near.selectedGoalId, "quick-goal");
-  assert.equal(near.goalBonusBp, 7000);
+  assert.equal(near.goalBonusBp, 5000);
   assert.deepEqual(near.goals.map((item) => item.reached), [true, false]);
   assert.equal(far.goalBonusBp, 10000);
   assert.equal(near.coins.filter((coin) => coin.collected).length, 1);
   assert.equal(far.coins.filter((coin) => coin.collected).length, 2);
-  assert.equal(objectiveProgress(near).completionBp, 4550);
+  assert.equal(objectiveProgress(near).completionBp, 3250);
   assert.equal(objectiveProgress(far).completionBp, 10000);
   assert.ok(near.elapsedTicks < far.elapsedTicks);
   assert.equal(run(sourceFar).elapsedTicks, far.elapsedTicks);
-  assert.equal(verifyStageRunResult(stage,{source:sourceNear,elapsedTicks:near.elapsedTicks,completionBp:4550}),near.elapsedTicks);
+  assert.equal(verifyStageRunResult(stage,{source:sourceNear,elapsedTicks:near.elapsedTicks,completionBp:3250}),near.elapsedTicks);
   assert.equal(verifyStageRunResult(stage,{source:sourceFar,elapsedTicks:far.elapsedTicks,completionBp:10000}),far.elapsedTicks);
   assert.throws(()=>verifyStageRunResult(stage,{source:sourceNear,elapsedTicks:near.elapsedTicks,completionBp:10000}),/objective progress/);
   assert.throws(()=>verifyStageRunResult(stage,{source:sourceFar,elapsedTicks:near.elapsedTicks,completionBp:10000}),/verified clear time/);
@@ -73,7 +73,9 @@ test("quick goal rewards speed while treasure goal rewards completion", () => {
   const nearRun=full(near,sourceNear),farRun=full(far,sourceFar);
   assert.ok(calculateScores(reference,nearRun).overall>0);
   assert.ok(calculateScores(reference,farRun).overall>0);
-  assert.notEqual(compareRuns("time",nearRun,farRun),0);
+  assert.ok(compareRuns("time",farRun,nearRun)<0);
+  assert.ok(compareRuns("chars",nearRun,farRun)<0);
+  assert.ok(compareRuns("overall",nearRun,farRun)<0);
 });
 
 test("skipping the near goal without a safe continuation loses to a wall", () => {
