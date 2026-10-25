@@ -29,7 +29,7 @@ defineProps<{
       paddingBottom: paddingBottom + 'px',
       transform: `translateY(-${scrollTop}px)`,
     }">
-      <div v-for="(state, index) in states" :key="index" class="flex items-center justify-between gap-1 px-1.5 font-mono text-[12px] font-bold"
+      <div v-for="(state, index) in states" :key="index" data-editor-gutter-row class="flex items-center justify-between gap-1 px-1.5 font-mono text-[12px] font-bold"
         :data-execution="failureLine === index + 1 ? 'last-action' : activeLines?.includes(index + 1) ? 'fired' : sustainedLines?.some((item) => item.line === index + 1) ? 'sustained' : waitingLine === index + 1 ? 'waiting' : repeatLine === index + 1 ? 'repeat' : monitoringLines?.includes(index + 1) ? 'monitoring' : null"
         :data-mode="sustainedLines?.find((item) => item.line === index + 1)?.action"
         :class="failureLine === index + 1 ? 'bg-[#ffe3b8] text-[#553911]' : activeLines?.includes(index + 1) ? 'bg-[#aaf0d0] text-[#123a31]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3] text-[#255743]' : waitingLine === index + 1 ? 'bg-[#e3d9ff] text-[#34265f]' : monitoringLines?.includes(index + 1) ? 'bg-[#f1f5f9] text-[#415a71]' : 'text-[#5d667a]'" :style="{ height: (lineHeights?.[index] ?? lineHeight) + 'px' }">
