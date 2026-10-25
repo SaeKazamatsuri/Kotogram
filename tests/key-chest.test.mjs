@@ -63,7 +63,19 @@ test("stage21's full bonus and skipped chest routes are deterministic and versio
       chars:countSourceCharacters(c.source),bp:objectiveProgress(a).completionBp,
       opened:a.chests.filter(x=>x.opened).length});
   }
-  console.log("CHEST_STAGE_REPORT "+JSON.stringify({stage:"stage-21",report}));
+  for(const [index,actual] of report.entries()){
+    const expected=checks[index];
+    assert.equal(actual.status,expected.expect,expected.name);
+    if(expected.expectedTicks!==undefined) assert.equal(actual.ticks,expected.expectedTicks,expected.name);
+    if(expected.failureReason) assert.equal(actual.reason,expected.failureReason,expected.name);
+  }
+  assert.equal(report.find(x=>x.role==="beginner")?.bp,10000);
+  assert.equal(report.find(x=>x.name==="key-without-opening-chest")?.bp,6500);
+  assert.equal(report.find(x=>x.name==="chest-without-picking-up-key")?.bp,6500);
+  assert.equal(report.find(x=>x.name==="optional-coin-low-score")?.bp,3000);
+  assert.equal(report.find(x=>x.role==="fast")?.ticks,383);
+  assert.equal(report.find(x=>x.role==="overall")?.ticks,383);
+  assert.equal(report.find(x=>x.role==="short")?.chars,32);
   assert.equal(getScoreReference("stage-21","2026-10-25-r2")?.timeTicks,670);
   assert.ok(getScoreReference("stage-21","2026-10-25-r3"));
 });
