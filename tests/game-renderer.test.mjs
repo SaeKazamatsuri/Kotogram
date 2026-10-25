@@ -70,3 +70,25 @@ test("idle preview clouds keep stable coordinates across clock changes", () => {
   assert.notDeepEqual(clouds(game, 20, false), clouds(game, 5000, false));
   assert.notDeepEqual(clouds(game, 20, true), clouds({ ...game, px: game.px + 300 }, 20, true));
 });
+
+
+test("下見中のカメラ移動ではキャラクターの世界位置を保持する", () => {
+  const game = createGame({ goal: 2200, objects: [{ type: "wall", position: 640 }] });
+  const initialX = game.px;
+  const characterScreenX = (previewOffset) => {
+    const calls = [];
+    const ctx = new Proxy({}, {
+      get(target, key) {
+        if (key === "createLinearGradient") return () => ({ addColorStop() {} });
+        return target[key] ?? ((...args) => calls.push([key, ...args]));
+      },
+      set(target, key, value) { target[key] = value; return true; },
+    });
+    const camera = { ...game, px: game.px + previewOffset };
+    renderGameFrame(ctx, camera, resolveScenePalette("day"), 0, true, 1, true, -previewOffset);
+    return calls.filter(([method]) => method === "translate").at(-1)?.[1];
+  };
+  assert.equal(characterScreenX(0), GAME.playerScreenX + GAME.playerWidth / 2);
+  assert.equal(characterScreenX(300), GAME.playerScreenX + GAME.playerWidth / 2 - 300);
+  assert.equal(game.px, initialX);
+});
