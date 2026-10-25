@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createGame } from "../app/game/core.ts";
+import { createGame, GAME } from "../app/game/core.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
 import { renderGameFrame } from "../app/game/renderer.ts";
 import { resolveScenePalette } from "../app/game/scenery.ts";
