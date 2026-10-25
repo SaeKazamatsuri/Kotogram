@@ -9,6 +9,7 @@ import { advanceFrameClock, createFrameClock } from "~/game/frame-clock";
 import { resolveScenePalette } from "~/game/scenery";
 import { worldPaletteForStage } from "~/stage/world-map";
 import { renderGameFrame } from "~/game/renderer";
+import { inspectGameObject, type InspectedObject } from "~/game/object-inspection";
 import { failureAnimationDuration } from "~/game/character";
 import { gameAudioEvents, snapshotGameAudio } from "~/game/audio-events";
 import { objectiveProgress, type ObjectiveProgress } from "~/scoring/objectives";
@@ -27,6 +28,8 @@ const emit = defineEmits<{
 }>();
 
 const canvas = ref<HTMLCanvasElement | null>(null);
+const hoveredObject = ref<InspectedObject | null>(null);
+const hoverPosition = ref({ x: 0, y: 0 });
 let game: GameState = createReadyGame(props.stage, props.program);
 let frame = 0;
 let frameClock = createFrameClock();
@@ -71,6 +74,7 @@ function draw(visualTick = props.running ? game.elapsedTicks : Math.floor(lastId
 
 function stop() {
   previewDrag = null;
+  hoveredObject.value = null;
   lastBgmRate = 1;
   actionHighlights.reset();
   if (lastTrace) {
@@ -161,6 +165,9 @@ watch(() => props.running, (running) => {
   if (running) start();
   else {
     stop();
+    game = createReadyGame(props.stage, props.program);
+    previewX = 0;
+    draw();
     scheduleIdle();
   }
 }, { immediate: true });
@@ -168,6 +175,7 @@ watch(() => props.stage, () => {
   previewX = 0;
   if (props.running) start();
   else {
+    hoveredObject.value = null;
     game = createReadyGame(props.stage, props.program);
     draw();
     scheduleIdle();
@@ -193,16 +201,32 @@ function previewMove(position: number) {
 
 function onPreviewPointerDown(event: PointerEvent) {
   if (props.running || !event.isPrimary || event.button !== 0) return;
+  hoveredObject.value = null;
   previewDrag = { pointerId: event.pointerId, clientX: event.clientX, position: previewX };
   canvas.value?.setPointerCapture(event.pointerId);
 }
 
 function onPreviewPointerMove(event: PointerEvent) {
-  if (!previewDrag || event.pointerId !== previewDrag.pointerId || !canvas.value) return;
-  const width = canvas.value.getBoundingClientRect().width;
-  if (width <= 0) return;
-  previewMove(previewDrag.position - (event.clientX - previewDrag.clientX) * GAME.width / width);
+  if (!canvas.value) return;
+  const rect = canvas.value.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return;
+  if (previewDrag) {
+    if (event.pointerId !== previewDrag.pointerId) return;
+    previewMove(previewDrag.position - (event.clientX - previewDrag.clientX) * GAME.width / rect.width);
+    return;
+  }
+  if (event.pointerType === "touch") return;
+  const x = (event.clientX - rect.left) * GAME.width / rect.width;
+  const y = (event.clientY - rect.top) * GAME.height / rect.height;
+  const view = !props.running && previewX > 0 ? { ...game, px: game.px + previewX } : game;
+  hoveredObject.value = inspectGameObject(view, x, y);
+  hoverPosition.value = {
+    x: Math.max(12, Math.min(88, x / GAME.width * 100)),
+    y: Math.max(14, Math.min(85, y / GAME.height * 100)),
+  };
 }
+
+function clearHover() { hoveredObject.value = null; }
 
 function onPreviewPointerEnd(event: PointerEvent) {
   if (!previewDrag || event.pointerId !== previewDrag.pointerId) return;
@@ -237,6 +261,9 @@ onBeforeUnmount(stop);
 
 <template>
   <div class="flex flex-col gap-3">
-    <canvas ref="canvas" class="w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" :class="{ 'cursor-grab touch-none active:cursor-grabbing': !running }" :tabindex="running ? -1 : 0" :aria-label="running ? 'ゲームを実行中' : 'ステージの下見。ドラッグ、または左右キーで先を見る'" @pointerdown="onPreviewPointerDown" @pointermove="onPreviewPointerMove" @pointerup="onPreviewPointerEnd" @pointercancel="onPreviewPointerEnd" @keydown="onPreviewKeydown" />
+    <div class="relative">
+      <canvas ref="canvas" class="block w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" :class="{ 'cursor-grab touch-none active:cursor-grabbing': !running }" :tabindex="running ? -1 : 0" :aria-label="running ? 'ゲームを実行中' : 'ステージの下見。ドラッグ、または左右キーで先を見る'" @pointerdown="onPreviewPointerDown" @pointermove="onPreviewPointerMove" @pointerup="onPreviewPointerEnd" @pointercancel="onPreviewPointerEnd" @pointerleave="clearHover" @keydown="onPreviewKeydown" />
+      <div v-if="hoveredObject" role="tooltip" class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border-2 border-[#38485c] bg-[#fffaf1] px-3 py-1.5 text-sm font-black text-[#172439] shadow-md" :style="{ left: hoverPosition.x + '%', top: hoverPosition.y + '%' }">{{ hoveredObject.name }}</div>
+    </div>
   </div>
 </template>
