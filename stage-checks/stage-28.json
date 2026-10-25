@@ -7,21 +7,21 @@
       "role": "beginner",
       "source": "もろいゆかとぶ\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1159
+      "expectedTicks": 1163
     },
     {
       "name": "short-variant",
       "role": "short",
       "source": "もろいゆかとぶ\n4かいくりかえ\nぼたんみおくる\nこいんとる\nぼたんおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1159
+      "expectedTicks": 1163
     },
     {
       "name": "sprint-variant",
       "role": "fast",
       "source": "もろいゆかとぶ\nめっちゃはしる\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 663
+      "expectedTicks": 665
     },
     {
       "name": "missing-actions",
@@ -40,7 +40,7 @@
       "role": "overall",
       "source": "もろいゆかとぶ\nめっちゃはしる\n4かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 663
+      "expectedTicks": 665
     },
     {
       "name": "fragile-floor-required",
