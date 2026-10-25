@@ -576,6 +576,12 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
       item.x+GAME.pad>=game.px && item.x-game.px<=GAME.switchPressRange);
     if(!portal) return false;
     portal.used=true;
+    // Bypassed hazards must not collide from behind immediately after a warp.
+    // They are intentionally *not* credited as skipped switches or coins.
+    for(const door of game.doors) if(door.x+GAME.doorWidth<portal.targetX) door.passed=true;
+    for(const wall of game.walls) if(wall.x+GAME.wallWidth<portal.targetX) wall.cleared=true;
+    for(const ghost of game.ghosts) if(ghost.x+GAME.ghostWidth<portal.targetX) ghost.cleared=true;
+    for(const laser of game.lasers) if(laser.x<portal.targetX) laser.passed=true;
     game.px=portal.targetX;
     // Travel consumes the usual single simulation tick and does not reset
     // watcher state, elapsed time or previously collected bonus objectives.
