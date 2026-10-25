@@ -35,6 +35,18 @@ export function drawHoles(ctx: CanvasRenderingContext2D, game: GameState): void 
 }
 
 export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState, visualTick = game.elapsedTicks): void {
+  for (const wind of game.winds) {
+    const x = worldToScreenX(game, wind.x);
+    if (x > GAME.width || x + wind.w < 0) continue;
+    ctx.fillStyle = wind.multiplier > 1 ? "rgba(61,153,174,0.14)" : "rgba(97,98,165,0.15)";
+    ctx.fillRect(x, GAME.groundY - 150, wind.w, 133);
+    ctx.fillStyle = wind.multiplier > 1 ? "#237b90" : "#65579f";
+    ctx.font = "bold 17px sans-serif";
+    const breeze = wind.multiplier > 1 ? "➜" : "←";
+    for (let offset = 16; offset < wind.w; offset += 44) {
+      ctx.fillText(breeze, x + offset, GAME.groundY - 55 - ((Math.floor(offset / 44) + Math.floor(visualTick / 15)) % 3) * 27);
+    }
+  }
   for (const floor of game.conveyors) {
     const x = worldToScreenX(game, floor.x);
     if (x > GAME.width || x + floor.w < 0) continue;

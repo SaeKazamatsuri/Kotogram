@@ -35,7 +35,8 @@ test("two advanced worlds require deliberate pace choices, but precise instructi
 test("previous leaderboard scopes remain visible while new versions are used for server replay", () => {
   for (const number of [13, 25]) {
     const id = "stage-" + number;
-    assert.equal(manifest.stages.find((stage) => stage.id === id)?.version, "2026-10-25-r2");
+    const newestVersion = number === 25 ? "2026-10-25-r3" : "2026-10-25-r2";
+    assert.equal(manifest.stages.find((stage) => stage.id === id)?.version, newestVersion);
     const scope = (stageVersion) => ({
       seasonId: SEASON_ID, stageId: id, stageVersion, engineVersion: ENGINE_VERSION,
       languageVersion: LANGUAGE_VERSION, scoringVersion: SCORING_VERSION,
@@ -45,15 +46,21 @@ test("previous leaderboard scopes remain visible while new versions are used for
     assert.throws(() => validateRunPayload(scope("2026-10-20-r1")), /old stage version is read-only/);
     const original = getScoreReference(id, "2026-10-20-r1");
     const revised = getScoreReference(id, "2026-10-25-r2");
-    assert.ok(original && revised);
+    const latest = getScoreReference(id, newestVersion);
+    assert.ok(original && revised && latest);
     assert.equal(original.product, revised.product);
+    if (number === 25) {
+      assert.equal(validateScope(scope(newestVersion)).stageVersion, newestVersion);
+      assert.throws(() => validateRunPayload(scope("2026-10-25-r2")), /old stage version is read-only/);
+      assert.notEqual(revised.product, latest.product);
+    }
     const checks = read("stage-checks/" + id + ".json");
     const baseline = checks.cases.find((item) => item.role === "beginner");
     const stage = read("public/stages/" + id + ".json");
     const validation = validateStageCases(id, stage, checks);
     const measured = validation.cases.find((item) => item.role === "beginner");
     assert.ok(measured?.pass, id);
-    assert.equal(verifyRunResult({ stageId: id, source: baseline.source, elapsedTicks: measured.elapsedTicks }), revised.timeTicks);
+    assert.equal(verifyRunResult({ stageId: id, source: baseline.source, elapsedTicks: measured.elapsedTicks }), latest.timeTicks);
   }
 });
 

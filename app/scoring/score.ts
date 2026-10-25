@@ -77,6 +77,7 @@ const knownReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-25": { ...knownReferences["stage-25"]!, stageVersion: "2026-10-25-r2" },
   "stage-19": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 41, product: 26732 },
   "stage-2": { ...knownReferences["stage-2"]!, stageVersion: "2026-10-20-r1" },
   "stage-3": { stageVersion: "2026-10-20-r1", scoringVersion: SCORING_VERSION, timeTicks: 834, characters: 14, product: 11676 },
@@ -85,6 +86,9 @@ const revisedReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 };
 
 const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
+  "stage-23": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 1446, characters: 15, product: 21690 },
+  "stage-25": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 1261, characters: 20, product: 25220 },
+  "stage-29": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 1047, characters: 28, product: 29316 },
   "stage-14": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 25, product: 16300 },
   "stage-19": { stageVersion: "2026-10-25-r3", scoringVersion: SCORING_VERSION, timeTicks: 662, characters: 41, product: 27142 },
   "stage-27": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 1090, characters: 29, product: 31610 },
@@ -99,7 +103,7 @@ const latestReferences: Record<string, Omit<ScoreReference, "stageId">> = {
 
   "stage-18": { stageVersion: "2026-10-25-r2", scoringVersion: SCORING_VERSION, timeTicks: 652, characters: 9, product: 5868 },
   "stage-13": { ...knownReferences["stage-13"]!, stageVersion: "2026-10-25-r2" },
-  "stage-25": { ...knownReferences["stage-25"]!, stageVersion: "2026-10-25-r2" },
+
   "stage-5": { ...revisedReferences["stage-5"]!, stageVersion: "2026-10-20-r2" },
 };
 

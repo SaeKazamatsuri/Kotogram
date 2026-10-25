@@ -23,6 +23,7 @@ export type SwitchStageObject = { type: "switch"; position: number; id: string; 
 export type DoorStageObject = { type: "door"; position: number; id: string; breakable?: boolean; vaultable?: boolean; autoCloseTicks?: number };
 export type ConveyorStageObject = { type: "conveyor"; position: number; id?: string; width: number; multiplier: number };
 export type FragileFloorStageObject = { type: "fragileFloor"; position: number; id?: string; width: number; breakAfterTicks: number };
+export type WindStageObject = { type: "wind"; position: number; id?: string; width: number; multiplier: number };
 export type StageObject =
   | WallStageObject
   | GhostStageObject
@@ -33,6 +34,7 @@ export type StageObject =
   | DoorStageObject
   | ConveyorStageObject
   | FragileFloorStageObject
+  | WindStageObject
   | { type: string; [key: string]: unknown };
 export type StageData = {
   id?: string;

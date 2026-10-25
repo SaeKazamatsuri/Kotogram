@@ -4,8 +4,9 @@
   "scrollSpeed": 3,
   "requiredCoins": 2,
   "learningObjectives": [
-    "速く進むときも ていねいに",
-    "おばけの すぐあとに あなが ある"
+    "向かい風だと ジャンプの 進みが おそくなるよ",
+    "コインは とると点数が 上がるよ",
+    "速さをかえたら ジャンプのタイミングを見よう"
   ],
   "objects": [
     {
@@ -39,21 +40,29 @@
       "id": "ghost-6",
       "type": "ghost",
       "position": 3340
+    },
+    {
+      "id": "headwind-gap",
+      "type": "wind",
+      "position": 3380,
+      "width": 165,
+      "multiplier": 0.82
     }
   ],
   "meta": {
-    "title": "速さと コイン",
+    "title": "速さと 風と コイン",
     "bg": "twilight",
-    "hint": "さいごの おばけの あとに あなが あるよ。走る速さを ためそう",
+    "hint": "向かい風の あなと コインで 速さを くふうしよう",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
-      "hole": "おばけの あとに あなも くるよ。あなを ねらうか、前で 歩いてみよう",
+      "hole": "向かい風に ちゅういして ジャンプしよう",
       "enemy": "おばけの 下を くぐってみよう",
-      "coin": "コインを ぜんぶ とろう",
+      "coin": "コインを 取ると 点数が あがるよ",
       "door": "門の 前に スイッチが あるよ",
       "trap": "あかいスイッチは おさないでね",
       "skip": "あかいスイッチを どうやって こえたかな"
     }
   },
-  "jumpSensorProfile": "centered-holes"
+  "jumpSensorProfile": "centered-holes",
+  "optionalObjectives": true
 }
