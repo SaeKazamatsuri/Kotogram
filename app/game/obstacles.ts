@@ -302,6 +302,35 @@ export function drawWorldObjects(ctx: CanvasRenderingContext2D, game: GameState,
     ctx.beginPath();
     ctx.roundRect(x + 3, y + 1, width, GAME.doorHeight - 3, 4);
     ctx.fill();
+    if (!door.open && !door.broken && door.breakable) {
+      ctx.strokeStyle = "#f7bf88";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x + 8, y + 35);
+      ctx.lineTo(x + 17, y + 47);
+      ctx.lineTo(x + 11, y + 58);
+      ctx.lineTo(x + 22, y + 72);
+      ctx.stroke();
+    }
+    if (!door.open && !door.vaulted && door.vaultable) {
+      ctx.fillStyle = "#b3e7ff";
+      ctx.font = "bold 17px sans-serif";
+      ctx.fillText("↑", x + 7, y - 10);
+      ctx.strokeStyle = "#b3e7ff";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x - 4, y + 4);
+      ctx.lineTo(x - 4, y + 38);
+      ctx.stroke();
+    }
+    if (!door.open && !door.breakable && !door.vaultable) {
+      ctx.strokeStyle = "#dce3ef";
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(x + 4, y + 47);
+      ctx.lineTo(x + GAME.doorWidth - 3, y + 47);
+      ctx.stroke();
+    }
     if (door.broken) {
       ctx.fillStyle = "#ffd4a0";
       ctx.fillRect(x + 4, GAME.groundY - 18, 12, 5);

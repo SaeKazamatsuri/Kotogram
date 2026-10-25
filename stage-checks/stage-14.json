@@ -47,6 +47,25 @@
       "role": "regression",
       "source": "あかいばつのぼたんみおくる\nむらさきのほしのぼたんみおくる\nみどりのぼたんおす\nきいろいぼたんおす",
       "expect": "cleared"
+    },
+    {
+      "name": "secret-vault-with-sprint",
+      "role": "regression",
+      "source": "めっちゃはしる\nとびらをすごいじゃんぷ",
+      "expect": "cleared"
+    },
+    {
+      "name": "bonus-preserving-vault-route",
+      "role": "regression",
+      "source": "すいっちみおくる\nとびらをすごいじゃんぷ",
+      "expect": "cleared"
+    },
+    {
+      "name": "ordinary-jump-still-fails-on-gate",
+      "role": "negative",
+      "source": "とびらじゃんぷ",
+      "expect": "failed",
+      "failureReason": "door"
     }
   ]
 }
