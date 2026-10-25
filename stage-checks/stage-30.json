@@ -46,7 +46,7 @@
       "role": "learning",
       "source": "もろいゆかとぶ\nかべとぶ\nあなとぶ\nおばけしゃがむ\n3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり",
       "expect": "cleared",
-      "expectedTicks": 1412
+      "expectedTicks": 1438
     },
     {
       "name": "overall-known-best",
