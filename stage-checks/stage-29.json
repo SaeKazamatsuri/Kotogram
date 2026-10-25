@@ -45,9 +45,9 @@
     {
       "name": "overall-known-best",
       "role": "overall",
-      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "source": "めっちゃはしる\nかべ1かいすごいじゃんぷ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared",
-      "expectedTicks": 1047
+      "expectedTicks": 597
     },
     {
       "name": "last-bonus-can-be-missed",
