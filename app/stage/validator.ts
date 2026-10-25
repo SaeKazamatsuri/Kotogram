@@ -95,6 +95,7 @@ export function validateStage(stageId: string, value: unknown, requireIds = fals
   if (value.requiredCoins !== undefined && (!Number.isSafeInteger(value.requiredCoins) || (value.requiredCoins as number) < 0)) issues.push({ path: "requiredCoins", message: "requiredCoins must be a nonnegative integer" });
   if (value.requiredSkips !== undefined && (!Number.isSafeInteger(value.requiredSkips) || (value.requiredSkips as number) < 0)) issues.push({ path: "requiredSkips", message: "requiredSkips must be a nonnegative integer" });
   if (value.optionalObjectives !== undefined && typeof value.optionalObjectives !== "boolean") issues.push({ path: "optionalObjectives", message: "optionalObjectives must be a boolean" });
+  if (value.secretDoorRiskBp !== undefined && (!Number.isSafeInteger(value.secretDoorRiskBp) || (value.secretDoorRiskBp as number)<6000 || (value.secretDoorRiskBp as number)>10000)) issues.push({path:"secretDoorRiskBp",message:"secretDoorRiskBp must be 6000..10000"});
   if (isObject(value.meta) && value.meta.dictionary !== undefined) {
     const guide = value.meta.dictionary;
     if (!isObject(guide) || ["conditions", "actions", "examples"].some((key) =>

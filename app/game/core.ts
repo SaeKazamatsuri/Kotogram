@@ -30,6 +30,7 @@ export type GameStage = {
   requiredCoins?: number;
   requiredSkips?: number;
   optionalObjectives?: boolean;
+  secretDoorRiskBp?: number;
   jumpSensorProfile?: "centered-holes";
   objects?: unknown;
   walls?: unknown;
@@ -92,6 +93,7 @@ export type GameState = {
   requiredCoins: number;
   requiredSkips: number;
   optionalObjectives: boolean;
+  secretDoorRiskBp: number;
   goalX: number;
   program: GameRule[];
   fired: Set<string>[];
@@ -412,6 +414,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
     optionalObjectives: stage.optionalObjectives === true,
+    secretDoorRiskBp: typeof stage.secretDoorRiskBp === "number" ? stage.secretDoorRiskBp : 10000,
     goalX,
     program: watchers.map((rule) => ({ ...rule, conds: rule.conds ? [...rule.conds] : undefined })),
     fired: watchers.map(() => new Set<string>()),

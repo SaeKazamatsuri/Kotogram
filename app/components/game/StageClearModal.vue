@@ -79,10 +79,11 @@ function bestScore(kind: "time" | "chars" | "overall") {
         <span v-else-if="mastery.loopChallenge" class="rounded-full bg-[#e7edf2] px-3 py-2 text-[#38556a]">次は くりかえしでも クリアしてみよう</span>
         <span v-if="mastery.secretFound" class="rounded-full bg-[#fff0c6] px-3 py-2 text-[#67451c]"><Icon name="lucide:sparkles" class="game-icon" aria-hidden="true" /> ひみつの 近道を みつけた！</span>
       </div>
-      <div v-if="objectives && (objectives.coinTarget || objectives.skipTarget)" class="mb-4 rounded-xl border border-[#bbd6e1] bg-[#eaf4f7] px-3 py-2 text-sm font-black text-[#244254]" aria-label="おつかいの達成">
+      <div v-if="objectives && (objectives.coinTarget || objectives.skipTarget || objectives.secretDoorRiskBp)" class="mb-4 rounded-xl border border-[#bbd6e1] bg-[#eaf4f7] px-3 py-2 text-sm font-black text-[#244254]" aria-label="おつかいの達成">
         <p v-if="objectives.coinTarget">コイン {{ objectives.collected }}/{{ objectives.coinTarget }}</p>
         <p v-if="objectives.skipTarget">見送った ボタン {{ objectives.skipped }}/{{ objectives.skipTarget }}</p>
-        <p v-if="objectives.completionBp < 10000" class="text-[#994c22]">{{ goalChoice ? "ゴールと おつかいの 点数倍率は" : "おつかいが のこったので 点数が" }} {{ Math.round(objectives.completionBp / 100) }}%に なったよ</p>
+        <p v-if="objectives.secretDoorRiskBp">ひみつのわざの 点数倍率 {{ Math.round(objectives.secretDoorRiskBp / 100) }}%</p>
+        <p v-if="objectives.completionBp < 10000" class="text-[#994c22]">{{ goalChoice || objectives.secretDoorRiskBp ? "ゴール・わざ・おつかいの 合計倍率は" : "おつかいが のこったので 点数が" }} {{ Math.round(objectives.completionBp / 100) }}%に なったよ</p>
       </div>
       <div v-if="scores" class="mb-4 rounded-2xl bg-[#fff0c6] p-3">
         <div class="grid grid-cols-3 gap-2" aria-label="3つの点数">
