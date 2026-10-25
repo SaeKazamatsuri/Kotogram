@@ -7,6 +7,7 @@ import LineGutter from "./LineGutter.vue";
 import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
+import { syntaxPieces, TOKEN_CLASS } from "~/editor/syntax-colors";
 import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
 const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
@@ -65,6 +66,7 @@ function onCompositionEnd(event: CompositionEvent) {
 const lineArray = computed(() => text.value.replace(/\r/g, "").split("\n"));
 watch(lineArray, (value) => emit("update:lines", value), { immediate: true });
 const analysis = computed(() => analyzeProgram(lineArray.value, props.dictionary ?? {}));
+const highlightedLines = computed(() => lineArray.value.map((line, index) => syntaxPieces(line, analysis.value.tokens[index] ?? [])));
 const lineStates = computed(() => {
   const states: ("valid" | "invalid" | "empty" | "loop")[] = lineArray.value.map((line) => line.trim() ? "valid" : "empty");
   for (const tokens of analysis.value.tokens) {
@@ -229,9 +231,12 @@ defineExpose({ getText });
               :class="failureLine === index + 1 ? 'bg-[#ffe3b8]' : activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : monitoringLines?.includes(index + 1) ? 'bg-[#f1f5f9]' : ''" />
           </div>
         </div>
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+        <pre class="m-0 box-border w-full whitespace-pre-wrap break-all p-4 text-[18px] font-bold leading-[1.7]" :style="{ transform: 'translateY(-' + taScrollTop + 'px)' }"><template v-for="(line, index) in highlightedLines" :key="index"><span v-for="(piece, pieceIndex) in line" :key="pieceIndex" :class="TOKEN_CLASS[piece.kind]">{{ piece.text }}</span><span v-if="index < highlightedLines.length - 1">{{ '\n' }}</span></template></pre>
+      </div>
       <textarea
         ref="textarea"
-        class="relative h-full w-full min-h-0 min-w-0 resize-none p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a]" :class="running || failureLine != null ? 'bg-transparent' : 'bg-[#fffaf1] focus:bg-white'"
+        class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] text-transparent caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2]"
         :value="text"
         :readonly="running"
         aria-label="コードを書く"
