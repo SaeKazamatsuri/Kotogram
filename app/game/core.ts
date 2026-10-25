@@ -276,7 +276,7 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     }
     if (condition === "door") {
       const target = nextTarget(game.doors.filter((door) => !door.open && !door.vaulted), game.px);
-      if (target && target.x - game.px <= GAME.doorBreakRange) found.set(target.id, target);
+      if (target && target.x - game.px <= range) found.set(target.id, target);
       continue;
     }
     if (condition === "coin") {
