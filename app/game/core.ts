@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "movingPlatform" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -43,6 +43,7 @@ export type Coin = { id: string; x: number; collected: boolean };
 export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
+export type MovingPlatform = { id: string; x: number; originX: number; w: number; travel: number; period: number };
 export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
 export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape; sequenceStep: number | null };
 export type GameState = {
@@ -66,6 +67,7 @@ export type GameState = {
   switches: Switch[];
   conveyors: Conveyor[];
   winds: WindZone[];
+  movingPlatforms: MovingPlatform[];
   fragileFloors: FragileFloor[];
   requiredCoins: number;
   requiredSkips: number;
@@ -230,6 +232,17 @@ function makeWinds(stage: GameStage): WindZone[] {
   })).sort((a,b)=>a.x-b.x);
 }
 
+export function movingPlatformX(platform: Pick<MovingPlatform,"originX"|"travel"|"period">, tick: number): number {
+  const phase = (tick % platform.period) / platform.period;
+  return platform.originX + platform.travel * (phase <= 0.5 ? phase * 2 : 2 - phase * 2);
+}
+function makeMovingPlatforms(stage: GameStage): MovingPlatform[] {
+  return fromStage(stage,"movingPlatform").map((item,index)=>({
+    id: typeof item.id === "string" ? item.id : "movingPlatform:" + index,
+    x:item.position as number,originX:item.position as number,
+    w:item.width as number, travel:item.travel as number,period:item.period as number
+  })).sort((a,b)=>a.x-b.x);
+}
 function makeFragileFloors(stage: GameStage): FragileFloor[] {
   return fromStage(stage, "fragileFloor").map((item, i) => ({
     id: typeof item.id === "string" ? item.id : "fragileFloor:" + i,
@@ -251,9 +264,10 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   for (const door of doors) door.sequenceLength = switches.filter(item => item.targetDoorId === door.id && item.sequenceStep !== null).length;
   const conveyors = makeConveyors(stage);
   const winds = makeWinds(stage);
+  const movingPlatforms = makeMovingPlatforms(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...movingPlatforms.map((o) => o.originX + o.travel + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -278,6 +292,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     switches,
     conveyors,
     winds,
+    movingPlatforms,
     fragileFloors,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
@@ -333,6 +348,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     if (condition === "door") {
       const target = nextTarget(game.doors.filter((door) => !door.open && !door.vaulted), game.px);
       if (target && target.x - game.px <= range) found.set(target.id, target);
+      continue;
+    }
+    if (condition === "movingPlatform") {
+      const target = nextTarget(game.movingPlatforms,game.px);
+      if (target && target.x - game.px <= range) found.set(target.id,target);
       continue;
     }
     if (condition === "wind") {
@@ -523,8 +543,12 @@ function applySequence(game: GameState, observe?: TraceObserver): void {
 }
 
 function overHole(game: GameState, x: number): boolean {
-  return game.holes.some((hole) => x >= hole.x && x <= hole.x + hole.w) ||
+  const unsafe = game.holes.some((hole) => x >= hole.x && x <= hole.x + hole.w) ||
     game.fragileFloors.some((floor) => floor.collapsed && x >= floor.x && x <= floor.x + floor.w);
+  if (!unsafe) return false;
+  const supported = game.py <= GAME.groundY - GAME.epsilon + 8 &&
+    game.movingPlatforms.some(platform => x >= platform.x && x <= platform.x + platform.w);
+  return !supported;
 }
 
 function fail(game: GameState, reason: GameFailReason) {
@@ -549,6 +573,15 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   if (game.status !== "running") return game.status;
   applySequence(game, observe);
   if (game.status !== "running") return game.status;
+  for (const platform of game.movingPlatforms) {
+    const next = movingPlatformX(platform,game.elapsedTicks + 1);
+    const midpoint = game.px + GAME.playerWidth/2;
+    const onPlatform = Math.abs(game.py - (GAME.groundY - GAME.epsilon)) < 0.1 &&
+      midpoint >= platform.x && midpoint <= platform.x + platform.w &&
+      game.holes.some(hole => midpoint >= hole.x && midpoint <= hole.x + hole.w);
+    if (onPlatform) game.px += next - platform.x;
+    platform.x = next;
+  }
   const movingFloor = game.conveyors.find((floor) => game.px >= floor.x && game.px <= floor.x + floor.w &&
     Math.abs(game.py - (GAME.groundY - GAME.epsilon)) < 0.1);
   // Wind changes horizontal velocity only during airborne ticks.
