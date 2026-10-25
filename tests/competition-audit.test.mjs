@@ -15,6 +15,11 @@ test("Competition audit replays all 30 ranked stages and respects actual score s
  assert.ok(summary.successfulRoutes>=30*4);
  assert.ok(stages.every(x=>x.frontierCount>=1));
  assert.deepEqual(summary.registeredOverallMismatch,[],"official overall must be consistent with measured runs");
+ console.log("COMPETITION_AUDIT_REPORT "+JSON.stringify({summary,rows:stages.map(r=>({
+   id:r.stageId,time:r.best.time.ticks,chars:r.best.chars.characters,overall:r.best.overall.score,
+   pace:r.timeGainPct,compact:r.charsGainPct,pareto:r.frontierCount,choices:r.differentObjectives,
+   penalty:r.optionalBypass.map(x=>x.pct)
+ }))}));
  for(const stage of stages){
    const entry=manifest.stages.find(x=>x.id===stage.stageId);
    const ref=getScoreReference(stage.stageId,entry.version??manifest.version);
