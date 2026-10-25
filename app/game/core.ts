@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | "portal" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | "movingPlatform" | "laser" | "bridge" | "key" | "chest" | "portal" | "goal" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -43,6 +43,7 @@ export type Coin = { id: string; x: number; collected: boolean; chestId?: string
 export type KeyItem = { id: string; x: number; collected: boolean };
 export type Chest = { id: string; x: number; keyId: string; opened: boolean; rewardId: string };
 export type Portal = { id: string; x: number; targetX: number; used: boolean };
+export type GoalChoice = { id: string; x: number; bonusBp: number; isFinal: boolean; skipped: boolean; reached: boolean };
 export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
@@ -72,6 +73,9 @@ export type GameState = {
   keys: KeyItem[];
   chests: Chest[];
   portals: Portal[];
+  goals: GoalChoice[];
+  goalBonusBp: number;
+  selectedGoalId: string | null;
   doors: Door[];
   switches: Switch[];
   conveyors: Conveyor[];
@@ -346,6 +350,12 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
   );
+  const specifiedGoals = fromStage(stage, "goal").sort((a, b) => (a.position as number) - (b.position as number));
+  const goals: GoalChoice[] = specifiedGoals.length === 2
+    ? specifiedGoals.map((item, index) => ({ id: item.id as string, x: item.position as number,
+      bonusBp: item.bonusBp as number, isFinal: index === 1, skipped: false, reached: false }))
+    : [{ id: specifiedGoals[0]?.id as string || "goal-default", x: goalX, bonusBp: 10000,
+      isFinal: true, skipped: false, reached: false }];
   return {
     status: "running",
     elapsedTicks: 0,
@@ -365,6 +375,9 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     keys,
     chests,
     portals,
+    goals,
+    goalBonusBp: 10000,
+    selectedGoalId: null,
     doors,
     switches,
     conveyors,
@@ -422,6 +435,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
         (!color || color === "*" || item.color === color) &&
         (!shape || shape === "*" || item.shape === shape)
       ), game.px);
+      if (target && target.x - game.px <= GAME.switchPressRange) found.set(target.id, target);
+      continue;
+    }
+    if (condition === "goal") {
+      const target = nextTarget(game.goals.filter((goal) => !goal.isFinal && !goal.skipped && !goal.reached), game.px);
       if (target && target.x - game.px <= GAME.switchPressRange) found.set(target.id, target);
       continue;
     }
@@ -524,6 +542,11 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
   if (action === "crouch") {
     issueCrouch(game);
     return true;
+  }
+  if (action === "skip" && sensedTargetId !== undefined) {
+    const goal = game.goals.find((item) => item.id === sensedTargetId && !item.isFinal && !item.skipped &&
+      item.x + GAME.pad >= game.px && item.x - game.px <= GAME.switchPressRange);
+    if (goal) { goal.skipped = true; return true; }
   }
   if (action === "press" || action === "skip") {
     const target = game.switches.find((item) =>
@@ -825,10 +848,16 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
       return game.status;
     }
   }
-  if (game.px >= game.goalX) {
+  const reachedGoal = game.goals.find((item) => !item.skipped && !item.reached && game.px >= item.x);
+  if (reachedGoal) {
     if (!game.optionalObjectives && game.coins.filter((coin) => coin.collected).length < game.requiredCoins) fail(game, "coin");
     else if (!game.optionalObjectives && game.switches.filter((item) => item.skipped && item.trap).length < game.requiredSkips) fail(game, "skip");
-    else game.status = "cleared";
+    else {
+      reachedGoal.reached = true;
+      game.selectedGoalId = reachedGoal.id;
+      game.goalBonusBp = reachedGoal.bonusBp;
+      game.status = "cleared";
+    }
   }
   return game.status;
 }
