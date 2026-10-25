@@ -137,9 +137,9 @@
     },
     {
       "id": "stage-24",
-      "title": "ジャンプのあとに 風",
+      "title": "とぶ・しゃがむ・ふむ床",
       "file": "/stages/stage-24.json",
-      "version": "2026-10-25-r2"
+      "version": "2026-10-25-r3"
     },
     {
       "id": "stage-25",

@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | "wind" | "pressurePlate" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -43,6 +43,7 @@ export type Coin = { id: string; x: number; collected: boolean };
 export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null; passed: boolean; sequenceLength: number; nextSequenceStep: number };
 export type Conveyor = { id: string; x: number; w: number; multiplier: number };
 export type WindZone = { id: string; x: number; w: number; multiplier: number };
+export type PressurePlate = { id: string; x: number; w: number; holdTicks: number; heldTicks: number; targetDoorId: string; activated: boolean };
 export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
 export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape; sequenceStep: number | null };
 export type GameState = {
@@ -66,6 +67,7 @@ export type GameState = {
   switches: Switch[];
   conveyors: Conveyor[];
   winds: WindZone[];
+  pressurePlates: PressurePlate[];
   fragileFloors: FragileFloor[];
   requiredCoins: number;
   requiredSkips: number;
@@ -230,6 +232,17 @@ function makeWinds(stage: GameStage): WindZone[] {
   })).sort((a,b)=>a.x-b.x);
 }
 
+function makePressurePlates(stage: GameStage): PressurePlate[] {
+  return fromStage(stage, "pressurePlate").map((item, index) => ({
+    id: typeof item.id === "string" ? item.id : "pressurePlate:" + index,
+    x: item.position as number,
+    w: item.width as number,
+    holdTicks: item.holdTicks as number,
+    targetDoorId: item.targetDoorId as string,
+    heldTicks: 0,
+    activated: false,
+  })).sort((a,b)=>a.x-b.x);
+}
 function makeFragileFloors(stage: GameStage): FragileFloor[] {
   return fromStage(stage, "fragileFloor").map((item, i) => ({
     id: typeof item.id === "string" ? item.id : "fragileFloor:" + i,
@@ -251,9 +264,10 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   for (const door of doors) door.sequenceLength = switches.filter(item => item.targetDoorId === door.id && item.sequenceStep !== null).length;
   const conveyors = makeConveyors(stage);
   const winds = makeWinds(stage);
+  const pressurePlates = makePressurePlates(stage);
   const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...winds.map((o) => o.x + o.w), ...pressurePlates.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -278,6 +292,7 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     switches,
     conveyors,
     winds,
+    pressurePlates,
     fragileFloors,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
@@ -333,6 +348,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     if (condition === "door") {
       const target = nextTarget(game.doors.filter((door) => !door.open && !door.vaulted), game.px);
       if (target && target.x - game.px <= range) found.set(target.id, target);
+      continue;
+    }
+    if (condition === "pressurePlate") {
+      const target = nextTarget(game.pressurePlates.filter(item=>!item.activated),game.px);
+      if (target && target.x - game.px <= range) found.set(target.id,target);
       continue;
     }
     if (condition === "wind") {
@@ -565,6 +585,18 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     game.powerJumpActive = false;
   }
   game.elapsedTicks += 1;
+  for (const plate of game.pressurePlates) {
+    if (plate.activated) continue;
+    const center = game.px + GAME.playerWidth / 2;
+    const grounded = Math.abs(game.py - (GAME.groundY - GAME.epsilon)) < 0.1;
+    plate.heldTicks = grounded && center >= plate.x && center <= plate.x + plate.w ? plate.heldTicks + 1 : 0;
+    if (plate.heldTicks < plate.holdTicks) continue;
+    const gate = game.doors.find(door=>door.id===plate.targetDoorId);
+    if (!gate) continue;
+    plate.activated = true;
+    gate.open = true;
+    gate.openedUntilTick = gate.autoCloseTicks ? game.elapsedTicks + gate.autoCloseTicks : null;
+  }
   for (const door of game.doors) {
     if (door.openedUntilTick !== null && !door.broken && game.elapsedTicks >= door.openedUntilTick) {
       door.open = false;
