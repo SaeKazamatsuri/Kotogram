@@ -1,7 +1,7 @@
 export type SwitchColor = "red" | "green" | "blue" | "yellow" | "purple";
 export type SwitchShape = "circle" | "cross" | "triangle" | "square" | "star";
 export type SwitchSelector = `switch:${SwitchColor | "*"}:${SwitchShape | "*"}`;
-export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | SwitchSelector;
+export type GameCondition = "wall" | "enemy" | "hole" | "coin" | "ahead" | "switch" | "door" | "conveyor" | "fragileFloor" | SwitchSelector;
 
 export const SWITCH_COLORS: readonly SwitchColor[] = ["red", "green", "blue", "yellow", "purple"];
 export const SWITCH_SHAPES: readonly SwitchShape[] = ["circle", "cross", "triangle", "square", "star"];
@@ -40,7 +40,9 @@ export type GameStage = {
 export type Barrier = { id: string; x: number; cleared: boolean };
 export type Hole = { id: string; x: number; w: number };
 export type Coin = { id: string; x: number; collected: boolean };
-export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean };
+export type Door = { id: string; x: number; open: boolean; broken: boolean; vaulted: boolean; breakable: boolean; vaultable: boolean; autoCloseTicks: number; openedUntilTick: number | null };
+export type Conveyor = { id: string; x: number; w: number; multiplier: number };
+export type FragileFloor = { id: string; x: number; w: number; breakAfterTicks: number; firstStepTick: number | null; collapsed: boolean };
 export type Switch = { id: string; x: number; targetDoorId: string; activated: boolean; skipped: boolean; trap: boolean; color: SwitchColor; shape: SwitchShape };
 export type GameState = {
   status: GameStatus;
@@ -61,6 +63,8 @@ export type GameState = {
   coins: Coin[];
   doors: Door[];
   switches: Switch[];
+  conveyors: Conveyor[];
+  fragileFloors: FragileFloor[];
   requiredCoins: number;
   requiredSkips: number;
   optionalObjectives: boolean;
@@ -175,7 +179,7 @@ function makeCoins(stage: GameStage): Coin[] {
 
 function makeDoors(stage: GameStage): Door[] {
   return fromStage(stage, "door")
-    .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true }))
+    .map((object) => ({ id: object.id as string, x: object.position as number, open: false, broken: false, vaulted: false, breakable: object.breakable === true, vaultable: object.vaultable === true, autoCloseTicks: typeof object.autoCloseTicks === "number" ? object.autoCloseTicks : 0, openedUntilTick: null }))
     .sort((a, b) => a.x - b.x);
 }
 
@@ -193,6 +197,23 @@ function makeSwitches(stage: GameStage): Switch[] {
     .sort((a, b) => a.x - b.x);
 }
 
+function makeConveyors(stage: GameStage): Conveyor[] {
+  return fromStage(stage, "conveyor").map((item, i) => ({
+    id: typeof item.id === "string" ? item.id : "conveyor:" + i,
+    x: item.position as number, w: typeof item.width === "number" ? item.width : 120,
+    multiplier: typeof item.multiplier === "number" ? item.multiplier : 1.5,
+  })).sort((a, b) => a.x - b.x);
+}
+
+function makeFragileFloors(stage: GameStage): FragileFloor[] {
+  return fromStage(stage, "fragileFloor").map((item, i) => ({
+    id: typeof item.id === "string" ? item.id : "fragileFloor:" + i,
+    x: item.position as number, w: typeof item.width === "number" ? item.width : 120,
+    breakAfterTicks: typeof item.breakAfterTicks === "number" ? item.breakAfterTicks : 25,
+    firstStepTick: null, collapsed: false,
+  })).sort((a, b) => a.x - b.x);
+}
+
 export function createGame(stage: GameStage, program: readonly GameRule[] | GameProgram = []): GameState {
   const watchers = Array.isArray(program) ? program : (program as GameProgram).watchers;
   const steps = Array.isArray(program) ? [] : (program as GameProgram).steps;
@@ -202,8 +223,10 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
   const coins = makeCoins(stage);
   const doors = makeDoors(stage);
   const switches = makeSwitches(stage);
+  const conveyors = makeConveyors(stage);
+  const fragileFloors = makeFragileFloors(stage);
   const goal = fromStage(stage, "goal")[0]?.position;
-  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x));
+  const lastObstacle = Math.max(0, ...walls.map((o) => o.x), ...ghosts.map((o) => o.x), ...holes.map((o) => o.x), ...coins.map((o) => o.x), ...doors.map((o) => o.x), ...switches.map((o) => o.x), ...conveyors.map((o) => o.x + o.w), ...fragileFloors.map((o) => o.x + o.w));
   const goalX = Math.max(
     isFiniteNumber(goal) ? goal : isFiniteNumber(stage.goal) ? stage.goal : GAME.defaultGoal,
     lastObstacle + GAME.approachBase + 160,
@@ -226,6 +249,8 @@ export function createGame(stage: GameStage, program: readonly GameRule[] | Game
     coins,
     doors,
     switches,
+    conveyors,
+    fragileFloors,
     requiredCoins: Number.isSafeInteger(stage.requiredCoins) && stage.requiredCoins! > 0 ? stage.requiredCoins! : 0,
     requiredSkips: Number.isSafeInteger(stage.requiredSkips) && stage.requiredSkips! > 0 ? stage.requiredSkips! : 0,
     optionalObjectives: stage.optionalObjectives === true,
@@ -279,6 +304,11 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
     }
     if (condition === "door") {
       const target = nextTarget(game.doors.filter((door) => !door.open && !door.vaulted), game.px);
+      if (target && target.x - game.px <= range) found.set(target.id, target);
+      continue;
+    }
+    if (condition === "conveyor" || condition === "fragileFloor") {
+      const target = nextTarget(condition === "conveyor" ? game.conveyors : game.fragileFloors, game.px);
       if (target && target.x - game.px <= range) found.set(target.id, target);
       continue;
     }
@@ -352,6 +382,7 @@ function acceptAction(game: GameState, action: GameAction, sensedTargetId?: stri
     }
     target.activated = true;
     door.open = true;
+    door.openedUntilTick = door.autoCloseTicks ? game.elapsedTicks + door.autoCloseTicks : null;
     return true;
   }
   if (action === "breakDoor") {
@@ -449,7 +480,8 @@ function applySequence(game: GameState, observe?: TraceObserver): void {
 }
 
 function overHole(game: GameState, x: number): boolean {
-  return game.holes.some((hole) => x >= hole.x && x <= hole.x + hole.w);
+  return game.holes.some((hole) => x >= hole.x && x <= hole.x + hole.w) ||
+    game.fragileFloors.some((floor) => floor.collapsed && x >= floor.x && x <= floor.x + floor.w);
 }
 
 function fail(game: GameState, reason: GameFailReason) {
@@ -463,7 +495,9 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
   if (game.status !== "running") return game.status;
   applySequence(game, observe);
   if (game.status !== "running") return game.status;
-  game.px += game.vx;
+  const movingFloor = game.conveyors.find((floor) => game.px >= floor.x && game.px <= floor.x + floor.w &&
+    Math.abs(game.py - (GAME.groundY - GAME.epsilon)) < 0.1);
+  game.px += game.vx * (movingFloor?.multiplier ?? 1);
   game.vy += GAME.gravity;
   game.py += game.vy;
   const front = game.px + GAME.playerWidth;
@@ -473,6 +507,21 @@ export function stepGame(game: GameState, observe?: TraceObserver): GameStatus {
     game.powerJumpActive = false;
   }
   game.elapsedTicks += 1;
+  for (const door of game.doors) {
+    if (door.openedUntilTick !== null && !door.broken && game.elapsedTicks >= door.openedUntilTick) {
+      door.open = false;
+      door.openedUntilTick = null;
+    }
+  }
+  for (const floor of game.fragileFloors) {
+    if (floor.collapsed) continue;
+    const standing = game.px >= floor.x && game.px <= floor.x + floor.w &&
+      Math.abs(game.py - (GAME.groundY - GAME.epsilon)) < 0.1;
+    if (standing && floor.firstStepTick === null) floor.firstStepTick = game.elapsedTicks;
+    if (floor.firstStepTick !== null && game.elapsedTicks - floor.firstStepTick >= floor.breakAfterTicks) {
+      floor.collapsed = true;
+    }
+  }
   if (game.py < GAME.groundY - GAME.epsilon - 8) {
     for (const item of game.switches) {
       if (!item.activated && !item.skipped && front >= item.x && game.px <= item.x + GAME.pad) {
