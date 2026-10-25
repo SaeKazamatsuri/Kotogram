@@ -35,6 +35,12 @@
       "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nこいんとる",
       "expect": "cleared",
       "expectedTicks": 487
+    },
+    {
+      "name": "optional-coins-low-score",
+      "role": "regression",
+      "source": "かべとぶ\nあなとぶ",
+      "expect": "cleared"
     }
   ]
 }
