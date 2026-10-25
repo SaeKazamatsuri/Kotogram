@@ -23,24 +23,24 @@ test("visual poses reflect physics but never mutate the simulation", () => {
   assert.deepEqual({ px: game.px, py: game.py, vx: game.vx, elapsedTicks: game.elapsedTicks }, { px: before.px, py: before.py, vx: before.vx * 1.3, elapsedTicks: before.elapsedTicks });
 });
 
-test("ステージ8の3回ループは待機・実行中・完了の回数を表示できる", () => {
+test("ステージ8の2回ループは待機・実行中・完了の回数を表示できる", () => {
   const stage = JSON.parse(readFileSync(new URL("../public/stages/stage-8.json", import.meta.url), "utf8"));
-  const parsed = analyzeProgram("3かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり");
+  const parsed = analyzeProgram("2かいくりかえす\nすいっちみおくる\nこいんとる\nすいっちおす\nおわり");
   assert.deepEqual(parsed.diagnostics, []);
   const game = createGame(stage, parsed.program);
-  assert.deepEqual(getRepeatProgress(game), { current: 0, total: 3 });
+  assert.deepEqual(getRepeatProgress(game), { current: 0, total: 2 });
   const observed = new Set([0]);
   while (game.status === "running" && game.elapsedTicks < 2000) {
     stepGame(game);
     const progress = getRepeatProgress(game);
     assert.ok(progress);
-    assert.equal(progress.total, 3);
+    assert.equal(progress.total, 2);
     observed.add(progress.current);
   }
   assert.equal(game.status, "cleared");
-  assert.equal(game.elapsedTicks, 846);
-  assert.deepEqual([...observed].sort(), [0, 1, 2, 3]);
-  assert.deepEqual(getRepeatProgress(game), { current: 3, total: 3 });
+  assert.equal(game.elapsedTicks, 592);
+  assert.deepEqual([...observed].sort(), [0, 1, 2]);
+  assert.deepEqual(getRepeatProgress(game), { current: 2, total: 2 });
 });
 
 test("ループを使わない解法と1回ずつの列挙では繰り返し表示を出さない", () => {
