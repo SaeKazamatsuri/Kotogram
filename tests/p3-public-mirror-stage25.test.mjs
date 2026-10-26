@@ -26,7 +26,7 @@ test("public mirror route and established stage25 strategies remain valid", () =
   assert.equal(report.pass, true, JSON.stringify(report));
   assert.equal(manifest.stages.find(x => x.id === "stage-25").version, scope.stageVersion);
   assert.equal(stage.objects.filter(x => x.type === "mirror").length, 2);
-  assert.equal(stage.requiredCoins, 3);
+  assert.equal(stage.requiredCoins, 5);
 
   const directSource = source("mirror-declined-sprint");
   const mirrorSource = source("mirror-return-full-sprint");
@@ -36,9 +36,9 @@ test("public mirror route and established stage25 strategies remain valid", () =
   assert.equal(returnRoute.status, "cleared");
   assert.equal(direct.mirrors.every(x => !x.used), true);
   assert.equal(returnRoute.mirrors.every(x => x.used), true);
-  assert.equal(direct.coins.find(x => x.id === "return-coin").collected, false);
-  assert.equal(returnRoute.coins.find(x => x.id === "return-coin").collected, true);
-  assert.equal(objectiveProgress(direct).completionBp, 7666);
+  assert.equal(direct.coins.filter(x => x.id.startsWith("return-coin-")).every(x => !x.collected), true);
+  assert.equal(returnRoute.coins.filter(x => x.id.startsWith("return-coin-")).every(x => x.collected), true);
+  assert.equal(objectiveProgress(direct).completionBp, 5800);
   assert.equal(objectiveProgress(returnRoute).completionBp, 10000);
   assert.ok(direct.elapsedTicks < returnRoute.elapsedTicks);
   assert.ok(countSourceCharacters(directSource) < countSourceCharacters(mirrorSource));
@@ -47,7 +47,7 @@ test("public mirror route and established stage25 strategies remain valid", () =
     const valid = { ...scope, runId: "00000000-0000-4000-8000-000000000001", playerId: "00000000-0000-4000-8000-000000000002", source: code, elapsedTicks: game.elapsedTicks, charCount: countSourceCharacters(code), completionBp: objectiveProgress(game).completionBp };
     assert.equal(validateRunPayload(valid).stageVersion, scope.stageVersion);
     assert.equal(verifyRunResult(valid), game.elapsedTicks);
-    assert.throws(() => verifyRunResult({ ...valid, completionBp: game === direct ? 10000 : 7666 }), /objective progress/);
+    assert.throws(() => verifyRunResult({ ...valid, completionBp: game === direct ? 10000 : 5800 }), /objective progress/);
     assert.throws(() => verifyRunResult({ ...valid, elapsedTicks: game.elapsedTicks - 1 }), /clear time/);
   }
 });
