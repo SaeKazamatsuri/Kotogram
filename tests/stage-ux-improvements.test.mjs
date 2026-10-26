@@ -5,7 +5,7 @@ import { analyzeProgram, tokenizeLine } from "../app/language/parser.ts";
 import { GAME, aimedJumpRange, createGame, stepGame } from "../app/game/core.ts";
 import { analyzeJumpTrajectories } from "../app/game/trajectory.ts";
 import { syntaxPieces, TOKEN_CLASS } from "../app/editor/syntax-colors.ts";
-import { inspectGameObject } from "../app/game/object-inspection.ts";
+import { inspectGameObject, OBJECT_NAMES } from "../app/game/object-inspection.ts";
 import conditionsDictionary from "../public/dictionary/conditions.json" with { type: "json" };
 
 const loadStage = (id) => JSON.parse(readFileSync(new URL("../public/stages/" + id + ".json", import.meta.url), "utf8"));
@@ -84,6 +84,11 @@ test("inspection follows rendered coin, key, wind and vertical-platform geometry
 
 
 test("every object hover uses a hiragana word accepted by the input dictionary", () => {
+  for (const [condition, name] of Object.entries(OBJECT_NAMES)) {
+    assert.equal(conditionsDictionary[condition][0], name, condition);
+  }
+  assert.equal(conditionsDictionary.switch[1], "ぼたん");
+  assert.equal(conditionsDictionary.door[1], "もん");
   assert.equal(conditionsDictionary.fragileFloor[0], "こわれるゆか");
   assert.equal(conditionsDictionary.movingPlatform[0], "うごくあしば");
   const samples = [
