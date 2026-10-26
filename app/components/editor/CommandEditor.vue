@@ -299,7 +299,7 @@ defineExpose({ getText });
     <p v-if="firstError" role="alert" class="border-t border-[#de9ea9] bg-[#fff1ef] px-4 py-3 text-sm font-black text-[#9f203c]">{{ firstError.line }} 行目：{{ firstError.message }}</p>
     <div class="flex flex-wrap items-center gap-3 border-t-2 border-[#7083a0] bg-[#243551] p-3">
       <button type="button" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
-      <button type="button" class="game-button game-button--night text-sm" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力</button>
+      <button type="button" class="game-button game-button--night text-sm" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力 <Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>
     </div>
     <div v-if="keyboardVisible" id="code-kana-keyboard" class="border-t border-[#7083a0] bg-[#243551] p-3">
       <KanaKeyboard :disabled="running || composing" @press="onSoftKey" />
