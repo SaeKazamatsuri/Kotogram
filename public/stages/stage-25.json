@@ -2,12 +2,12 @@
   "id": "stage-25",
   "goal": 3820,
   "scrollSpeed": 3,
-  "requiredCoins": 3,
+  "requiredCoins": 5,
   "learningObjectives": [
     "向かい風だと ジャンプの 進みが おそくなるよ",
     "コインは とると点数が 上がるよ",
     "速さをかえたら ジャンプのタイミングを見よう",
-    "かがみで 引きかえして ひみつの コインを とろう"
+    "かがみで 引きかえして 3まいの ひみつの コインを とろう"
   ],
   "objects": [
     {
@@ -24,19 +24,31 @@
     {
       "id": "return-mirror-left",
       "type": "mirror",
-      "position": 1080,
+      "position": 1020,
       "fromDirection": "left"
     },
     {
-      "id": "return-coin",
+      "id": "return-coin-1",
       "type": "coin",
-      "position": 1540,
+      "position": 1360,
+      "revealAfterMirrorId": "return-mirror-right"
+    },
+    {
+      "id": "return-coin-2",
+      "type": "coin",
+      "position": 1600,
+      "revealAfterMirrorId": "return-mirror-right"
+    },
+    {
+      "id": "return-coin-3",
+      "type": "coin",
+      "position": 1840,
       "revealAfterMirrorId": "return-mirror-right"
     },
     {
       "id": "return-mirror-right",
       "type": "mirror",
-      "position": 1980,
+      "position": 2060,
       "fromDirection": "right"
     },
     {
