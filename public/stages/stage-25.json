@@ -2,11 +2,12 @@
   "id": "stage-25",
   "goal": 3820,
   "scrollSpeed": 3,
-  "requiredCoins": 2,
+  "requiredCoins": 3,
   "learningObjectives": [
     "向かい風だと ジャンプの 進みが おそくなるよ",
     "コインは とると点数が 上がるよ",
-    "速さをかえたら ジャンプのタイミングを見よう"
+    "速さをかえたら ジャンプのタイミングを見よう",
+    "かがみで 引きかえして ひみつの コインを とろう"
   ],
   "objects": [
     {
@@ -21,10 +22,22 @@
       "position": 940
     },
     {
-      "id": "hole-3",
-      "type": "hole",
-      "position": 3456,
-      "width": 80
+      "id": "return-mirror-left",
+      "type": "mirror",
+      "position": 1080,
+      "fromDirection": "left"
+    },
+    {
+      "id": "return-coin",
+      "type": "coin",
+      "position": 1540,
+      "revealAfterMirrorId": "return-mirror-right"
+    },
+    {
+      "id": "return-mirror-right",
+      "type": "mirror",
+      "position": 1980,
+      "fromDirection": "right"
     },
     {
       "id": "wall-4",
@@ -47,12 +60,18 @@
       "position": 3380,
       "width": 165,
       "multiplier": 0.82
+    },
+    {
+      "id": "hole-3",
+      "type": "hole",
+      "position": 3456,
+      "width": 80
     }
   ],
   "meta": {
-    "title": "速さと 風と コイン",
+    "title": "風と コインと かがみ",
     "bg": "twilight",
-    "hint": "向かい風と あなでは、走る速さで ジャンプの タイミングが かわるよ。コインも とろう。",
+    "hint": "かがみで 引きかえると、もどる道だけに コインが あらわれるよ。取らなくても ゴールできるよ。",
     "failHints": {
       "wall": "かべの 手前で とんでみよう",
       "hole": "向かい風に ちゅういして ジャンプしよう",
