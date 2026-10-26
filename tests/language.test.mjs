@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { analyzeProgram, tokenizeLine, normalizeLine } from "../app/language/parser.ts";
+import { analyzeProgram, tokenizeLine, normalizeLine, CONTROL_WORDS, SWITCH_ATTRIBUTES } from "../app/language/parser.ts";
+import actionsDictionary from "../public/dictionary/actions.json" with { type: "json" };
+import conditionsDictionary from "../public/dictionary/conditions.json" with { type: "json" };
 import { createGame, runToCompletion } from "../app/game/core.ts";
 
 function valid(source, vocabulary) {
@@ -226,19 +228,49 @@ test("hints can be expressed using alternative obstacle names", () => {
   assert.deepEqual(valid("ひびがみえたらとぶ").rules[0].conds, ["fragileFloor"]);
 });
 
-test("mixed hiragana, katakana, kanji and printed symbols share the same switch rule", () => {
+test("hiragana, katakana and printed symbols share the same switch rule", () => {
   const base = valid("みどりとあかのぼたんをおす").rules;
   for (const source of [
     "みどりとあかのボタンをおす",
-    "緑と赤のボタンを押す".replace("押す", "おす"),
     "ミドリとアカのボタンをオス",
   ]) {
     assert.deepEqual(valid(source).rules, base, source);
   }
   assert.deepEqual(valid("あおい☆のボタンをおす").rules, valid("あおいほしのぼたんをおす").rules);
-  assert.deepEqual(valid("赤い×のボタンをみおくる").rules, valid("あかいばつのぼたんをみおくる").rules);
-  assert.deepEqual(valid("門をすごいジャンプ").rules, valid("とびらをすごいじゃんぷ").rules);
-  assert.deepEqual(valid("壁があったらジャンプ").rules, valid("かべがあったらじゃんぷ").rules);
+  assert.deepEqual(valid("あかい×のボタンをみおくる").rules, valid("あかいばつのぼたんをみおくる").rules);
+});
+
+test("every registered vocabulary phrase is free of kanji", () => {
+  const registered = [
+    ...Object.values(conditionsDictionary).flat(),
+    ...Object.values(actionsDictionary).flat(),
+    ...CONTROL_WORDS.map(word => word.raw),
+    ...SWITCH_ATTRIBUTES.map(word => word.raw),
+  ];
+  for (const word of registered) {
+    assert.doesNotMatch(word, /[一-龯々]/u, word);
+  }
+});
+
+test("ふせる is a synonym of しゃがむ in standalone and conditional commands", () => {
+  assert.ok(actionsDictionary.crouch.includes("ふせる"));
+  assert.deepEqual(valid("ふせる").program, valid("しゃがむ").program);
+  assert.deepEqual(valid("おばけがきたらふせる").rules, valid("おばけがきたらしゃがむ").rules);
+});
+
+test("kanji aliases are not part of the parser dictionary, including extensions", () => {
+  for (const input of [
+    "壁をとぶ",
+    "緑と赤のぼたんをおす",
+    "赤いばつのぼたんをみおくる",
+    "門をすごいじゃんぷ",
+    "宝箱をあける",
+  ]) {
+    assert.ok(analyzeProgram(input).diagnostics.length > 0, input);
+  }
+  const extension = { conditions: { wall: ["壁"] }, actions: { crouch: ["伏せる"] } };
+  assert.ok(analyzeProgram("壁をとぶ", extension).diagnostics.length > 0);
+  assert.ok(analyzeProgram("伏せる", extension).diagnostics.length > 0);
 });
 
 test("independent switch colors and shapes are OR, not an implicit combination", () => {
