@@ -1,7 +1,8 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { SoftKey } from "~/editor/text-input";
 
-defineProps<{ disabled?: boolean }>();
+const props = defineProps<{ disabled?: boolean; mode?: "code" | "nickname" }>();
 const emit = defineEmits<{ (e: "press", key: SoftKey): void }>();
 
 const rows = [
@@ -22,13 +23,14 @@ const controls: { label: string; icon?: string; key: SoftKey }[] = [
   { label: "空白", key: { kind: "insert", text: " " } },
   { label: "改行", key: { kind: "insert", text: "\n" } },
 ];
+const visibleControls = computed(() => props.mode === "nickname" ? controls.filter((control) => control.label !== "改行") : controls);
 </script>
 
 <template>
-  <section aria-label="ひらがなキーボード" class="rounded-2xl border-2 border-[#646b89] bg-[#25304d] p-3 text-[#fff7e8]">
+  <section :aria-label="mode === 'nickname' ? '名前用かなキーボード' : 'ひらがなキーボード'" class="rounded-2xl border-2 p-3" :class="mode === 'nickname' ? 'border-[#98b8aa] bg-[#f7fff9] text-[#22483d]' : 'border-[#646b89] bg-[#25304d] text-[#fff7e8]'">
     <div class="overflow-x-auto pb-1" @pointerdown.prevent>
-      <div class="min-w-[430px]">
-        <div class="grid grid-cols-10 gap-1">
+      <div :class="mode === 'nickname' ? 'min-w-0' : 'min-w-[430px]'">
+        <div class="grid gap-1" :class="mode === 'nickname' ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-10'">
           <template v-for="(row, i) in rows" :key="i">
             <template v-for="(kana, j) in row" :key="`${i}-${j}`">
               <button
@@ -43,7 +45,7 @@ const controls: { label: string; icon?: string; key: SoftKey }[] = [
             </template>
           </template>
         </div>
-        <div class="mt-2 grid grid-cols-10 gap-1">
+        <div class="mt-2 grid gap-1" :class="mode === 'nickname' ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-10'">
           <button
             v-for="digit in numbers"
             :key="digit"
@@ -57,7 +59,7 @@ const controls: { label: string; icon?: string; key: SoftKey }[] = [
     </div>
     <div class="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-8">
       <button
-        v-for="(control, i) in controls"
+        v-for="(control, i) in visibleControls"
         :key="i"
         type="button"
         :disabled="disabled"
