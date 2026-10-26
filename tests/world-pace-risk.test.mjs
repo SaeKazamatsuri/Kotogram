@@ -6,6 +6,7 @@ import { validateScope, validateRunPayload, verifyRunResult } from "../worker/va
 import { validateStageCases, usesSecretAction } from "../app/stage/validator.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
 import { createGame, runToCompletion } from "../app/game/core.ts";
+import { objectiveProgress } from "../app/scoring/objectives.ts";
 
 const read = (file) => JSON.parse(readFileSync(new URL("../" + file, import.meta.url), "utf8"));
 const manifest = read("public/stages/manifest.json");
@@ -60,7 +61,8 @@ test("previous leaderboard scopes remain visible while new versions are used for
     const validation = validateStageCases(id, stage, checks);
     const measured = validation.cases.find((item) => item.role === "beginner");
     assert.ok(measured?.pass, id);
-    assert.equal(verifyRunResult({ stageId: id, source: baseline.source, elapsedTicks: measured.elapsedTicks }), latest.timeTicks);
+    const replay = runToCompletion(createGame(stage, analyzeProgram(baseline.source).program));
+    assert.equal(verifyRunResult({ stageId: id, source: baseline.source, elapsedTicks: measured.elapsedTicks, completionBp: objectiveProgress(replay).completionBp }), latest.timeTicks);
   }
 });
 
