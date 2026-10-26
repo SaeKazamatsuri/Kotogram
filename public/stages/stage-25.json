@@ -48,7 +48,7 @@
     {
       "id": "return-mirror-right",
       "type": "mirror",
-      "position": 2060,
+      "position": 1980,
       "fromDirection": "right"
     },
     {
