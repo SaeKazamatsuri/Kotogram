@@ -12,7 +12,7 @@ import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
 const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
-const text = ref("");
+const text = ref(props.initialText ?? "");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const syntaxMirror = ref<HTMLElement | null>(null);
 const composing = ref(false);
@@ -32,7 +32,7 @@ const actionEntries = computed(() => Object.entries(props.dictionary?.actions ??
 const conditionEntries = computed(() => Object.entries(props.dictionary?.conditions ?? {})
   .filter(([key]) => stageWords.value.conditions.includes(key))
   .map(([key, words]) => ({ name: conditionNames[key] ?? key, word: words[0] ?? "" })));
-const history = new EditorHistory();
+const history = new EditorHistory({ text: text.value, start: text.value.length, end: text.value.length });
 const historyRevision = ref(0);
 
 function sanitize(input: string) {
