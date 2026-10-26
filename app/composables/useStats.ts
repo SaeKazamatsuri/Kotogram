@@ -1,3 +1,4 @@
+import { clearClearedStageCodes } from "../stage/cleared-code.ts";
 import {
   ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
   rankingScopeKey, selectBestRuns, type BestRuns, type ScoredRun,
@@ -103,6 +104,7 @@ export function useStats() {
   }
 
   function reset() {
+    clearClearedStageCodes();
     const storage = getStorage();
     if (!storage) return;
     for (const key of [STATS_KEY, BESTS_KEY, "kotogram.player", "kotogram.nickname", "kotogram.editor", "kotogram.ui"]) {

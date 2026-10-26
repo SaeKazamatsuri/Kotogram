@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { nextTick, ref } from "vue";
+import KanaKeyboard from "~/components/editor/KanaKeyboard.vue";
+import { editNicknameWithSoftKey } from "~/ranking/nickname-input";
+import type { SoftKey } from "~/editor/text-input";
 import { formatBestScore } from "~/scoring/display";
 import { classifyStrategy } from "~/scoring/score";
 import type { BestRuns, ScoredRun } from "~/scoring/score";
@@ -44,7 +47,20 @@ const confetti = Array.from({ length: 96 }, (_, index) => ({
   },
 }));
 const nickname = ref("");
+const nicknameInput = ref<HTMLInputElement | null>(null);
 const showRanking = ref(false);
+function onNicknameKey(key: SoftKey) {
+  if (props.saving || props.savedName) return;
+  const input = nicknameInput.value;
+  const selection = { text: nickname.value, start: input?.selectionStart ?? nickname.value.length, end: input?.selectionEnd ?? nickname.value.length };
+  const updated = editNicknameWithSoftKey(selection, key);
+  nickname.value = updated.text;
+  void nextTick(() => {
+    if (!input || input !== nicknameInput.value) return;
+    input.focus({ preventScroll: true });
+    input.setSelectionRange(updated.start, updated.end);
+  });
+}
 function bestScore(kind: "time" | "chars" | "overall") {
   return formatBestScore(props.stageId, props.stageVersion, props.bests, kind);
 }
@@ -110,7 +126,8 @@ function bestScore(kind: "time" | "chars" | "overall") {
       <section v-if="apiBase" class="rounded-2xl border border-[#94b9ae] bg-[#e9f5ee] p-4">
         <template v-if="!savedName">
           <label for="ranking-nickname" class="mb-2 block text-sm font-black text-[#183f35]">ランキングの名前</label>
-          <input id="ranking-nickname" v-model="nickname" :disabled="saving" :maxlength="16" type="text" class="w-full rounded-xl border-2 border-[#5b9c86] bg-white p-3 text-base font-semibold text-[#172439]" autocomplete="off" placeholder="名前なしなら ゲスト">
+          <input id="ranking-nickname" ref="nicknameInput" :value="nickname" :disabled="saving" :maxlength="16" type="text" readonly inputmode="none" class="w-full rounded-xl border-2 border-[#5b9c86] bg-white p-3 text-base font-semibold text-[#172439]" autocomplete="off" placeholder="名前なしなら ゲスト">
+          <div class="mt-3"><KanaKeyboard mode="nickname" :disabled="saving" @press="onNicknameKey" /></div>
           <p class="mt-2 text-xs font-bold text-[#274d43]">本名は 書かないでね</p>
           <p v-if="saveError" role="alert" class="mt-3 text-sm font-black text-[#a53148]">{{ saveError }} もう一度 おしてね。</p>
         </template>
