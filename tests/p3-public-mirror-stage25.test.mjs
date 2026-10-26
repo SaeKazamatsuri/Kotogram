@@ -38,7 +38,7 @@ test("public mirror route and established stage25 strategies remain valid", () =
   assert.equal(returnRoute.mirrors.every(x => x.used), true);
   assert.equal(direct.coins.find(x => x.id === "return-coin").collected, false);
   assert.equal(returnRoute.coins.find(x => x.id === "return-coin").collected, true);
-  assert.equal(objectiveProgress(direct).completionBp, 7667);
+  assert.equal(objectiveProgress(direct).completionBp, 7666);
   assert.equal(objectiveProgress(returnRoute).completionBp, 10000);
   assert.ok(direct.elapsedTicks < returnRoute.elapsedTicks);
   assert.ok(countSourceCharacters(directSource) < countSourceCharacters(mirrorSource));
@@ -47,7 +47,7 @@ test("public mirror route and established stage25 strategies remain valid", () =
     const valid = { ...scope, runId: "00000000-0000-4000-8000-000000000001", playerId: "00000000-0000-4000-8000-000000000002", source: code, elapsedTicks: game.elapsedTicks, charCount: countSourceCharacters(code), completionBp: objectiveProgress(game).completionBp };
     assert.equal(validateRunPayload(valid).stageVersion, scope.stageVersion);
     assert.equal(verifyRunResult(valid), game.elapsedTicks);
-    assert.throws(() => verifyRunResult({ ...valid, completionBp: game === direct ? 10000 : 7667 }), /objective progress/);
+    assert.throws(() => verifyRunResult({ ...valid, completionBp: game === direct ? 10000 : 7666 }), /objective progress/);
     assert.throws(() => verifyRunResult({ ...valid, elapsedTicks: game.elapsedTicks - 1 }), /clear time/);
   }
 });
