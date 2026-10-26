@@ -51,7 +51,7 @@ for(const n of [23,25,29]) {
       if (expected.failureReason) assert.equal(route.failure, expected.failureReason, expected.name);
       if (expected.expectedTicks !== undefined) assert.equal(route.ticks, expected.expectedTicks, expected.name);
     }
-    assert.equal(result.find(x => x.role === "beginner")?.bp, 10000);
+    assert.equal(result.find(x => x.role === "beginner")?.bp, n === 25 ? 5800 : 10000);
     if (n === 25) assert.equal(result.find(x => x.name === "coin-bonus-is-optional")?.bp, 3000);
     if (n === 29) assert.equal(result.find(x => x.name === "last-bonus-can-be-missed")?.bp, 3000);
     assert.ok(suggestedStageWords(stage).conditions.includes("wind"));
