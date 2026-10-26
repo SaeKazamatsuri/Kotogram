@@ -16,6 +16,7 @@ import { stageMastery, type MasteryResult } from "~/stage/mastery";
 import type { ObjectiveProgress } from "~/scoring/objectives";
 import type { StageData, StageListItem } from "~/composables/useStageLoader";
 import { canPlayStage, nextStageId } from "~/stage/progression";
+import { getClearedStageCode, saveClearedStageCode } from "~/stage/cleared-code";
 import {
   defaultFailHint,
   type FailPayload,
@@ -47,6 +48,7 @@ const editorRef = ref<InstanceType<typeof CommandEditor> | null>(null);
 const editorPanel = ref<HTMLElement | null>(null);
 const gamePanel = ref<HTMLElement | null>(null);
 const editorLines = ref<string[]>([]);
+const restoredCode = ref("");
 const program = ref<GameProgram | undefined>(undefined);
 const sourceMap = ref<SourceMap | undefined>(undefined);
 const executionTrace = ref<{ active: number[]; sustained: SustainedHighlight[]; monitoring: number[]; waiting: number | null; repeat: number | null; progress: string | null }>({ active: [], sustained: [], monitoring: [], waiting: null, repeat: null, progress: null });
@@ -139,6 +141,7 @@ async function loadCurrentStage() {
   sourceMap.value = undefined;
   executionTrace.value = { active: [], sustained: [], monitoring: [], waiting: null, repeat: null, progress: null };
   editorLines.value = [];
+  restoredCode.value = "";
   savedName.value = "";
   saveError.value = "";
   pendingRunId = "";
@@ -157,6 +160,7 @@ async function loadCurrentStage() {
       loadDictionary({ version: LANGUAGE_VERSION, ttlMs: 24 * 3600 * 1000 }),
     ]);
     if (request !== loadRequest) return;
+    restoredCode.value = getClearedStageCode(id);
     stage.value = stageData;
     stageVersion.value = manifest.stages.find((item) => item.id === id)?.version ?? manifest.version ?? "unknown";
     dict.value = dictionary;
@@ -211,6 +215,7 @@ function onClear(timing: { elapsedTicks: number; seconds: number; objectives: Ob
   failed.value = false;
   failInfo.value = null;
   const rawText = runningSource.value;
+  saveClearedStageCode(stageId.value, rawText);
   mastery.value = stageMastery(stageId.value, rawText);
   const chars = countSourceCharacters(rawText);
   const reference = getScoreReference(stageId.value, stageVersion.value);
@@ -301,6 +306,7 @@ watch(stageId, () => {
             :key="stageId"
             ref="editorRef"
             v-model:lines="editorLines"
+            :initial-text="restoredCode"
             :dictionary="dict || undefined"
             :stage="stage"
             :running="running"
