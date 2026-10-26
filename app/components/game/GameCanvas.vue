@@ -250,7 +250,9 @@ function onPreviewPointerMove(event: PointerEvent) {
   if (event.pointerType !== "touch") inspectPointer(event);
 }
 
-function clearHover() { hoveredObject.value = null; }
+function clearHover(event: PointerEvent) {
+  if (event.pointerType !== "touch") hoveredObject.value = null;
+}
 
 function onPreviewPointerEnd(event: PointerEvent) {
   if (!previewDrag || event.pointerId !== previewDrag.pointerId) return;
