@@ -7,6 +7,7 @@ import LineGutter from "./LineGutter.vue";
 import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
+import { getKeyboardExpanded, setKeyboardExpanded } from "~/editor/keyboard-preferences";
 import { syntaxPieces, TOKEN_CLASS } from "~/editor/syntax-colors";
 import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
@@ -16,6 +17,7 @@ const text = ref(props.initialText ?? "");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const syntaxMirror = ref<HTMLElement | null>(null);
 const composing = ref(false);
+const composingText = ref<string | null>(null);
 const keyboardVisible = ref(false);
 const dictionaryOpen = ref(false);
 const actionNames: Record<string, string> = {
@@ -58,29 +60,41 @@ function acceptInput(target: HTMLTextAreaElement) {
 }
 function onInput(event: Event) {
   if (props.running) return;
-  if (!composing.value) acceptInput(event.target as HTMLTextAreaElement);
+  const target = event.target as HTMLTextAreaElement;
+  if (composing.value) {
+    composingText.value = target.value;
+    return;
+  }
+  acceptInput(target);
+}
+function onCompositionStart(event: CompositionEvent) {
+  composing.value = true;
+  composingText.value = (event.target as HTMLTextAreaElement).value;
 }
 function onCompositionEnd(event: CompositionEvent) {
   composing.value = false;
+  composingText.value = null;
   acceptInput(event.target as HTMLTextAreaElement);
 }
 const lineArray = computed(() => text.value.replace(/\r/g, "").split("\n"));
+const previewLines = computed(() => (composingText.value ?? text.value).replace(/\r/g, "").split("\n"));
 watch(lineArray, (value) => emit("update:lines", value), { immediate: true });
 const analysis = computed(() => analyzeProgram(lineArray.value, props.dictionary ?? {}));
-const highlightedLines = computed(() => lineArray.value.map((line, index) => syntaxPieces(line, analysis.value.tokens[index] ?? [])));
+const previewAnalysis = computed(() => composingText.value === null ? analysis.value : analyzeProgram(previewLines.value, props.dictionary ?? {}));
+const highlightedLines = computed(() => previewLines.value.map((line, index) => syntaxPieces(line, previewAnalysis.value.tokens[index] ?? [])));
 const lineStates = computed(() => {
-  const states: ("valid" | "invalid" | "empty" | "loop")[] = lineArray.value.map((line) => line.trim() ? "valid" : "empty");
-  for (const tokens of analysis.value.tokens) {
+  const states: ("valid" | "invalid" | "empty" | "loop")[] = previewLines.value.map((line) => line.trim() ? "valid" : "empty");
+  for (const tokens of previewAnalysis.value.tokens) {
     if (tokens[0]?.kind === "repeat" || tokens[0]?.kind === "if" || tokens[0]?.kind === "end" || (tokens[0]?.kind === "number" && tokens[2]?.kind === "repeat")) {
       if (states[tokens[0].line - 1] === "valid") states[tokens[0].line - 1] = "loop";
     }
   }
-  for (const diagnostic of analysis.value.diagnostics) {
+  for (const diagnostic of previewAnalysis.value.diagnostics) {
     if (diagnostic.line <= states.length) states[diagnostic.line - 1] = "invalid";
   }
   return states;
 });
-const firstError = computed(() => analysis.value.diagnostics[0]);
+const firstError = computed(() => composing.value ? null : analysis.value.diagnostics[0]);
 const charCount = computed(() => countSourceCharacters(text.value));
 const taScrollTop = ref(0);
 const taPaddingTop = ref(0);
@@ -93,16 +107,16 @@ const canUndo = computed(() => { void historyRevision.value; return history.canU
 const canRedo = computed(() => { void historyRevision.value; return history.canRedo; });
 
 function measureLineHeights() {
-  if (!syntaxMirror.value || composing.value) return;
+  if (!syntaxMirror.value) return;
   const heights = Array.from(syntaxMirror.value.querySelectorAll<HTMLElement>("[data-syntax-row]"))
     .map(row => row.getBoundingClientRect().height || taLineHeight.value);
-  if (heights.length === lineArray.value.length &&
+  if (heights.length === previewLines.value.length &&
       (heights.length !== visualLineHeights.value.length || heights.some((height, index) => Math.abs(height - visualLineHeights.value[index]!) > 0.2))) {
     visualLineHeights.value = heights;
   }
 }
 function scheduleLineMeasure() { void nextTick(measureLineHeights); }
-watch([lineArray, taClientWidth, taLineHeight, composing], scheduleLineMeasure, { flush: "post" });
+watch([previewLines, taClientWidth, taLineHeight], scheduleLineMeasure, { flush: "post" });
 
 function lineTop(line: number) {
   let top = taPaddingTop.value;
@@ -142,6 +156,7 @@ watch(() => [props.activeLines?.join(","), props.failureLine], () => {
 });
 let observer: ResizeObserver | null = null;
 onMounted(() => {
+  keyboardVisible.value = getKeyboardExpanded("code");
   updateMetrics();
   if (textarea.value && typeof ResizeObserver !== "undefined") {
     observer = new ResizeObserver(updateMetrics);
@@ -192,7 +207,12 @@ function onSoftKey(key: SoftKey) {
   applyState({ text: normalized, start: cursor, end: cursor });
 }
 function run() {
-  if (analysis.value.diagnostics.length === 0) emit("run");
+  if (!composing.value && analysis.value.diagnostics.length === 0) emit("run");
+}
+function toggleKeyboard() {
+  if (props.running) return;
+  keyboardVisible.value = !keyboardVisible.value;
+  setKeyboardExpanded("code", keyboardVisible.value);
 }
 function getText() { return text.value; }
 defineExpose({ getText });
@@ -255,21 +275,21 @@ defineExpose({ getText });
               :class="failureLine === index + 1 ? 'bg-[#ffe3b8]' : activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : monitoringLines?.includes(index + 1) ? 'bg-[#f1f5f9]' : ''" />
           </div>
         </div>
-      <div v-if="!composing" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+      <div aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
         <div ref="syntaxMirror" data-syntax-mirror class="m-0 box-border whitespace-pre-wrap break-all p-4 font-[inherit] text-[18px] font-bold leading-[1.7]" :style="{ width: taClientWidth ? taClientWidth + 'px' : '100%', transform: 'translateY(-' + taScrollTop + 'px)' }">
           <div v-for="(line, index) in highlightedLines" :key="index" data-syntax-row :style="{ minHeight: taLineHeight + 'px' }"><span v-for="(piece, pieceIndex) in line" :key="pieceIndex" :class="TOKEN_CLASS[piece.kind]">{{ piece.text }}</span></div>
         </div>
       </div>
       <textarea
         ref="textarea"
-        class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] break-all caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2]" :class="composing ? 'text-[#172439]' : 'text-transparent'"
+        class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] break-all caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2]" class="text-transparent"
         :value="text"
         :readonly="running"
         aria-label="コードを書く"
         :spellcheck="false"
         autocomplete="off"
         @input="onInput"
-        @compositionstart="composing = true"
+        @compositionstart="onCompositionStart"
         @compositionend="onCompositionEnd"
         placeholder="かべをまえにみつけたらじゃんぷする"
         @scroll="onScroll"
@@ -279,9 +299,9 @@ defineExpose({ getText });
     <p v-if="firstError" role="alert" class="border-t border-[#de9ea9] bg-[#fff1ef] px-4 py-3 text-sm font-black text-[#9f203c]">{{ firstError.line }} 行目：{{ firstError.message }}</p>
     <div class="flex flex-wrap items-center gap-3 border-t-2 border-[#7083a0] bg-[#243551] p-3">
       <button type="button" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
-      <button type="button" class="game-button game-button--night text-sm" :disabled="running" :aria-expanded="keyboardVisible" @click="keyboardVisible = !keyboardVisible"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力</button>
+      <button type="button" class="game-button game-button--night text-sm" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力</button>
     </div>
-    <div v-if="keyboardVisible" class="border-t border-[#7083a0] bg-[#243551] p-3">
+    <div v-if="keyboardVisible" id="code-kana-keyboard" class="border-t border-[#7083a0] bg-[#243551] p-3">
       <KanaKeyboard :disabled="running || composing" @press="onSoftKey" />
     </div>
   </div>
