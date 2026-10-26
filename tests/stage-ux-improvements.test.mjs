@@ -133,19 +133,18 @@ test("shortcut goal hover is also a valid condition", () => {
   assert.deepEqual(tokenizeLine(label, 1).map(token => token.value), ["goal"]);
 });
 
-test("previously shown kanji object labels remain usable in code", () => {
-  for (const [label, condition] of [
-    ["宝箱", "chest"],
-    ["橋", "bridge"],
-    ["風", "wind"],
-    ["ふむ床", "pressurePlate"],
-    ["動く足場", "movingPlatform"],
-    ["上下する足場", "verticalPlatform"],
-    ["こわれる床", "fragileFloor"],
+test("old kanji object labels are not accepted as commands", () => {
+  for (const label of [
+    "宝箱",
+    "橋",
+    "風",
+    "ふむ床",
+    "動く足場",
+    "上下する足場",
+    "こわれる床",
   ]) {
-    const tokens = tokenizeLine(label, 1);
-    assert.deepEqual(tokens.map(token => token.value), [condition], label);
-    assert.deepEqual(tokens.map(token => token.kind), ["condition"], label);
+    assert.ok(tokenizeLine(label, 1).some(token => token.kind === "unknown"), label);
+    assert.ok(analyzeProgram(`${label}をとぶ`).diagnostics.length > 0, label);
   }
 });
 
