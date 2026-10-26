@@ -73,6 +73,24 @@
       "role": "regression",
       "source": "かべとぶ\nあなとぶ\nおばけしゃがむ",
       "expect": "cleared"
+    },
+    {
+      "name": "mirror-return-full-regular",
+      "role": "regression",
+      "source": "かべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる\nかがみにうつる",
+      "expect": "cleared"
+    },
+    {
+      "name": "mirror-return-full-sprint",
+      "role": "regression",
+      "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる\nかがみにうつる",
+      "expect": "cleared"
+    },
+    {
+      "name": "mirror-declined-sprint",
+      "role": "regression",
+      "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
+      "expect": "cleared"
     }
   ]
 }
