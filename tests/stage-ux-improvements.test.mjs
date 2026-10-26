@@ -6,6 +6,7 @@ import { GAME, aimedJumpRange, createGame, stepGame } from "../app/game/core.ts"
 import { analyzeJumpTrajectories } from "../app/game/trajectory.ts";
 import { syntaxPieces, TOKEN_CLASS } from "../app/editor/syntax-colors.ts";
 import { inspectGameObject } from "../app/game/object-inspection.ts";
+import conditionsDictionary from "../public/dictionary/conditions.json" with { type: "json" };
 
 const loadStage = (id) => JSON.parse(readFileSync(new URL("../public/stages/" + id + ".json", import.meta.url), "utf8"));
 
@@ -60,7 +61,7 @@ test("hover hitboxes follow scrolling and distinguish wall, hole, switch, and gh
   game.px = GAME.playerScreenX + 500;
   assert.equal(inspectGameObject(game, 114, 230)?.name, "かべ");
   assert.equal(inspectGameObject(game, 330, 310)?.name, "あな");
-  assert.equal(inspectGameObject(game, 20, 250)?.name, "あかのばつボタン");
+  assert.equal(inspectGameObject(game, 20, 250)?.name, "あかのばつぼたん");
   assert.equal(inspectGameObject(game, 200, 180)?.name, "おばけ");
   assert.equal(inspectGameObject(game, 700, 0), null);
   assert.equal(inspectGameObject(game, Number.NaN, 200), null);
@@ -74,11 +75,46 @@ test("inspection follows rendered coin, key, wind and vertical-platform geometry
     { type: "verticalPlatform", position: 1100, width: 80, topY: 170, travelY: 30, period: 120 },
   ] });
   game.px = GAME.playerScreenX + 500;
-  assert.equal(inspectGameObject(game, 100, 258)?.name, "コイン");
+  assert.equal(inspectGameObject(game, 100, 258)?.name, "こいん");
   assert.equal(inspectGameObject(game, 222, 241)?.name, "かぎ");
-  assert.equal(inspectGameObject(game, 450, 135)?.name, "風");
-  assert.equal(inspectGameObject(game, 640, 170)?.name, "上下する足場");
+  assert.equal(inspectGameObject(game, 450, 135)?.name, "かぜ");
+  assert.equal(inspectGameObject(game, 640, 170)?.name, "のぼりだい");
   assert.equal(inspectGameObject(game, 450, 125), null);
+});
+
+
+test("every object hover uses a hiragana word accepted by the input dictionary", () => {
+  assert.equal(conditionsDictionary.fragileFloor[0], "こわれるゆか");
+  assert.equal(conditionsDictionary.movingPlatform[0], "うごくあしば");
+  const samples = [
+    [{ type: "switch", id: "switch", position: 600, color: "red", shape: "cross", targetDoorId: "door" }, 250, "あかのばつぼたん"],
+    [{ type: "key", id: "key", position: 600 }, 240, "かぎ"],
+    [{ type: "chest", id: "chest", position: 600, keyId: "key" }, 260, "たからばこ"],
+    [{ type: "coin", id: "coin", position: 600 }, 240, "こいん"],
+    [{ type: "door", id: "door", position: 600 }, 210, "もん"],
+    [{ type: "wall", position: 600 }, 225, "かべ"],
+    [{ type: "ghost", position: 600 }, 185, "おばけ"],
+    [{ type: "laser", id: "laser", position: 600, period: 120, activeTicks: 60 }, 185, "ひかり"],
+    [{ type: "pressurePlate", id: "plate", position: 600, width: 100, holdTicks: 20, targetDoorId: "door" }, 269, "ふむゆか"],
+    [{ type: "mirror", id: "mirror", position: 600 }, 210, "かがみ"],
+    [{ type: "portal", id: "portal", position: 600, targetPosition: 900 }, 210, "わーぷ"],
+    [{ type: "verticalPlatform", id: "vertical", position: 600, width: 100, topY: 170, travelY: 30, period: 120 }, 170, "のぼりだい"],
+    [{ type: "movingPlatform", id: "moving", position: 600, width: 100, travel: 30, period: 120 }, 267, "うごくあしば"],
+    [{ type: "bridge", id: "bridge", position: 600, width: 100, targetDoorId: "door" }, 268, "かけはし"],
+    [{ type: "fragileFloor", id: "fragile", position: 600, width: 100, breakAfterTicks: 20 }, 271, "こわれるゆか"],
+    [{ type: "conveyor", id: "conveyor", position: 600, width: 100, multiplier: 1.5 }, 271, "うごくゆか"],
+    [{ type: "wind", id: "wind", position: 600, width: 100, multiplier: 1.2 }, 175, "かぜ"],
+    [{ type: "hole", position: 600, width: 100 }, 310, "あな"],
+    [{ type: "goal", id: "goal", position: 600 }, 230, "ごーる"],
+  ];
+  for (const [object, y, expected] of samples) {
+    const game = createGame({ goal: object.type === "goal" ? 600 : 1600, objects: [object] });
+    game.px = GAME.playerScreenX + 500;
+    const label = inspectGameObject(game, 100, y)?.name;
+    assert.equal(label, expected, object.type);
+    assert.doesNotMatch(label, /[一-龯々ァ-ヶ]/u, object.type);
+    assert.ok(tokenizeLine(label, 1).some(token => token.kind === "condition"), object.type);
+  }
 });
 
 test("power jumps peak over vaultable door centers at normal and sprint pace", () => {
