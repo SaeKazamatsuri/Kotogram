@@ -8,6 +8,7 @@ test("公開サイトのWorker名とSPAルーティングが固定されてい�
   assert.equal(frontend.name, "kotogram");
   assert.equal(frontend.workers_dev, false);
   assert.equal(frontend.preview_urls, false);
+  assert.deepEqual(frontend.routes, [{ pattern: "kotogram.sae-chan.net", custom_domain: true }]);
   assert.equal(frontend.assets.directory, "./.output/public");
   assert.equal(frontend.assets.not_found_handling, "single-page-application");
   assert.notEqual(frontend.name, api.env.production.name);
