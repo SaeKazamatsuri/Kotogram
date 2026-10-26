@@ -36,6 +36,73 @@ test("ステージ画面の描画が見え、画面の横はみ出しがない",
   await canvas.screenshot({ path: `test-artifacts/visual-${testInfo.project.name}.png`, animations: "disabled" });
 });
 
+test("失敗後も開始地点を下見でき、オブジェクト名と色分けが見える", async ({ page }) => {
+  test.setTimeout(45000);
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("かべをみつけたらじゃんぷする");
+  await expect(page.locator("[data-syntax-mirror]").first()).toContainText("かべをみつけたらじゃんぷする");
+  await expect(page.locator("[data-syntax-mirror] span").filter({ hasText: "かべ" }).first()).toHaveClass(/underline/);
+  await expect(page.locator("[data-syntax-mirror] span").filter({ hasText: "じゃんぷ" }).first()).toHaveClass(/font-bold/);
+  const canvas = page.locator("canvas");
+  const hoverWall = async () => {
+    const bounds = await canvas.boundingBox();
+    if (!bounds) throw new Error("Missing canvas bounds");
+    await page.mouse.move(bounds.x + bounds.width * 610 / 720, bounds.y + bounds.height * 234 / 360);
+    await expect(page.getByRole("tooltip")).toHaveText("かべ");
+  };
+  await hoverWall();
+  await editor.fill("あるく");
+  await page.getByRole("button", { name: "動かす" }).click();
+  await expect(page.getByRole("dialog", { name: "ステージしっぱい" })).toBeVisible({ timeout: 20000 });
+  await page.getByRole("button", { name: "コードを直す" }).click();
+  await hoverWall();
+});
+
+test("マップのタップとドラッグを区別し、画面縮小時にもオブジェクト名を表示できる", async ({ page }, testInfo) => {
+  await page.goto("/play/stage-1");
+  const canvas = page.locator("canvas");
+  await expect(canvas).toBeVisible();
+  const location = await canvas.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: rect.left + element.clientLeft + element.clientWidth * 610 / 720,
+      y: rect.top + element.clientTop + element.clientHeight * 234 / 360,
+    };
+  });
+  if (testInfo.project.use.hasTouch) await page.touchscreen.tap(location.x, location.y);
+  else await page.mouse.click(location.x, location.y);
+  await expect(page.getByRole("tooltip")).toHaveText("かべ");
+  const boundary = await canvas.boundingBox();
+  if (!boundary) throw new Error("Missing canvas");
+  const start = { x: boundary.x + boundary.width * 0.8, y: boundary.y + boundary.height * 0.6 };
+  await page.mouse.move(start.x, start.y);
+  await page.mouse.down();
+  await page.mouse.move(start.x - Math.min(70, boundary.width / 3), start.y, { steps: 5 });
+  await page.mouse.up();
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+});
+
+test("長文を折り返しても構文表示と行番号・実行帯が同じ行高になる", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("かべをまえにみつけたらじゃんぷする".repeat(6) + "\nかべとぶ");
+  await expect(page.locator("[data-syntax-row]")).toHaveCount(2);
+  await expect.poll(async () => page.evaluate(() => {
+    const row = document.querySelector("[data-syntax-row]");
+    const gutter = document.querySelector("[data-editor-gutter-row]");
+    if (!(row instanceof HTMLElement) || !(gutter instanceof HTMLElement)) return -100;
+    return Math.abs(row.getBoundingClientRect().height - gutter.getBoundingClientRect().height);
+  })).toBeLessThan(1.5);
+  const sizes = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll("[data-syntax-row]")];
+    const gutters = [...document.querySelectorAll("[data-editor-gutter-row]")];
+    return { rows: rows.map(row => row.getBoundingClientRect().height), gutters: gutters.map(row => row.getBoundingClientRect().height) };
+  });
+  expect(sizes.rows[0]).toBeGreaterThan(sizes.rows[1] * 2);
+  expect(sizes.gutters.length).toBe(2);
+});
+
 test("ステージの通信失敗後に画面から再読みこみできる", async ({ page }) => {
   let failedOnce = false;
   await page.route("**/stages/stage-1.json", async (route) => {

@@ -7,12 +7,14 @@ import LineGutter from "./LineGutter.vue";
 import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
+import { syntaxPieces, TOKEN_CLASS } from "~/editor/syntax-colors";
 import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
 const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
 const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
 const text = ref("");
 const textarea = ref<HTMLTextAreaElement | null>(null);
+const syntaxMirror = ref<HTMLElement | null>(null);
 const composing = ref(false);
 const keyboardVisible = ref(false);
 const dictionaryOpen = ref(false);
@@ -65,6 +67,7 @@ function onCompositionEnd(event: CompositionEvent) {
 const lineArray = computed(() => text.value.replace(/\r/g, "").split("\n"));
 watch(lineArray, (value) => emit("update:lines", value), { immediate: true });
 const analysis = computed(() => analyzeProgram(lineArray.value, props.dictionary ?? {}));
+const highlightedLines = computed(() => lineArray.value.map((line, index) => syntaxPieces(line, analysis.value.tokens[index] ?? [])));
 const lineStates = computed(() => {
   const states: ("valid" | "invalid" | "empty" | "loop")[] = lineArray.value.map((line) => line.trim() ? "valid" : "empty");
   for (const tokens of analysis.value.tokens) {
@@ -84,8 +87,28 @@ const taPaddingTop = ref(0);
 const taPaddingBottom = ref(0);
 const taLineHeight = ref(20);
 const taClientHeight = ref(0);
+const taClientWidth = ref(0);
+const visualLineHeights = ref<number[]>([]);
 const canUndo = computed(() => { void historyRevision.value; return history.canUndo; });
 const canRedo = computed(() => { void historyRevision.value; return history.canRedo; });
+
+function measureLineHeights() {
+  if (!syntaxMirror.value || composing.value) return;
+  const heights = Array.from(syntaxMirror.value.querySelectorAll<HTMLElement>("[data-syntax-row]"))
+    .map(row => row.getBoundingClientRect().height || taLineHeight.value);
+  if (heights.length === lineArray.value.length &&
+      (heights.length !== visualLineHeights.value.length || heights.some((height, index) => Math.abs(height - visualLineHeights.value[index]!) > 0.2))) {
+    visualLineHeights.value = heights;
+  }
+}
+function scheduleLineMeasure() { void nextTick(measureLineHeights); }
+watch([lineArray, taClientWidth, taLineHeight, composing], scheduleLineMeasure, { flush: "post" });
+
+function lineTop(line: number) {
+  let top = taPaddingTop.value;
+  for (let index = 0; index < line - 1; index++) top += visualLineHeights.value[index] ?? taLineHeight.value;
+  return top;
+}
 
 function updateMetrics() {
   const element = textarea.value;
@@ -97,7 +120,9 @@ function updateMetrics() {
   taPaddingTop.value = parseFloat(style.paddingTop) || 0;
   taPaddingBottom.value = parseFloat(style.paddingBottom) || 0;
   taClientHeight.value = element.clientHeight;
+  taClientWidth.value = element.clientWidth;
   taScrollTop.value = element.scrollTop;
+  scheduleLineMeasure();
 }
 function onScroll() {
   if (textarea.value) taScrollTop.value = textarea.value.scrollTop;
@@ -106,8 +131,8 @@ watch(() => [props.activeLines?.join(","), props.failureLine], () => {
   if (!textarea.value || (!props.running && props.failureLine == null)) return;
   const line = props.failureLine ?? props.activeLines?.at(-1);
   if (line == null) return;
-  const top = taPaddingTop.value + (line - 1) * taLineHeight.value;
-  const bottom = top + taLineHeight.value;
+  const top = lineTop(line);
+  const bottom = top + (visualLineHeights.value[line - 1] ?? taLineHeight.value);
   const viewTop = textarea.value.scrollTop;
   const viewBottom = viewTop + textarea.value.clientHeight;
   if (top < viewTop || bottom > viewBottom) {
@@ -217,6 +242,7 @@ defineExpose({ getText });
         :repeat-line="repeatLine"
         :repeat-progress="repeatProgress"
         :line-height="taLineHeight"
+        :line-heights="visualLineHeights"
         :padding-top="taPaddingTop"
         :padding-bottom="taPaddingBottom"
         :scroll-top="taScrollTop"
@@ -225,13 +251,18 @@ defineExpose({ getText });
       <div class="relative min-h-0 min-w-0 flex-1 overflow-hidden">
         <div v-if="running || failureLine != null" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
           <div :style="{ paddingTop: taPaddingTop + 'px', transform: 'translateY(-' + taScrollTop + 'px)' }">
-            <div v-for="(_, index) in lineArray" :key="index" :style="{ height: taLineHeight + 'px' }"
+            <div v-for="(_, index) in lineArray" :key="index" :style="{ height: (visualLineHeights[index] ?? taLineHeight) + 'px' }"
               :class="failureLine === index + 1 ? 'bg-[#ffe3b8]' : activeLines?.includes(index + 1) ? 'bg-[#baf3d3]' : sustainedLines?.some((item) => item.line === index + 1) ? 'bg-[#dcefe3]' : waitingLine === index + 1 ? 'bg-[#ede6ff]' : repeatLine === index + 1 ? 'bg-[#fff0c7]' : monitoringLines?.includes(index + 1) ? 'bg-[#f1f5f9]' : ''" />
           </div>
         </div>
+      <div v-if="!composing" aria-hidden="true" class="pointer-events-none absolute inset-0 overflow-hidden">
+        <div ref="syntaxMirror" data-syntax-mirror class="m-0 box-border whitespace-pre-wrap break-all p-4 font-[inherit] text-[18px] font-bold leading-[1.7]" :style="{ width: taClientWidth ? taClientWidth + 'px' : '100%', transform: 'translateY(-' + taScrollTop + 'px)' }">
+          <div v-for="(line, index) in highlightedLines" :key="index" data-syntax-row :style="{ minHeight: taLineHeight + 'px' }"><span v-for="(piece, pieceIndex) in line" :key="pieceIndex" :class="TOKEN_CLASS[piece.kind]">{{ piece.text }}</span></div>
+        </div>
+      </div>
       <textarea
         ref="textarea"
-        class="relative h-full w-full min-h-0 min-w-0 resize-none p-4 text-[18px] font-bold leading-[1.7] text-[#172439] outline-none placeholder:text-[#62778a]" :class="running || failureLine != null ? 'bg-transparent' : 'bg-[#fffaf1] focus:bg-white'"
+        class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] break-all caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2]" :class="composing ? 'text-[#172439]' : 'text-transparent'"
         :value="text"
         :readonly="running"
         aria-label="コードを書く"

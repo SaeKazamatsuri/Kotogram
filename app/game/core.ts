@@ -472,7 +472,13 @@ function directionalCoinInRange(game: GameState, coin: Coin): boolean {
     ? coin.x + GAME.pad >= game.px && coin.x - game.px <= GAME.coinPickupRange
     : coin.x <= game.px + GAME.playerWidth && game.px - coin.x <= GAME.coinPickupRange;
 }
-function sensedTargets(game: GameState, conditions: readonly GameCondition[]): { id: string; x: number }[] {
+export function aimedJumpRange(speed: number, targetWidth: number, powered = false): number {
+  const velocity = powered ? GAME.powerJumpVelocity : GAME.jumpVelocity;
+  const ticksToPeak = Math.floor(-velocity / GAME.gravity);
+  return Math.max(0, GAME.playerWidth / 2 + speed * ticksToPeak - targetWidth / 2);
+}
+
+function sensedTargets(game: GameState, conditions: readonly GameCondition[], action?: GameAction): { id: string; x: number }[] {
   const range = GAME.approachBase + game.vx * GAME.reactionFrames;
   const found = new Map<string, { id: string; x: number }>();
   for (const condition of conditions) {
@@ -503,8 +509,10 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       continue;
     }
     if (condition === "door") {
-      const target = nextTarget(game.doors.filter((door) => !door.open && !door.vaulted), game.px);
-      if (target && target.x - game.px <= range) found.set(target.id, target);
+      const target = game.doors.find(door => !door.open && !door.vaulted && door.x + GAME.pad >= game.px);
+      const triggerRange = action === "powerJump" && target?.vaultable && game.winds.length === 0
+        ? aimedJumpRange(game.vx, GAME.doorWidth, true) : range;
+      if (target && target.x - game.px <= triggerRange) found.set(target.id, target);
       continue;
     }
     if (condition === "pressurePlate") {
@@ -569,9 +577,17 @@ function sensedTargets(game: GameState, conditions: readonly GameCondition[]): {
       : condition === "enemy" ? [game.ghosts] : [game.holes];
     for (const objects of groups) {
       const target = nextTarget(objects, game.px);
-      const triggerRange = game.jumpSensorProfile === "centered-holes" && objects === game.holes
-        ? Math.max(0, range - Math.max(0, ((game.holes.find((hole) => hole.id === target?.id)?.w ?? GAME.defaultHoleWidth) - GAME.wallWidth) / 2))
-        : range;
+      const holeWidth = objects === game.holes
+        ? game.holes.find(hole => hole.id === target?.id)?.w ?? GAME.defaultHoleWidth
+        : GAME.wallWidth;
+      const jumping = action === "jump" || action === "powerJump";
+      const pairedGhost = objects === game.walls && game.ghosts.some(ghost => ghost.x === target?.x);
+      const safeToAim = game.winds.length === 0 && !pairedGhost;
+      const triggerRange = jumping && safeToAim && (objects === game.walls || (objects === game.holes && game.jumpSensorProfile === "centered-holes"))
+        ? aimedJumpRange(game.vx, holeWidth, action === "powerJump")
+        : game.jumpSensorProfile === "centered-holes" && objects === game.holes
+          ? Math.max(0, range - Math.max(0, (holeWidth - GAME.wallWidth) / 2))
+          : range;
       if (target && target.x - game.px <= triggerRange) found.set(target.id, target);
     }
   }
@@ -731,7 +747,7 @@ function applyProgram(game: GameState, observe?: TraceObserver) {
     const history = game.fired[index];
     if (rule.maxFires !== undefined && history.size >= rule.maxFires) continue;
     const conditions = rule.conds?.length ? rule.conds : rule.cond ? [rule.cond] : [];
-    const sensed = conditions.length ? sensedTargets(game, conditions) : [];
+    const sensed = conditions.length ? sensedTargets(game, conditions, rule.action) : [];
     if (conditions.length && !sensed.length) continue;
     const target = conditions.length ? sensed.find((item) => !history.has(item.id)) : undefined;
     if (conditions.length && !target) {
@@ -783,7 +799,7 @@ function applySequence(game: GameState, observe?: TraceObserver): void {
       if (game.sequenceProgress > 0) return;
       continue;
     }
-    const target = sensedTargets(game, op.conds).find((item) => !game.sequenceConsumed.has(item.id));
+    const target = sensedTargets(game, op.conds, op.action).find((item) => !game.sequenceConsumed.has(item.id));
     if (!target) return;
     if (op.action && !acceptAction(game, op.action, target.id)) return;
     observe?.({ kind: "step", index: game.cursor, tick: game.elapsedTicks, action: op.action });

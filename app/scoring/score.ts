@@ -2,7 +2,8 @@ import { normalizeLine } from "../language/parser.ts";
 
 export const SCORING_VERSION = "2026-v2";
 export const PREVIOUS_SCORING_VERSION = "2026-v1";
-export const ENGINE_VERSION = "2026-core-v3";
+export const ENGINE_VERSION = "2026-core-v4";
+export const RECENT_ENGINE_VERSION = "2026-core-v3";
 export const PREVIOUS_ENGINE_VERSION = "2026-core-v2";
 export const LANGUAGE_VERSION = "2026-language-v5";
 export const PREVIOUS_LANGUAGE_VERSION = "2026-language-v4";

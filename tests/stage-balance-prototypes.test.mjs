@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { createGame, runToCompletion } from "../app/game/core.ts";
+import { GAME, createGame, runToCompletion } from "../app/game/core.ts";
 import { analyzeProgram } from "../app/language/parser.ts";
 import { analyzeJumpTrajectories } from "../app/game/trajectory.ts";
 import { validateStage } from "../app/stage/validator.ts";
@@ -43,8 +43,10 @@ test("穴の幅に合わせたセンサー補正で最高点が穴の中央に�
   const old = legacy.jumps.filter((jump) => jump.target?.type === "hole");
   assert.equal(holes.length, 2);
   for (let index = 0; index < holes.length; index++) {
-    assert.ok(Math.abs(holes[index].peakOffsetX) < Math.abs(old[index].peakOffsetX));
-    assert.ok(Math.abs(holes[index].peakOffsetX) <= 20);
+    const alignedCenter = holes[index].peakOffsetX - GAME.playerWidth / 2;
+    const legacyCenter = old[index].peakOffsetX - GAME.playerWidth / 2;
+    assert.ok(Math.abs(alignedCenter) < Math.abs(legacyCenter));
+    assert.ok(Math.abs(alignedCenter) <= stage.scrollSpeed + 2);
   }
 });
 
