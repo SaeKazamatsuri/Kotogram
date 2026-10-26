@@ -117,6 +117,17 @@ test("every object hover uses a hiragana word accepted by the input dictionary",
   }
 });
 
+test("shortcut goal hover is also a valid condition", () => {
+  const game = createGame({ goal: 1300, objects: [
+    { type: "goal", id: "shortcut", position: 600, bonusBp: 9000 },
+    { type: "goal", id: "final", position: 1300, bonusBp: 10000 },
+  ] });
+  game.px = GAME.playerScreenX + 500;
+  const label = inspectGameObject(game, 100, 230)?.name;
+  assert.equal(label, "ちかみち");
+  assert.deepEqual(tokenizeLine(label, 1).map(token => token.value), ["goal"]);
+});
+
 test("previously shown kanji object labels remain usable in code", () => {
   for (const [label, condition] of [
     ["宝箱", "chest"],
@@ -136,7 +147,9 @@ test("previously shown kanji object labels remain usable in code", () => {
 test("stage-specific help uses input-friendly names for special objects", () => {
   for (const [number, word] of [
     [13, "うごくゆか"],
+    [17, "こわれるゆか"],
     [18, "こわれるゆか"],
+    [21, "たからばこ"],
     [22, "かけはし"],
     [24, "ふむゆか"],
     [28, "わーぷ"],
@@ -144,6 +157,14 @@ test("stage-specific help uses input-friendly names for special objects", () => 
     const stage = loadStage(`stage-${number}`);
     const guidance = [stage.learningObjectives ?? [], stage.meta?.hint, Object.values(stage.meta?.failHints ?? {})].flat().join(" ");
     assert.ok(guidance.includes(word), `stage-${number}: ${word}`);
+  }
+});
+
+test("stage descriptions do not show old fragile-floor spelling", () => {
+  for (let number = 1; number <= 30; number++) {
+    const stage = loadStage(`stage-${number}`);
+    const guidance = JSON.stringify({ objectives: stage.learningObjectives, meta: stage.meta });
+    assert.ok(!guidance.includes("こわれる床"), `stage-${number}`);
   }
 });
 
