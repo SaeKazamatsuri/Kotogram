@@ -1,4 +1,5 @@
 import { clearClearedStageCodes } from "../stage/cleared-code.ts";
+import { clearKeyboardPreferences } from "../editor/keyboard-preferences.ts";
 import {
   ENGINE_VERSION, LANGUAGE_VERSION, SCORING_VERSION, SEASON_ID,
   rankingScopeKey, selectBestRuns, type BestRuns, type ScoredRun,
@@ -105,6 +106,7 @@ export function useStats() {
 
   function reset() {
     clearClearedStageCodes();
+    clearKeyboardPreferences();
     const storage = getStorage();
     if (!storage) return;
     for (const key of [STATS_KEY, BESTS_KEY, "kotogram.player", "kotogram.nickname", "kotogram.editor", "kotogram.ui"]) {

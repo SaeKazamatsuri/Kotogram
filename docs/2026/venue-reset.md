@@ -10,3 +10,4 @@
 
 - クリア済みステージのコードは `sessionStorage` の `kotogram.clearedStageCodes` にステージ別に保存し、同じタブで移動・再読み込みしても復元する。保存されるのは最後にクリアしたコードであり、途中の編集中コードは保存しない。
 - 「次の人へ」では、従来のローカル記録に加えて `kotogram.clearedStageCodes` と直近のクリア演出情報を削除する。他サイトのデータやサーバー上のランキングは消さない。
+- ソフトウェアキーボードの開閉状態（`kotogram.keyboard.code`、`kotogram.keyboard.nickname`）もセッションストレージから削除し、次の利用者では両方閉じた状態にする。

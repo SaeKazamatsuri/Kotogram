@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { nextTick, ref } from "vue";
+import { nextTick, onMounted, ref } from "vue";
+import { getKeyboardExpanded, setKeyboardExpanded } from "~/editor/keyboard-preferences";
 import KanaKeyboard from "~/components/editor/KanaKeyboard.vue";
 import { editNicknameWithSoftKey } from "~/ranking/nickname-input";
 import type { SoftKey } from "~/editor/text-input";
@@ -48,6 +49,14 @@ const confetti = Array.from({ length: 96 }, (_, index) => ({
 }));
 const nickname = ref("");
 const nicknameInput = ref<HTMLInputElement | null>(null);
+const keyboardVisible = ref(false);
+onMounted(() => {
+  keyboardVisible.value = getKeyboardExpanded("nickname");
+});
+function toggleKeyboard() {
+  keyboardVisible.value = !keyboardVisible.value;
+  setKeyboardExpanded("nickname", keyboardVisible.value);
+}
 const showRanking = ref(false);
 function onNicknameKey(key: SoftKey) {
   if (props.saving || props.savedName) return;
@@ -127,7 +136,8 @@ function bestScore(kind: "time" | "chars" | "overall") {
         <template v-if="!savedName">
           <label for="ranking-nickname" class="mb-2 block text-sm font-black text-[#183f35]">ランキングの名前</label>
           <input id="ranking-nickname" ref="nicknameInput" :value="nickname" :disabled="saving" :maxlength="16" type="text" readonly inputmode="none" class="w-full rounded-xl border-2 border-[#5b9c86] bg-white p-3 text-base font-semibold text-[#172439]" autocomplete="off" placeholder="名前なしなら ゲスト">
-          <div class="mt-3"><KanaKeyboard mode="nickname" :disabled="saving" @press="onNicknameKey" /></div>
+          <button type="button" class="mt-3 flex min-h-11 w-full items-center justify-between rounded-xl border-2 border-[#81aa9a] bg-white px-4 text-sm font-black text-[#214c40] hover:bg-[#f1faf4]" aria-controls="ranking-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><span class="flex items-center gap-2"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true" /> かな入力</span><Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true" /></button>
+          <div v-if="keyboardVisible" id="ranking-kana-keyboard" class="mt-2"><KanaKeyboard mode="nickname" :disabled="saving" @press="onNicknameKey" /></div>
           <p class="mt-2 text-xs font-bold text-[#274d43]">本名は 書かないでね</p>
           <p v-if="saveError" role="alert" class="mt-3 text-sm font-black text-[#a53148]">{{ saveError }} もう一度 おしてね。</p>
         </template>

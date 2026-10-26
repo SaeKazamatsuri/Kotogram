@@ -64,6 +64,10 @@ test("クリア後のランキング名は画面内かなキーボードで入�
   const input = modal.locator("#ranking-nickname");
   await expect(input).toHaveAttribute("readonly", "");
   await expect(input).toHaveAttribute("inputmode", "none");
+  const toggle = modal.getByRole("button", { name: "かな入力" });
+  await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  await toggle.click();
+  await expect(toggle).toHaveAttribute("aria-expanded", "true");
   const keyboard = modal.getByRole("region", { name: "名前用かなキーボード" });
   await keyboard.getByRole("button", { name: "か をにゅうりょく" }).click();
   await keyboard.getByRole("button", { name: "゛" }).click();
