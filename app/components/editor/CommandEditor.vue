@@ -283,7 +283,7 @@ defineExpose({ getText });
       <textarea
         ref="textarea"
         class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] break-all caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2] text-transparent"
-        :value="text"
+        :value="composingText ?? text"
         :readonly="running"
         aria-label="コードを書く"
         :spellcheck="false"
