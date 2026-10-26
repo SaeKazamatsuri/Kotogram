@@ -117,6 +117,36 @@ test("every object hover uses a hiragana word accepted by the input dictionary",
   }
 });
 
+test("previously shown kanji object labels remain usable in code", () => {
+  for (const [label, condition] of [
+    ["宝箱", "chest"],
+    ["橋", "bridge"],
+    ["風", "wind"],
+    ["ふむ床", "pressurePlate"],
+    ["動く足場", "movingPlatform"],
+    ["上下する足場", "verticalPlatform"],
+    ["こわれる床", "fragileFloor"],
+  ]) {
+    const tokens = tokenizeLine(label, 1);
+    assert.deepEqual(tokens.map(token => token.value), [condition], label);
+    assert.deepEqual(tokens.map(token => token.kind), ["condition"], label);
+  }
+});
+
+test("stage-specific help uses input-friendly names for special objects", () => {
+  for (const [number, word] of [
+    [13, "うごくゆか"],
+    [18, "こわれるゆか"],
+    [22, "かけはし"],
+    [24, "ふむゆか"],
+    [28, "わーぷ"],
+  ]) {
+    const stage = loadStage(`stage-${number}`);
+    const guidance = [stage.learningObjectives ?? [], stage.meta?.hint, Object.values(stage.meta?.failHints ?? {})].flat().join(" ");
+    assert.ok(guidance.includes(word), `stage-${number}: ${word}`);
+  }
+});
+
 test("power jumps peak over vaultable door centers at normal and sprint pace", () => {
   for (const prefix of ["", "めっちゃはしる\n"]) {
     const stage = { goal: 960, scrollSpeed: 3, objects: [
