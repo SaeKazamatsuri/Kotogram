@@ -1,8 +1,12 @@
 import type { TextSelection } from "./text-input.ts";
 
 export class EditorHistory {
-  private snapshots: TextSelection[] = [{ text: "", start: 0, end: 0 }];
+  private snapshots: TextSelection[];
   private position = 0;
+
+  constructor(initial: TextSelection = { text: "", start: 0, end: 0 }) {
+    this.snapshots = [{ ...initial }];
+  }
 
   get canUndo(): boolean { return this.position > 0; }
   get canRedo(): boolean { return this.position < this.snapshots.length - 1; }
