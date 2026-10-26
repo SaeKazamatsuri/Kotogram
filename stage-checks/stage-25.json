@@ -91,6 +91,12 @@
       "role": "regression",
       "source": "めっちゃはしる\nかべとぶ\nあなとぶ\nおばけしゃがむ\nこいんとる",
       "expect": "cleared"
+    },
+    {
+      "name": "mirror-return-compact",
+      "role": "regression",
+      "source": "かべとあなとぶ\nてきかがむ\nこいんとる\nかがみうつる",
+      "expect": "cleared"
     }
   ]
 }
