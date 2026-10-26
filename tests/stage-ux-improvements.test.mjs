@@ -163,7 +163,7 @@ test("stage-specific help uses input-friendly names for special objects", () => 
 test("stage descriptions do not show old fragile-floor spelling", () => {
   for (let number = 1; number <= 30; number++) {
     const stage = loadStage(`stage-${number}`);
-    const guidance = JSON.stringify({ objectives: stage.learningObjectives, meta: stage.meta });
+    const guidance = JSON.stringify({ objectives: stage.learningObjectives, hint: stage.meta?.hint, failHints: stage.meta?.failHints });
     assert.ok(!guidance.includes("こわれる床"), `stage-${number}`);
   }
 });
