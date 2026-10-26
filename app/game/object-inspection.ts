@@ -1,11 +1,29 @@
 import { GAME, worldToScreenX, type GameState } from "./core.ts";
-import conditionsDictionary from "../../public/dictionary/conditions.json";
 
 export type InspectedObject = { id: string; name: string };
 
 const COLORS = { red: "あか", green: "みどり", blue: "あお", yellow: "きいろ", purple: "むらさき" };
 const SHAPES = { circle: "まる", cross: "ばつ", triangle: "さんかく", square: "しかく", star: "ほし" };
-const objectName = (key: keyof typeof conditionsDictionary): string => conditionsDictionary[key][0]!;
+export const OBJECT_NAMES = {
+  key: "かぎ",
+  chest: "たからばこ",
+  coin: "こいん",
+  wall: "かべ",
+  enemy: "おばけ",
+  laser: "ひかり",
+  pressurePlate: "ふむゆか",
+  mirror: "かがみ",
+  portal: "わーぷ",
+  goal: "ごーる",
+  verticalPlatform: "のぼりだい",
+  movingPlatform: "うごくあしば",
+  bridge: "かけはし",
+  fragileFloor: "こわれるゆか",
+  conveyor: "うごくゆか",
+  wind: "かぜ",
+  hole: "あな",
+} as const;
+const objectName = (key: keyof typeof OBJECT_NAMES): string => OBJECT_NAMES[key];
 
 export function inspectGameObject(game: GameState, screenX: number, screenY: number): InspectedObject | null {
   if (!Number.isFinite(screenX) || !Number.isFinite(screenY) || screenX < 0 || screenY < 0 || screenX > GAME.width || screenY > GAME.height) return null;
@@ -19,11 +37,11 @@ export function inspectGameObject(game: GameState, screenX: number, screenY: num
   };
 
   return find(game.switches, item => hit(item.x - 16, GAME.groundY - 40, 32, 40),
-    item => `${COLORS[item.color]}の${SHAPES[item.shape]}${conditionsDictionary.switch[1]}`)
+    item => `${COLORS[item.color]}の${SHAPES[item.shape]}ぼたん`)
     ?? find(game.keys.filter(item => !item.collected), item => hit(item.x - 14, GAME.groundY - 60, 47, 34), () => objectName("key"))
     ?? find(game.chests, item => hit(item.x - 24, GAME.groundY - 38, 48, 38), () => objectName("chest"))
     ?? find(game.coins.filter(item => !item.collected && !item.chestId), item => hit(item.x - GAME.coinRadius - 5, GAME.groundY - 35 - GAME.coinRadius - 6, GAME.coinRadius * 2 + 10, GAME.coinRadius * 2 + 12), () => objectName("coin"))
-    ?? find(game.doors, item => hit(item.x - 5, GAME.groundY - GAME.doorHeight - 6, GAME.doorWidth + 10, GAME.doorHeight + 6), () => conditionsDictionary.door[1]!)
+    ?? find(game.doors, item => hit(item.x - 5, GAME.groundY - GAME.doorHeight - 6, GAME.doorWidth + 10, GAME.doorHeight + 6), () => "もん")
     ?? find(game.walls, item => hit(item.x - 2, GAME.groundY - GAME.wallHeight, GAME.wallWidth + 4, GAME.wallHeight), () => objectName("wall"))
     ?? find(game.ghosts, item => hit(item.x, GAME.groundY - GAME.ghostHeight - GAME.ghostClearance - 4, GAME.ghostWidth, GAME.ghostHeight + 16), () => objectName("enemy"))
     ?? find(game.lasers, item => hit(item.x - 7, GAME.groundY - 132, 14, 132), () => objectName("laser"))
