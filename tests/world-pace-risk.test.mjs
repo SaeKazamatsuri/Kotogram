@@ -35,7 +35,7 @@ test("two advanced worlds require deliberate pace choices, but precise instructi
 test("previous leaderboard scopes remain visible while new versions are used for server replay", () => {
   for (const number of [13, 25]) {
     const id = "stage-" + number;
-    const newestVersion = "2026-10-25-r3";
+    const newestVersion = number === 25 ? "2026-10-26-r1" : "2026-10-25-r3";
     assert.equal(manifest.stages.find((stage) => stage.id === id)?.version, newestVersion);
     const scope = (stageVersion) => ({
       seasonId: SEASON_ID, stageId: id, stageVersion, engineVersion: ENGINE_VERSION,
