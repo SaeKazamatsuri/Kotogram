@@ -1,5 +1,5 @@
 import { GAME, worldToScreenX, type GameState } from "./core.ts";
-import conditionsDictionary from "../../public/dictionary/conditions.json" with { type: "json" };
+import conditionsDictionary from "../../public/dictionary/conditions.json";
 
 export type InspectedObject = { id: string; name: string };
 
