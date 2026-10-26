@@ -9,9 +9,10 @@ export function useDictionary() {
     version?: string;
     ttlMs?: number;
   }): Promise<Dict> {
+    const assetOptions = { ...opts, version: `${opts?.version ?? ""}:dictionary-20261027` };
     const [c, a] = await Promise.all([
-      get<Record<string, string[]>>("/dictionary/conditions.json", opts),
-      get<Record<string, string[]>>("/dictionary/actions.json", opts),
+      get<Record<string, string[]>>("/dictionary/conditions.json", assetOptions),
+      get<Record<string, string[]>>("/dictionary/actions.json", assetOptions),
     ]);
     return { conditions: c ?? {}, actions: a ?? {} };
   }
