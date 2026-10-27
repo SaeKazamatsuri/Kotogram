@@ -107,7 +107,10 @@ export function useStats() {
   function reset() {
     if (typeof window !== "undefined") {
       try {
-        window.sessionStorage.removeItem("kotogram.tutorial.introDismissed");
+        for (let index = window.sessionStorage.length - 1; index >= 0; index--) {
+          const key = window.sessionStorage.key(index);
+          if (key?.startsWith("kotogram.tutorial.introDismissed")) window.sessionStorage.removeItem(key);
+        }
       } catch {
         if (import.meta.dev) console.warn("Could not reset tutorial preference");
       }
