@@ -3,7 +3,7 @@ export const FIRST_STAGE_SHORT = "かべとぶ";
 export const TUTORIAL_DISMISSED_KEY = "kotogram.tutorial.introDismissed";
 
 export function isStageOneShortForm(source: string): boolean {
-  return source.normalize("NFC").replace(/[\s\u3000]/g, "") === FIRST_STAGE_SHORT;
+  return source.normalize("NFC").split(/\r?\n/).some(line => line.replace(/[\s\u3000]/g, "") === FIRST_STAGE_SHORT);
 }
 
 export function shouldShowFirstClearLesson(stageId: string, wasCleared: boolean, source: string): boolean {
