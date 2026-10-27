@@ -6,7 +6,8 @@ import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
 import StageOneGuide from "~/components/game/StageOneGuide.vue";
-import { TUTORIAL_DISMISSED_KEY, shouldShowFirstClearLesson } from "~/stage/onboarding";
+import TutorialConnector from "~/components/game/TutorialConnector.vue";
+import { hasStageTutorial, stageTutorialSteps, tutorialStorageKey, shouldShowFirstClearLesson } from "~/stage/onboarding";
 import { calculateScores, countSourceCharacters, getScoreReference, LANGUAGE_VERSION, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
@@ -39,14 +40,21 @@ const guideStep = ref(0);
 const guideVisible = ref(true);
 const practiceShort = ref(false);
 const firstClearLesson = ref(false);
-const canShowGuide = computed(() => stageId.value === "stage-1" && !running.value && !failed.value && !cleared.value && (practiceShort.value || !isCleared(stageId.value)));
+const canShowGuide = computed(() => hasStageTutorial(stageId.value) && !running.value && !failed.value && !cleared.value);
 const showGuide = computed(() => canShowGuide.value && guideVisible.value);
+const guideSteps = computed(() => stageTutorialSteps(stageId.value, practiceShort.value));
+const guideTarget = computed(() => guideSteps.value[Math.min(guideStep.value, guideSteps.value.length - 1)]?.target ?? "canvas");
+const showDragHelp = computed(() => showGuide.value && guideSteps.value[guideStep.value]?.dragDemo === true);
+
+function onPreviewDrag() {
+  if (stageId.value === "stage-1" && showGuide.value && !practiceShort.value && guideStep.value === 0) guideStep.value = 1;
+}
 
 function closeGuide() {
   guideVisible.value = false;
   if (practiceShort.value || !import.meta.client) return;
   try {
-    window.sessionStorage.setItem(TUTORIAL_DISMISSED_KEY, "1");
+    window.sessionStorage.setItem(tutorialStorageKey(stageId.value), "1");
   } catch {
     return;
   }
@@ -55,7 +63,7 @@ function closeGuide() {
 function practiceShortForm() {
   firstClearLesson.value = false;
   practiceShort.value = true;
-  guideStep.value = 2;
+  guideStep.value = 0;
   guideVisible.value = true;
   closeClear();
 }
@@ -163,7 +171,7 @@ async function loadCurrentStage() {
   guideVisible.value = true;
   if (import.meta.client) {
     try {
-      guideVisible.value = window.sessionStorage.getItem(TUTORIAL_DISMISSED_KEY) !== "1";
+      guideVisible.value = !isCleared(id) && window.sessionStorage.getItem(tutorialStorageKey(id)) !== "1";
     } catch {
       guideVisible.value = true;
     }
@@ -345,7 +353,7 @@ watch(stageId, () => {
     </div>
 
     <div v-else-if="stage" class="game-surface play-screen__surface min-h-0 flex-1 overflow-hidden">
-      <div class="game-workspace game-workspace--stage h-full min-h-0 gap-0">
+      <div class="game-workspace game-workspace--stage relative h-full min-h-0 gap-0">
         <section ref="editorPanel" class="play-screen__editor min-h-0 min-w-0 overflow-y-auto border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
           <CommandEditor
             :key="stageId"
@@ -375,13 +383,15 @@ watch(stageId, () => {
               :stage="stage"
               :program="program"
               :running="running"
+              :show-drag-help="showDragHelp"
               :source-map="sourceMap"
+              @preview-drag="onPreviewDrag"
               @trace="executionTrace = $event"
               @clear="onClear"
               @fail="onFail"
             />
           </div>
-          <StageOneGuide v-if="showGuide" :step="guideStep" :practice="practiceShort" @next="guideStep = Math.min(guideStep + 1, 2)" @keyboard="showKanaKeyboard" @close="closeGuide" />
+          <StageOneGuide v-if="showGuide" :stage-id="stageId" :step="guideStep" :practice="practiceShort" @next="guideStep = Math.min(guideStep + 1, guideSteps.length - 1)" @keyboard="showKanaKeyboard" @close="closeGuide" />
           <div v-if="stage.meta?.hint" class="border-t border-[#647b9b] px-4 py-3">
             <button type="button" class="flex min-h-9 items-center gap-2 rounded-xl px-3 text-sm font-black text-[#fffaf1] hover:bg-[#425575]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen">
               <Icon name="lucide:lightbulb" class="game-icon text-[#ffdc90]" aria-hidden="true"/> ヒント
@@ -390,6 +400,7 @@ watch(stageId, () => {
             <p v-if="hintOpen" class="mt-3 rounded-xl bg-[#17263f] p-4 text-sm font-bold leading-relaxed text-white">{{ stage.meta.hint }}</p>
           </div>
         </section>
+        <TutorialConnector v-if="showGuide" :target="guideTarget" />
       </div>
     </div>
 

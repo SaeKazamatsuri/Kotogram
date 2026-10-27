@@ -240,7 +240,7 @@ defineExpose({ getText, openKeyboard });
     <div class="flex flex-wrap items-center gap-2 bg-[#e3eaf1] px-3 py-2 text-[#23344e]">
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canUndo || composing" @click="undo" aria-label="もどす"><Icon name="lucide:undo-2" class="game-icon" aria-hidden="true"/> もどす</button>
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/> やり直す</button>
-      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" :aria-expanded="dictionaryOpen" @click="dictionaryOpen = !dictionaryOpen"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/> 使える言葉</button>
+      <button type="button" data-tour-target="dictionary" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" :aria-expanded="dictionaryOpen" @click="dictionaryOpen = !dictionaryOpen"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/> 使える言葉</button>
       <button type="button" class="ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/> 全部消す</button>
     </div>
     <div v-if="dictionaryOpen" class="max-h-56 shrink-0 overflow-y-auto border-b-2 border-[#95a8bd] bg-[#f5f7ee] px-4 py-3 text-[#1d3045]" role="region" aria-label="使える言葉の辞書">
@@ -259,6 +259,7 @@ defineExpose({ getText, openKeyboard });
           </ul>
         </section>
       </div>
+      <NuxtLink to="/reference/" class="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#95a8bd] bg-white px-3 text-sm font-black text-[#1d3045]"><Icon name="lucide:book-open-check" class="game-icon" aria-hidden="true"/> ことばの じてんを 見る</NuxtLink>
     </div>
     <div class="flex min-h-[130px] min-w-0 flex-1 overflow-hidden bg-[#fffaf1]">
       <LineGutter
@@ -291,6 +292,7 @@ defineExpose({ getText, openKeyboard });
       </div>
       <textarea
         ref="textarea"
+        data-tour-target="editor"
         class="relative h-full w-full min-h-0 min-w-0 resize-none bg-transparent p-4 text-[18px] font-bold leading-[1.7] break-all caret-[#172439] outline-none placeholder:text-[#62778a] selection:bg-[#bed7f2] text-transparent"
         :value="composingText ?? text"
         :readonly="running"
@@ -308,7 +310,7 @@ defineExpose({ getText, openKeyboard });
     <p v-if="firstError" role="alert" class="border-t border-[#de9ea9] bg-[#fff1ef] px-4 py-3 text-sm font-black text-[#9f203c]">{{ firstError.line }} 行目：{{ firstError.message }}</p>
     <p v-if="inputNotice" role="status" class="border-t border-[#a5c5b8] bg-[#e8f3ec] px-4 py-2 text-sm font-bold text-[#245845]">{{ inputNotice }}</p>
     <div class="flex flex-wrap items-center gap-3 border-t-2 border-[#7083a0] bg-[#243551] p-3">
-      <button type="button" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
+      <button type="button" data-tour-target="run" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
       <button type="button" class="game-button game-button--night text-sm" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力 <Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>
     </div>
     <div v-if="keyboardVisible" id="code-kana-keyboard" class="border-t border-[#7083a0] bg-[#243551] p-3">

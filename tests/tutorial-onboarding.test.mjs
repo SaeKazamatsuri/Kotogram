@@ -7,6 +7,9 @@ import {
   failureLearningHint,
   isStageOneShortForm,
   shouldShowFirstClearLesson,
+  hasStageTutorial,
+  stageTutorialSteps,
+  tutorialStorageKey,
 } from "../app/stage/onboarding.ts";
 
 test("the first natural-language example and its short form produce the same rule", () => {
@@ -36,4 +39,33 @@ test("failure guidance gives the player an inferable next action", () => {
   assert.match(failureLearningHint("enemy"), /おばけ.*しゃがんで/);
   assert.match(failureLearningHint("trap"), /みおくる/);
   assert.equal(failureLearningHint("unknown"), failureLearningHint("void"));
+});
+
+test("the first stage demonstrates drag, editor, run, inspection and dictionary in order", () => {
+  const steps = stageTutorialSteps("stage-1");
+  assert.deepEqual(steps.map(step => step.target), ["canvas", "editor", "run", "canvas", "dictionary"]);
+  assert.equal(steps[0].dragDemo, true);
+  assert.match(steps[3].message, /マウス.*タップ/);
+  assert.match(steps[4].message, /使える言葉/);
+  assert.deepEqual(stageTutorialSteps("stage-1", true).map(step => step.target), ["editor"]);
+});
+
+test("new mechanics have contextual guidance without writing a complete answer", () => {
+  for (const stageNumber of [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29]) {
+    const id = `stage-${stageNumber}`;
+    assert.equal(hasStageTutorial(id), true, id);
+    const steps = stageTutorialSteps(id);
+    assert.ok(steps.length >= 2, id);
+    assert.equal(steps[0].target, "canvas", id);
+    assert.equal(steps.at(-1).target, "dictionary", id);
+  }
+  assert.equal(hasStageTutorial("stage-17"), false);
+  assert.equal(hasStageTutorial("stage-30"), false);
+  assert.deepEqual(stageTutorialSteps("stage-30"), []);
+});
+
+test("tutorial dismissal is isolated per stage and preserves the legacy first-stage key", () => {
+  assert.equal(tutorialStorageKey("stage-1"), "kotogram.tutorial.introDismissed");
+  assert.equal(tutorialStorageKey("stage-2"), "kotogram.tutorial.introDismissed.stage-2");
+  assert.notEqual(tutorialStorageKey("stage-2"), tutorialStorageKey("stage-3"));
 });

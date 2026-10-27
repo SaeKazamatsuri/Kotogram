@@ -19,11 +19,13 @@ const props = defineProps<{
   stage: StageData;
   program?: GameProgram;
   running?: boolean;
+  showDragHelp?: boolean;
   sourceMap?: SourceMap;
 }>();
 const emit = defineEmits<{
   (e: "clear", result: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress; goalChoice: { label: string; bonusBp: number } | null }): void;
   (e: "fail", payload: FailPayload & { lastExecutedLine: number | null }): void;
+  (e: "preview-drag"): void;
   (e: "trace", payload: { active: number[]; sustained: SustainedHighlight[]; monitoring: number[]; waiting: number | null; repeat: number | null; progress: string | null }): void;
 }>();
 
@@ -241,7 +243,10 @@ function onPreviewPointerMove(event: PointerEvent) {
     if (event.pointerId !== previewDrag.pointerId || !canvas.value) return;
     const dx = event.clientX - previewDrag.clientX;
     const dy = event.clientY - previewDrag.clientY;
-    if (Math.hypot(dx, dy) > 8) previewDrag.moved = true;
+    if (Math.hypot(dx, dy) > 8 && !previewDrag.moved) {
+      previewDrag.moved = true;
+      emit("preview-drag");
+    }
     if (previewDrag.moved && canvas.value.clientWidth > 0) {
       previewMove(previewDrag.position - dx * GAME.width / canvas.value.clientWidth);
     }
@@ -290,8 +295,21 @@ onBeforeUnmount(stop);
 <template>
   <div class="flex flex-col gap-3">
     <div class="relative">
-      <canvas ref="canvas" class="block w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" :class="{ 'cursor-grab touch-none active:cursor-grabbing': !running }" :tabindex="running ? -1 : 0" :aria-label="running ? 'ゲームを実行中' : 'ステージの下見。ドラッグか左右キーで動かし、オブジェクトをタップすると名前を表示'" @pointerdown="onPreviewPointerDown" @pointermove="onPreviewPointerMove" @pointerup="onPreviewPointerEnd" @pointercancel="onPreviewPointerEnd" @pointerleave="clearHover" @keydown="onPreviewKeydown" />
+      <canvas ref="canvas" data-tour-target="canvas" class="block w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" :class="{ 'cursor-grab touch-none active:cursor-grabbing': !running }" :tabindex="running ? -1 : 0" :aria-label="running ? 'ゲームを実行中' : 'ステージの下見。ドラッグか左右キーで動かし、オブジェクトをタップすると名前を表示'" @pointerdown="onPreviewPointerDown" @pointermove="onPreviewPointerMove" @pointerup="onPreviewPointerEnd" @pointercancel="onPreviewPointerEnd" @pointerleave="clearHover" @keydown="onPreviewKeydown" />
+      <div v-if="showDragHelp && !running" class="drag-demo pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2" aria-hidden="true">
+        <div class="drag-demo__motion flex items-center gap-2 rounded-full border-2 border-[#ffdc90] bg-[#17263f]/90 px-4 py-2 text-[#fffaf1] shadow-lg">
+          <Icon name="lucide:mouse-pointer-2" class="game-icon" />
+          <Icon name="lucide:move-horizontal" class="game-icon" />
+        </div>
+        <span class="rounded-lg bg-[#17263f]/90 px-3 py-1 text-sm font-black text-[#fffaf1]">おしたまま 左右に うごかそう</span>
+      </div>
       <div v-if="hoveredObject" role="tooltip" class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border-2 border-[#38485c] bg-[#fffaf1] px-3 py-1.5 text-sm font-black text-[#172439] shadow-md" :style="{ left: hoverPosition.x + '%', top: hoverPosition.y + '%' }">{{ hoveredObject.name }}</div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.drag-demo__motion { animation: drag-demo-move 2.3s ease-in-out infinite alternate; }
+@keyframes drag-demo-move { 0%, 15% { transform: translateX(38px); } 75%, 100% { transform: translateX(-38px); } }
+@media (prefers-reduced-motion: reduce) { .drag-demo__motion { animation: none; } }
+</style>
