@@ -54,3 +54,14 @@ test("失敗した対象と次に試す動作が見える", async ({ page }) => 
   await dialog.getByRole("button", { name: "もっと ヒント" }).click();
   await expect(dialog).toContainText("じゃんぷする めいれい");
 });
+
+test("かたかなは ひらがなに直し、つかえない文字は理由を示す", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("カベトブ");
+  await expect(editor).toHaveValue("かべとぶ");
+  await expect(page.getByRole("status").filter({ hasText: "かたかなを ひらがな" })).toBeVisible();
+  await editor.fill("壁をジャンプ");
+  await expect(editor).toHaveValue("をじゃんぷ");
+  await expect(page.getByRole("status").filter({ hasText: "つかえない もじ" })).toBeVisible();
+});
