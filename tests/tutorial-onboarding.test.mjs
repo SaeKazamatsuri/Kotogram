@@ -23,6 +23,7 @@ test("the first-clear tutorial is shown once for an unshortened first solution",
   assert.equal(shouldShowFirstClearLesson("stage-2", false, FIRST_STAGE_EXAMPLE), false);
   assert.equal(shouldShowFirstClearLesson("stage-1", false, FIRST_STAGE_SHORT), false);
   assert.equal(isStageOneShortForm(" かべ とぶ "), true);
+  assert.equal(isStageOneShortForm("はしる\nかべとぶ"), true);
   assert.equal(isStageOneShortForm("かべじゃんぷ"), false);
 });
 
