@@ -385,8 +385,8 @@ watch(stageId, () => {
               @clear="onClear"
               @fail="onFail"
             />
-            <StageOneGuide v-if="showGuide" :step="guideStep" :practice="practiceShort" @next="guideStep = Math.min(guideStep + 1, 2)" @close="closeGuide" />
           </div>
+          <StageOneGuide v-if="showGuide" :step="guideStep" :practice="practiceShort" @next="guideStep = Math.min(guideStep + 1, 2)" @close="closeGuide" />
           <div v-if="stage.meta?.hint" class="border-t border-[#647b9b] px-4 py-3">
             <button type="button" class="flex min-h-9 items-center gap-2 rounded-xl px-3 text-sm font-black text-[#fffaf1] hover:bg-[#425575]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen">
               <Icon name="lucide:lightbulb" class="game-icon text-[#ffdc90]" aria-hidden="true"/> ヒント
