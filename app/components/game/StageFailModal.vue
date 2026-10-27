@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from "vue";
+import { failureLearningHint } from "~/stage/onboarding";
 import {
   defaultFailHint,
   failReasonLabel,
@@ -14,6 +15,7 @@ const emit = defineEmits<{ (e: "close"): void }>();
 const hintOpen = ref(false);
 
 const message = computed(() => failReasonLabel(props.reason));
+const learningHint = computed(() => failureLearningHint(props.reason));
 const hintText = computed(() => {
   if (props.hint && props.hint.trim().length > 0) return props.hint;
   return defaultFailHint(props.reason);
@@ -28,7 +30,8 @@ const hintText = computed(() => {
         <h2 class="game-heading text-3xl text-[#962d47]">もう一度！</h2>
       </div>
       <p class="mb-4 rounded-xl bg-[#ffefea] p-4 text-lg font-black text-[#7d263d]">{{ message }}</p>
-      <button type="button" class="mb-3 flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-black text-[#2f5972]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen"><Icon name="lucide:lightbulb" class="game-icon" aria-hidden="true"/> ヒント <Icon :name="hintOpen ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>
+      <p class="mb-4 rounded-xl bg-[#e5f4ea] p-4 text-base font-black leading-relaxed text-[#235342]">{{ learningHint }}</p>
+      <button type="button" class="mb-3 flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-black text-[#2f5972]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen"><Icon name="lucide:lightbulb" class="game-icon" aria-hidden="true"/> もっと ヒント <Icon :name="hintOpen ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>
       <p v-if="hintOpen" class="mb-4 rounded-xl bg-[#eaf4ec] p-4 text-sm font-bold leading-relaxed text-[#1b5141]">{{ hintText }}</p>
       <button type="button" class="game-button game-button--coral w-full text-lg" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
     </div>
