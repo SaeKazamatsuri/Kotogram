@@ -216,8 +216,15 @@ function toggleKeyboard() {
   keyboardVisible.value = !keyboardVisible.value;
   setKeyboardExpanded("code", keyboardVisible.value);
 }
+function openKeyboard() {
+  if (props.running) return;
+  if (!keyboardVisible.value) {
+    keyboardVisible.value = true;
+    setKeyboardExpanded("code", true);
+  }
+}
 function getText() { return text.value; }
-defineExpose({ getText });
+defineExpose({ getText, openKeyboard });
 </script>
 
 <template>
