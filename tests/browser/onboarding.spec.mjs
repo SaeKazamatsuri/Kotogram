@@ -102,3 +102,58 @@ test("通常クリアは 3画面内で簡潔に表示し、くわしい結果と
     expect(rect.y + rect.height).toBeLessThanOrEqual(page.viewportSize().height);
   }
 });
+
+test("ドラッグの見本から操作すると、次のステップに進み入力欄まで案内線がつながる", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const guide = page.getByRole("region", { name: "主人公のあんない" });
+  const canvas = page.locator('canvas[data-tour-target="canvas"]');
+  await expect(page.locator(".drag-demo")).toBeVisible();
+  await expect(page.locator(".tutorial-connector__target")).toBeVisible();
+  const rect = await canvas.boundingBox();
+  expect(rect).not.toBeNull();
+  await page.mouse.move(rect.x + rect.width * .7, rect.y + rect.height * .5);
+  await page.mouse.down();
+  await page.mouse.move(rect.x + rect.width * .3, rect.y + rect.height * .5, { steps: 10 });
+  await page.mouse.up();
+  await expect(guide).toContainText("2 / 5");
+  await expect(guide).toContainText("かべがまえにあったらじゃんぷする");
+  await expect(page.locator(".drag-demo")).toHaveCount(0);
+  const highlighted = await page.locator(".tutorial-connector__target").boundingBox();
+  const editor = await page.locator('textarea[data-tour-target="editor"]').boundingBox();
+  expect(highlighted).not.toBeNull();
+  expect(editor).not.toBeNull();
+  expect(Math.abs(highlighted.x - editor.x)).toBeLessThan(4);
+  expect(Math.abs(highlighted.y - editor.y)).toBeLessThan(4);
+});
+
+test("対象の名前とステージ辞書、ことばの辞典まで順番に案内する", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const guide = page.getByRole("region", { name: "主人公のあんない" });
+  for (let step = 0; step < 3; step++) await guide.getByRole("button", { name: "つぎの ヒント" }).click();
+  await expect(guide).toContainText("マウス");
+  await expect(guide).toContainText("タップ");
+  await guide.getByRole("button", { name: "つぎの ヒント" }).click();
+  await expect(guide).toContainText("使える言葉");
+  await expect(guide.getByRole("link", { name: "ことばの辞典を 見る" })).toHaveAttribute("href", "/reference/");
+  await page.getByRole("button", { name: "使える言葉" }).click();
+  await expect(page.getByRole("region", { name: "使える言葉の辞書" })).toBeVisible();
+});
+
+test("新しいしかけを初めて遊ぶと説明を表示し、閉じてももう一度見られる", async ({ page }) => {
+  await page.addInitScript(() => {
+    const stats = Object.fromEntries(Array.from({ length: 7 }, (_, index) => [`stage-${index + 1}`, { seconds: 5, chars: 5 }]));
+    window.localStorage.setItem("kotogram.stats", JSON.stringify(stats));
+  });
+  await page.goto("/play/stage-8");
+  const guide = page.getByRole("region", { name: "主人公のあんない" });
+  await expect(guide).toBeVisible();
+  await expect(guide).toContainText("色と 形");
+  await guide.getByRole("button", { name: "つぎの ヒント" }).click();
+  await expect(guide).toContainText("使える言葉");
+  await guide.getByRole("button", { name: "わかった！" }).click();
+  await expect(guide).toBeHidden();
+  await page.reload();
+  await expect(guide).toBeHidden();
+  await page.getByRole("button", { name: "あんないを 見る" }).click();
+  await expect(guide).toBeVisible();
+});
