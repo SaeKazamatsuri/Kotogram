@@ -23,7 +23,7 @@ const last = computed(() => props.step >= steps.value.length - 1);
       <p v-if="current?.example" class="stage-guide__example">{{ current.example }}</p>
       <div class="stage-guide__actions">
         <button v-if="step === 1 && stageId === 'stage-1' && !practice" type="button" @click="emit('keyboard')">かな入力を ひらく</button>
-        <NuxtLink v-if="last && !practice" to="/reference/" class="stage-guide__reference">ことばの辞典を 見る</NuxtLink>
+        <NuxtLink v-if="last && !practice" to="/reference/" class="stage-guide__reference">ことばの じてんを 見る</NuxtLink>
         <button v-if="!last" type="button" @click="emit('next')">つぎの ヒント</button>
         <button type="button" class="stage-guide__dismiss" @click="emit('close')">{{ practice || last ? "わかった！" : "あとで" }}</button>
       </div>
