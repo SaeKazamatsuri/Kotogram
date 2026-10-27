@@ -246,44 +246,6 @@ function bestScore(kind: "time" | "chars" | "overall") {
     </div>
   </div>
 </template>
-        <template v-else-if="classifyStrategy(scores) === 'compact'">みじかいコードで クリア！</template>
-        <template v-else>バランスよく クリア！</template>
-      </div>
-      <div v-if="bests?.time || bests?.chars || bests?.overall" class="mb-4 rounded-xl border border-[#bccbd9] bg-[#f0f5f8] p-3 text-sm text-[#172439]">
-        <h3 class="mb-2 flex items-center gap-2 font-black"><Icon name="lucide:medal" class="game-icon text-[#14684e]" aria-hidden="true"/> 自分の ベスト</h3>
-        <div class="grid gap-2 sm:grid-cols-3">
-          <p>タイム {{ bestScore('time') }}</p>
-          <p>文字数 {{ bestScore('chars') }}</p>
-          <p>総合 {{ bestScore('overall') }}</p>
-        </div>
-      </div>
-      <section v-if="apiBase" class="rounded-2xl border border-[#94b9ae] bg-[#e9f5ee] p-4">
-        <template v-if="!savedName">
-          <label for="ranking-nickname" class="mb-2 block text-sm font-black text-[#183f35]">ランキングの名前</label>
-          <input id="ranking-nickname" ref="nicknameInput" :value="nickname" :disabled="saving" :maxlength="16" type="text" readonly inputmode="none" class="w-full rounded-xl border-2 border-[#5b9c86] bg-white p-3 text-base font-semibold text-[#172439]" autocomplete="off" placeholder="名前なしなら ゲスト">
-          <button type="button" class="mt-3 flex min-h-11 w-full items-center justify-between rounded-xl border-2 border-[#81aa9a] bg-white px-4 text-sm font-black text-[#214c40] hover:bg-[#f1faf4]" aria-controls="ranking-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><span class="flex items-center gap-2"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true" /> かな入力</span><Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true" /></button>
-          <div v-if="keyboardVisible" id="ranking-kana-keyboard" class="mt-2"><KanaKeyboard mode="nickname" :disabled="saving" @press="onNicknameKey" /></div>
-          <p class="mt-2 text-xs font-bold text-[#274d43]">本名は 書かないでね</p>
-          <p v-if="saveError" role="alert" class="mt-3 text-sm font-black text-[#a53148]">{{ saveError }} もう一度 おしてね。</p>
-        </template>
-        <p v-else class="text-sm font-black text-[#155b44]">「{{ savedName }}」で とうろくできたよ！</p>
-        <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <button type="button" class="game-button game-button--ghost text-sm" @click="showRanking = !showRanking"><Icon name="lucide:list-ordered" class="game-icon" aria-hidden="true"/>{{ showRanking ? 'ランキングを とじる' : 'ランキングを 見る' }}</button>
-          <button v-if="!savedName" type="button" :disabled="saving" class="game-button game-button--mint ml-auto text-sm disabled:opacity-50" @click="emit('register', nickname)"><Icon name="lucide:send" class="game-icon" aria-hidden="true"/>{{ saving ? '送っているよ…' : 'きろくを 送る' }}</button>
-        </div>
-      </section>
-      <RankingPanel v-if="showRanking && apiBase" :stage-id="stageId" :stage-version="stageVersion" :api-base="apiBase" :refresh="rankingRefresh ?? 0" />
-      </div>
-      <div class="relative z-10 shrink-0 border-t-2 border-[#c2cdd4] bg-[#fffaf1] px-4 py-3 sm:px-7"> 
-      <div class="flex flex-wrap gap-3">
-        <button type="button" class="game-button game-button--ghost flex-1 text-base" @click="emit('map')"><Icon name="lucide:map" class="game-icon" aria-hidden="true"/> マップへ</button>
-        <button type="button" class="game-button game-button--mint flex-1 text-base" @click="emit('next')"><Icon name="lucide:arrow-right" class="game-icon" aria-hidden="true"/>{{ hasNext ? '次へ' : 'ステージへ' }}</button>
-      </div>
-      <button type="button" class="mt-2 flex min-h-10 w-full items-center justify-center gap-2 rounded-xl px-3 py-1 text-sm font-black text-[#405978] hover:bg-[#e8f0f5]" @click="emit('close')"><Icon name="lucide:edit-3" class="game-icon" aria-hidden="true"/> コードを直す</button>
-      </div>
-    </div>
-  </div>
-</template>
 
 <style scoped>
 .celebration-panel {
