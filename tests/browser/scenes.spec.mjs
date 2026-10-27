@@ -350,9 +350,11 @@ test("リザルト画面で次へ・マップへ・コードを直すが常に�
   await expect(sendButton).toBeVisible();
   const rankingBounds = await rankingButton.boundingBox();
   const sendBounds = await sendButton.boundingBox();
-  expect(rankingBounds.x).toBeLessThan(sendBounds.x);
   if (Math.abs(rankingBounds.y - sendBounds.y) < 2) {
+    expect(rankingBounds.x).toBeLessThan(sendBounds.x);
     expect(sendBounds.x - rankingBounds.x - rankingBounds.width).toBeGreaterThanOrEqual(8);
+  } else {
+    expect(rankingBounds.y).toBeLessThan(sendBounds.y);
   }
   const mapBounds = await dialog.getByRole("button", { name: "マップへ" }).boundingBox();
   const nextBounds = await dialog.getByRole("button", { name: "次へ" }).boundingBox();
