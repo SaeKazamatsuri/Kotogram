@@ -183,6 +183,7 @@ test("ゲーム中にコードを編集しても開始時のプログラムで�
       body: JSON.stringify({ ok: true, nickname: "ゲスト1", runId: body.runId, duplicate: false }),
     });
   });
+  await page.getByRole("navigation", { name: "クリアしたあとにすること" }).getByRole("button", { name: /きろく/ }).click();
   await page.getByRole("button", { name: "きろくを 送る" }).click();
   await expect(page.getByText(/で とうろくできたよ！/)).toBeVisible();
   expect(submittedSource).toBe("かべとぶ");
@@ -220,6 +221,7 @@ test("次の人へ初期化した後に前利用者の遅い送信結果が名�
   await page.getByRole("textbox", { name: "コードを書く" }).fill("かべとぶ");
   await page.getByRole("button", { name: "動かす" }).click();
   await expect(page.getByRole("heading", { name: "ステージクリア！" })).toBeVisible({ timeout: 30000 });
+  await page.getByRole("navigation", { name: "クリアしたあとにすること" }).getByRole("button", { name: /きろく/ }).click();
   await page.getByRole("button", { name: "きろくを 送る" }).click();
   await requestSeen;
   await page.getByRole("dialog", { name: "ステージクリア" }).getByRole("button", { name: "マップへ" }).click();
@@ -340,15 +342,19 @@ test("リザルト画面で次へ・マップへ・コードを直すが常に�
     expect(bounds.y).toBeGreaterThanOrEqual(0);
     expect(bounds.y + bounds.height).toBeLessThanOrEqual(page.viewportSize().height);
   }
+  await expect(dialog.getByRole("button", { name: "ランキングを 見る" })).toHaveCount(0);
+  await dialog.getByRole("navigation", { name: "クリアしたあとにすること" }).getByRole("button", { name: /きろく/ }).click();
   const rankingButton = dialog.getByRole("button", { name: "ランキングを 見る" });
   const sendButton = dialog.getByRole("button", { name: "きろくを 送る" });
   await expect(rankingButton).toBeVisible();
   await expect(sendButton).toBeVisible();
   const rankingBounds = await rankingButton.boundingBox();
   const sendBounds = await sendButton.boundingBox();
-  expect(rankingBounds.x).toBeLessThan(sendBounds.x);
   if (Math.abs(rankingBounds.y - sendBounds.y) < 2) {
+    expect(rankingBounds.x).toBeLessThan(sendBounds.x);
     expect(sendBounds.x - rankingBounds.x - rankingBounds.width).toBeGreaterThanOrEqual(8);
+  } else {
+    expect(rankingBounds.y).toBeLessThan(sendBounds.y);
   }
   const mapBounds = await dialog.getByRole("button", { name: "マップへ" }).boundingBox();
   const nextBounds = await dialog.getByRole("button", { name: "次へ" }).boundingBox();

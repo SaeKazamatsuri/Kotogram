@@ -6,7 +6,6 @@ import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
 import StageOneGuide from "~/components/game/StageOneGuide.vue";
-import StageOneLearningModal from "~/components/game/StageOneLearningModal.vue";
 import { TUTORIAL_DISMISSED_KEY, shouldShowFirstClearLesson } from "~/stage/onboarding";
 import { calculateScores, countSourceCharacters, getScoreReference, LANGUAGE_VERSION, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
@@ -61,13 +60,9 @@ function practiceShortForm() {
   closeClear();
 }
 
-function finishFirstClearLesson() {
-  firstClearLesson.value = false;
-}
-
-function skipFirstClearLesson() {
-  firstClearLesson.value = false;
-  goNext();
+function showKanaKeyboard() {
+  editorRef.value?.openKeyboard();
+  focusSmallScreenPanel(editorPanel.value);
 }
 const rankingApiBase = String(useRuntimeConfig().public.rankingApiBase || "");
 const { loadStage, getManifest } = useStageLoader();
@@ -386,7 +381,7 @@ watch(stageId, () => {
               @fail="onFail"
             />
           </div>
-          <StageOneGuide v-if="showGuide" :step="guideStep" :practice="practiceShort" @next="guideStep = Math.min(guideStep + 1, 2)" @close="closeGuide" />
+          <StageOneGuide v-if="showGuide" :step="guideStep" :practice="practiceShort" @next="guideStep = Math.min(guideStep + 1, 2)" @keyboard="showKanaKeyboard" @close="closeGuide" />
           <div v-if="stage.meta?.hint" class="border-t border-[#647b9b] px-4 py-3">
             <button type="button" class="flex min-h-9 items-center gap-2 rounded-xl px-3 text-sm font-black text-[#fffaf1] hover:bg-[#425575]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen">
               <Icon name="lucide:lightbulb" class="game-icon text-[#ffdc90]" aria-hidden="true"/> ヒント
@@ -400,10 +395,11 @@ watch(stageId, () => {
 
     <Teleport to="body">
       <StageFailModal v-if="failed && failInfo" :reason="failInfo.reason" :hint="failInfo.hint" @close="closeFail" />
-      <StageOneLearningModal v-if="cleared && firstClearLesson" :chars="lastChars" :source="runningSource" @practice="practiceShortForm" @result="finishFirstClearLesson" @next="skipFirstClearLesson" />
     <StageClearModal
-      v-if="cleared && !firstClearLesson"
+      v-if="cleared"
       :seconds="lastSeconds"
+      :first-lesson="firstClearLesson"
+      :source="runningSource"
       :stage-id="String(stageId)"
       :stage-version="stageVersion"
       :has-next="nextStageId(stageId, stageItems) !== null"
@@ -422,6 +418,7 @@ watch(stageId, () => {
       @next="goNext"
       @map="goMap"
       @register="onRegister"
+      @practice="practiceShortForm"
     />
     </Teleport>
   </div>

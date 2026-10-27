@@ -90,6 +90,11 @@ try {
   await page.getByRole("button", { name: "動かす" }).click();
   await page.getByText("ステージクリア！").waitFor({ timeout: 45000 });
   await saveScene(page, "clear-desktop");
+  assert.equal(await page.getByText("自分の ベスト").count(), 0);
+  assert.equal(await page.getByRole("button", { name: "きろくを 送る" }).count(), 0);
+  await page.getByRole("navigation", { name: "クリアしたあとにすること" }).getByRole("button", { name: /きろく/ }).click();
+  assert.equal(await page.getByRole("button", { name: "きろくを 送る" }).count(), 1);
+  await page.getByRole("button", { name: /くわしい 点数と ベスト/ }).click();
   assert.equal(await page.getByText("自分の ベスト").count(), 1);
 
   const browserApiHealth = await page.evaluate(async (base) => {

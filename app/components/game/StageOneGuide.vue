@@ -4,7 +4,7 @@ import GameCharacterSprite from "~/components/game/CharacterSprite.vue";
 import { FIRST_STAGE_EXAMPLE, FIRST_STAGE_SHORT } from "~/stage/onboarding";
 
 const props = defineProps<{ step: number; practice?: boolean }>();
-const emit = defineEmits<{ (e: "next" | "close"): void }>();
+const emit = defineEmits<{ (e: "next" | "close" | "keyboard"): void }>();
 
 const messages = [
   "ここが ステージだよ。かべが あるね。ドラッグすると 先も 見られるよ。",
@@ -28,6 +28,7 @@ const example = computed(() => props.practice ? FIRST_STAGE_SHORT : props.step =
       <p>{{ message }}</p>
       <p v-if="example" class="stage-guide__example">{{ example }}</p>
       <div class="stage-guide__actions">
+        <button v-if="step === 1 && !practice" type="button" @click="emit('keyboard')">かな入力を ひらく</button>
         <button v-if="!practice && step < 2" type="button" @click="emit('next')">つぎの ヒント</button>
         <button type="button" class="stage-guide__dismiss" @click="emit('close')">{{ practice ? "わかった！" : "あとで" }}</button>
       </div>

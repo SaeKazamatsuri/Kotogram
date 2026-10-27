@@ -61,6 +61,8 @@ test("クリア後のランキング名は画面内かなキーボードで入�
   await page.getByRole("button", { name: "動かす" }).click();
   const modal = page.getByRole("dialog", { name: "ステージクリア" });
   await expect(modal).toBeVisible({ timeout: 30000 });
+  await expect(modal.locator("#ranking-nickname")).toHaveCount(0);
+  await modal.getByRole("navigation", { name: "クリアしたあとにすること" }).getByRole("button", { name: /きろく/ }).click();
   const input = modal.locator("#ranking-nickname");
   await expect(input).toHaveAttribute("readonly", "");
   await expect(input).toHaveAttribute("inputmode", "none");
