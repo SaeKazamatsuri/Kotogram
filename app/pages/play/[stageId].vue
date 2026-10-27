@@ -40,7 +40,7 @@ const guideStep = ref(0);
 const guideVisible = ref(true);
 const practiceShort = ref(false);
 const firstClearLesson = ref(false);
-const canShowGuide = computed(() => hasStageTutorial(stageId.value) && !running.value && !failed.value && !cleared.value && (practiceShort.value || !isCleared(stageId.value)));
+const canShowGuide = computed(() => hasStageTutorial(stageId.value) && !running.value && !failed.value && !cleared.value);
 const showGuide = computed(() => canShowGuide.value && guideVisible.value);
 const guideSteps = computed(() => stageTutorialSteps(stageId.value, practiceShort.value));
 const guideTarget = computed(() => guideSteps.value[Math.min(guideStep.value, guideSteps.value.length - 1)]?.target ?? "canvas");
@@ -171,7 +171,7 @@ async function loadCurrentStage() {
   guideVisible.value = true;
   if (import.meta.client) {
     try {
-      guideVisible.value = window.sessionStorage.getItem(tutorialStorageKey(id)) !== "1";
+      guideVisible.value = !isCleared(id) && window.sessionStorage.getItem(tutorialStorageKey(id)) !== "1";
     } catch {
       guideVisible.value = true;
     }
