@@ -105,6 +105,13 @@ export function useStats() {
   }
 
   function reset() {
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.removeItem("kotogram.tutorial.introDismissed");
+      } catch {
+        void 0;
+      }
+    }
     clearClearedStageCodes();
     clearKeyboardPreferences();
     const storage = getStorage();
