@@ -14,7 +14,7 @@ const page = ref(0);
       <div class="mb-4 flex items-center gap-3">
         <div class="w-[76px] shrink-0" aria-hidden="true"><GameCharacterSprite /></div>
         <div>
-          <p class="text-sm font-black text-[#23765c]">いっしょに おぼえよう　{{ page + 1 }} / 3</p>
+          <p class="text-sm font-black text-[#23765c]">いっしょに おぼえよう {{ page + 1 }} / 3</p>
           <h2 class="text-2xl font-black sm:text-3xl">{{ page === 0 ? "ステージクリア！" : page === 1 ? "ことばを ちぢめられるよ" : "もう一度 ためしてみよう" }}</h2>
         </div>
       </div>
