@@ -400,7 +400,7 @@ watch(stageId, () => {
 
     <Teleport to="body">
       <StageFailModal v-if="failed && failInfo" :reason="failInfo.reason" :hint="failInfo.hint" @close="closeFail" />
-      <StageOneLearningModal v-if="cleared && firstClearLesson" :chars="lastChars" @practice="practiceShortForm" @result="finishFirstClearLesson" @next="skipFirstClearLesson" />
+      <StageOneLearningModal v-if="cleared && firstClearLesson" :chars="lastChars" :source="runningSource" @practice="practiceShortForm" @result="finishFirstClearLesson" @next="skipFirstClearLesson" />
     <StageClearModal
       v-if="cleared && !firstClearLesson"
       :seconds="lastSeconds"
