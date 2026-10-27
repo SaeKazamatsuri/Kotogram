@@ -36,10 +36,10 @@ const example = computed(() => props.practice ? FIRST_STAGE_SHORT : props.step =
 </template>
 
 <style scoped>
-.stage-guide { position: absolute; z-index: 12; bottom: 12px; left: 12px; right: 12px; display: flex; align-items: end; gap: 10px; max-width: 670px; pointer-events: none; }
+.stage-guide { position: relative; z-index: 1; display: flex; align-items: end; gap: 10px; width: calc(100% - 24px); max-width: 670px; margin: 0 auto 12px; flex-shrink: 0; }
 .stage-guide__hero { flex: 0 0 65px; width: 65px; filter: drop-shadow(2px 5px 0 #14243b); }
 .stage-guide__hero :deep(canvas) { display: block; width: 100%; height: auto; }
-.stage-guide__speech { flex: 1; min-width: 0; padding: 12px 14px; border: 3px solid #bcebdc; border-radius: 18px; background: #fffaf1; color: #20344c; box-shadow: 0 5px 0 #16243c; pointer-events: auto; }
+.stage-guide__speech { flex: 1; min-width: 0; padding: 12px 14px; border: 3px solid #bcebdc; border-radius: 18px; background: #fffaf1; color: #20344c; box-shadow: 0 5px 0 #16243c; }
 .stage-guide__header { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; color: #22634f; font-size: 12px; font-weight: 900; }
 .stage-guide__count { white-space: nowrap; }
 .stage-guide__speech p { font-size: 14px; line-height: 1.6; font-weight: 800; }
@@ -47,5 +47,5 @@ const example = computed(() => props.practice ? FIRST_STAGE_SHORT : props.step =
 .stage-guide__actions { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px; }
 .stage-guide__actions button { min-height: 36px; padding: 5px 11px; border-radius: 9px; background: #25896c; color: white; font-size: 13px; font-weight: 900; }
 .stage-guide__actions .stage-guide__dismiss { background: #e8edf1; color: #354b63; }
-@media (max-width: 639px) { .stage-guide { left: 7px; right: 7px; bottom: 7px; gap: 4px; } .stage-guide__hero { flex-basis: 45px; width: 45px; } .stage-guide__speech { padding: 9px; } .stage-guide__speech p { font-size: 12px; } .stage-guide__speech .stage-guide__example { font-size: 13px; } }
+@media (max-width: 639px) { .stage-guide { width: calc(100% - 14px); gap: 4px; } .stage-guide__hero { flex-basis: 45px; width: 45px; } .stage-guide__speech { padding: 9px; } .stage-guide__speech p { font-size: 12px; } .stage-guide__speech .stage-guide__example { font-size: 13px; } }
 </style>
