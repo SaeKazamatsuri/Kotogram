@@ -134,7 +134,7 @@ test("対象の名前とステージ辞書、ことばの辞典まで順番に�
   await expect(guide).toContainText("タップ");
   await guide.getByRole("button", { name: "つぎの ヒント" }).click();
   await expect(guide).toContainText("使える言葉");
-  await expect(guide.getByRole("link", { name: "ことばの辞典を 見る" })).toHaveAttribute("href", "/reference/");
+  await expect(guide.getByRole("link", { name: "ことばの じてんを 見る" })).toHaveAttribute("href", "/reference/");
   await page.getByRole("button", { name: "使える言葉" }).click();
   await expect(page.getByRole("region", { name: "使える言葉の辞書" })).toBeVisible();
 });
