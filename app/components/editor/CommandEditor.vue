@@ -291,7 +291,7 @@ defineExpose({ getText });
         @input="onInput"
         @compositionstart="onCompositionStart"
         @compositionend="onCompositionEnd"
-        placeholder="かべをまえにみつけたらじゃんぷする"
+        placeholder="かべがまえにあったらじゃんぷする"
         @scroll="onScroll"
       />
       </div>
