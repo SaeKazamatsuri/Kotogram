@@ -13,11 +13,12 @@ test("初回は主人公が自然文を案内し、クリア後に同じステ�
   await expect(guide).toContainText("かべがまえにあったらじゃんぷする");
   await editor.fill("かべがまえにあったらじゃんぷする");
   await page.getByRole("button", { name: "動かす" }).click();
-  const lesson = page.getByRole("dialog", { name: "はじめての クリア" });
+  const lesson = page.getByRole("dialog", { name: "ステージクリア" });
   await expect(lesson).toBeVisible({ timeout: 30000 });
-  await lesson.getByRole("button", { name: "つぎの はなし" }).click();
+  await expect(lesson.getByRole("textbox", { name: "ランキングの名前" })).toHaveCount(0);
+  await lesson.getByRole("button", { name: "ふりかえる" }).click();
   await expect(lesson).toContainText("かべとぶ");
-  await lesson.getByRole("button", { name: "つぎの はなし" }).click();
+  await expect(lesson).toContainText("かべがまえにあったらじゃんぷする");
   await lesson.getByRole("button", { name: "みじかく 書いて ためす" }).click();
   await expect(editor).toHaveValue("かべがまえにあったらじゃんぷする");
   await expect(guide).toContainText("かべとぶ");
@@ -64,4 +65,40 @@ test("かたかなは ひらがなに直し、つかえない文字は理由を�
   await editor.fill("壁をジャンプ");
   await expect(editor).toHaveValue("をじゃんぷ");
   await expect(page.getByRole("status").filter({ hasText: "つかえない もじ" })).toBeVisible();
+});
+
+test("案内から かな入力を ひらけるが 初期状態は とじている", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const guide = page.getByRole("region", { name: "主人公のあんない" });
+  const keyboard = page.getByRole("button", { name: /かな入力/ }).first();
+  await expect(keyboard).toHaveAttribute("aria-expanded", "false");
+  await guide.getByRole("button", { name: "つぎの ヒント" }).click();
+  await guide.getByRole("button", { name: "かな入力を ひらく" }).click();
+  await expect(keyboard).toHaveAttribute("aria-expanded", "true");
+});
+
+test("通常クリアは 3画面内で簡潔に表示し、くわしい結果とランキングは任意で見る", async ({ page }) => {
+  test.setTimeout(60000);
+  await page.goto("/play/stage-1");
+  await page.getByRole("textbox", { name: "コードを書く" }).fill("かべとぶ");
+  await page.getByRole("button", { name: "動かす" }).click();
+  const dialog = page.getByRole("dialog", { name: "ステージクリア" });
+  await expect(dialog).toBeVisible({ timeout: 30000 });
+  await expect(dialog.getByRole("region", { name: "クリアをよろこぶ" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "ランキングを 見る" })).toHaveCount(0);
+  await expect(dialog.getByRole("button", { name: "きろくを 送る" })).toHaveCount(0);
+  await dialog.getByRole("button", { name: "ふりかえる" }).click();
+  await expect(dialog.getByRole("region", { name: "クリアをふりかえる" })).toBeVisible();
+  await dialog.getByRole("button", { name: "きろくを 見る" }).click();
+  await expect(dialog.getByRole("region", { name: "きろくをのこす" })).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "きろくを 送る" })).toBeVisible();
+  await expect(dialog.getByText("自分の ベスト")).toHaveCount(0);
+  await dialog.getByRole("button", { name: /くわしい 点数と ベスト/ }).click();
+  await expect(dialog.getByText("自分の ベスト")).toBeVisible();
+  for(const name of ["マップへ", "次へ", "コードを直す"]) {
+    const element = dialog.getByRole("button", { name });
+    await expect(element).toBeVisible();
+    const rect = await element.boundingBox();
+    expect(rect.y + rect.height).toBeLessThanOrEqual(page.viewportSize().height);
+  }
 });
