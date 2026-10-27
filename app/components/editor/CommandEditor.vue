@@ -259,6 +259,7 @@ defineExpose({ getText, openKeyboard });
           </ul>
         </section>
       </div>
+      <NuxtLink to="/reference/" class="mt-3 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#95a8bd] bg-white px-3 text-sm font-black text-[#1d3045]"><Icon name="lucide:book-open-check" class="game-icon" aria-hidden="true"/> ことばの じてんを 見る</NuxtLink>
     </div>
     <div class="flex min-h-[130px] min-w-0 flex-1 overflow-hidden bg-[#fffaf1]">
       <LineGutter
