@@ -52,7 +52,7 @@ test("失敗した対象と次に試す動作が見える", async ({ page }) => 
   await expect(dialog).toBeVisible({ timeout: 20000 });
   await expect(dialog).toContainText("かべを じゃんぷして よけよう");
   await dialog.getByRole("button", { name: "もっと ヒント" }).click();
-  await expect(dialog).toContainText("じゃんぷする めいれい");
+  await expect(dialog).toContainText("じゃんぷする ことば");
 });
 
 test("かたかなは ひらがなに直し、つかえない文字は理由を示す", async ({ page }) => {
