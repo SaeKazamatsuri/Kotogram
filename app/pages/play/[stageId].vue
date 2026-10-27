@@ -5,6 +5,9 @@ import CommandEditor from "~/components/editor/CommandEditor.vue";
 import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
+import StageOneGuide from "~/components/game/StageOneGuide.vue";
+import StageOneLearningModal from "~/components/game/StageOneLearningModal.vue";
+import { TUTORIAL_DISMISSED_KEY, shouldShowFirstClearLesson } from "~/stage/onboarding";
 import { calculateScores, countSourceCharacters, getScoreReference, LANGUAGE_VERSION, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
@@ -33,6 +36,39 @@ const router = useRouter();
 const stageId = computed(() => String(route.params.stageId || "stage-1"));
 const stageNumber = computed(() => Number(stageId.value.replace("stage-", "")) || 1);
 const hintOpen = ref(false);
+const guideStep = ref(0);
+const guideVisible = ref(true);
+const practiceShort = ref(false);
+const firstClearLesson = ref(false);
+const canShowGuide = computed(() => stageId.value === "stage-1" && !running.value && !failed.value && !cleared.value && (practiceShort.value || !isCleared(stageId.value)));
+const showGuide = computed(() => canShowGuide.value && guideVisible.value);
+
+function closeGuide() {
+  guideVisible.value = false;
+  if (practiceShort.value || !import.meta.client) return;
+  try {
+    window.sessionStorage.setItem(TUTORIAL_DISMISSED_KEY, "1");
+  } catch {
+    return;
+  }
+}
+
+function practiceShortForm() {
+  firstClearLesson.value = false;
+  practiceShort.value = true;
+  guideStep.value = 2;
+  guideVisible.value = true;
+  closeClear();
+}
+
+function finishFirstClearLesson() {
+  firstClearLesson.value = false;
+}
+
+function skipFirstClearLesson() {
+  firstClearLesson.value = false;
+  goNext();
+}
 const rankingApiBase = String(useRuntimeConfig().public.rankingApiBase || "");
 const { loadStage, getManifest } = useStageLoader();
 const { loadDictionary } = useDictionary();
@@ -126,6 +162,17 @@ async function loadCurrentStage() {
   stage.value = null;
   loadError.value = null;
   hintOpen.value = false;
+  firstClearLesson.value = false;
+  practiceShort.value = false;
+  guideStep.value = 0;
+  guideVisible.value = true;
+  if (import.meta.client) {
+    try {
+      guideVisible.value = window.sessionStorage.getItem(TUTORIAL_DISMISSED_KEY) !== "1";
+    } catch {
+      guideVisible.value = true;
+    }
+  }
   running.value = false;
   cleared.value = false;
   failed.value = false;
@@ -215,6 +262,9 @@ function onClear(timing: { elapsedTicks: number; seconds: number; objectives: Ob
   failed.value = false;
   failInfo.value = null;
   const rawText = runningSource.value;
+  const wasCleared = isCleared(stageId.value);
+  firstClearLesson.value = shouldShowFirstClearLesson(stageId.value, wasCleared, rawText);
+  practiceShort.value = false;
   saveClearedStageCode(stageId.value, rawText);
   mastery.value = stageMastery(stageId.value, rawText);
   const chars = countSourceCharacters(rawText);
@@ -323,7 +373,8 @@ watch(stageId, () => {
         <section ref="gamePanel" class="game-playview relative flex min-h-0 min-w-0 flex-col overflow-y-auto" aria-label="ゲーム画面">
           <span v-if="running" role="status" class="absolute right-5 top-5 z-10 rounded-full border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]">動いているよ</span>
           <span v-if="!running" class="pointer-events-none absolute right-5 top-5 z-10 rounded-full border border-[#f8dca5] bg-[#172439] px-3 py-1 text-xs font-black text-[#fff0cf]">ドラッグで先を見る</span>
-          <div class="flex min-h-0 flex-1 items-center p-3 sm:p-5">
+          <button v-if="canShowGuide" type="button" class="absolute left-4 top-4 z-10 rounded-xl border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]" @click="guideVisible = !guideVisible">{{ guideVisible ? "あんないを とじる" : "あんないを 見る" }}</button>
+          <div class="relative flex min-h-0 flex-1 items-center p-3 sm:p-5">
             <GameCanvas
               :key="stageId"
               :stage="stage"
@@ -335,6 +386,7 @@ watch(stageId, () => {
               @fail="onFail"
             />
           </div>
+          <StageOneGuide v-if="showGuide" :step="guideStep" :practice="practiceShort" @next="guideStep = Math.min(guideStep + 1, 2)" @close="closeGuide" />
           <div v-if="stage.meta?.hint" class="border-t border-[#647b9b] px-4 py-3">
             <button type="button" class="flex min-h-9 items-center gap-2 rounded-xl px-3 text-sm font-black text-[#fffaf1] hover:bg-[#425575]" :aria-expanded="hintOpen" @click="hintOpen = !hintOpen">
               <Icon name="lucide:lightbulb" class="game-icon text-[#ffdc90]" aria-hidden="true"/> ヒント
@@ -348,8 +400,9 @@ watch(stageId, () => {
 
     <Teleport to="body">
       <StageFailModal v-if="failed && failInfo" :reason="failInfo.reason" :hint="failInfo.hint" @close="closeFail" />
+      <StageOneLearningModal v-if="cleared && firstClearLesson" :chars="lastChars" :source="runningSource" @practice="practiceShortForm" @result="finishFirstClearLesson" @next="skipFirstClearLesson" />
     <StageClearModal
-      v-if="cleared"
+      v-if="cleared && !firstClearLesson"
       :seconds="lastSeconds"
       :stage-id="String(stageId)"
       :stage-version="stageVersion"

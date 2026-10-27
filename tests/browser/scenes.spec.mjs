@@ -8,7 +8,7 @@ test("ステージ画面の描画が見え、画面の横はみ出しがない",
   await page.goto("/");
   await page.getByRole("link", { name: "遊ぶ" }).click();
   await page.getByRole("link", { name: /かべで ジャンプ/ }).click();
-  const canvas = page.locator("canvas");
+  const canvas = page.locator(".game-playview canvas[aria-label]").first();
   await expect(canvas).toBeVisible();
   const sampleColors = () => canvas.evaluate((element) => {
     const ctx = element.getContext("2d");
@@ -44,7 +44,7 @@ test("失敗後も開始地点を下見でき、オブジェクト名と色分�
   await expect(page.locator("[data-syntax-mirror]").first()).toContainText("かべをみつけたらじゃんぷする");
   await expect(page.locator("[data-syntax-mirror] span").filter({ hasText: "かべ" }).first()).toHaveClass(/underline/);
   await expect(page.locator("[data-syntax-mirror] span").filter({ hasText: "じゃんぷ" }).first()).toHaveClass(/font-bold/);
-  const canvas = page.locator("canvas");
+  const canvas = page.locator(".game-playview canvas[aria-label]").first();
   const hoverWall = async () => {
     const bounds = await canvas.boundingBox();
     if (!bounds) throw new Error("Missing canvas bounds");
@@ -61,7 +61,7 @@ test("失敗後も開始地点を下見でき、オブジェクト名と色分�
 
 test("マップのタップとドラッグを区別し、画面縮小時にもオブジェクト名を表示できる", async ({ page }, testInfo) => {
   await page.goto("/play/stage-1");
-  const canvas = page.locator("canvas");
+  const canvas = page.locator(".game-playview canvas[aria-label]").first();
   await expect(canvas).toBeVisible();
   const location = await canvas.evaluate((element) => {
     const rect = element.getBoundingClientRect();
@@ -116,7 +116,7 @@ test("ステージの通信失敗後に画面から再読みこみできる", as
   await page.goto("/play/stage-1");
   await expect(page.getByRole("alert")).toContainText("ステージを読みこめませんでした");
   await page.getByRole("button", { name: "もう一度 読みこむ" }).click();
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator(".game-playview canvas[aria-label]").first()).toBeVisible();
   expect(failedOnce).toBe(true);
 });
 
@@ -143,7 +143,7 @@ test("ステージ一覧の初回通信失敗で偽のステージを出さず�
 test("エディターの例文と未対応の言葉を正しく案内する", async ({ page }) => {
   await page.goto("/play/stage-1");
   const editor = page.getByRole("textbox", { name: "コードを書く" });
-  const example = "かべをまえにみつけたらじゃんぷする";
+  const example = "かべがまえにあったらじゃんぷする";
   await expect(editor).toHaveAttribute("placeholder", example);
   await editor.fill("かべとぶ\\nあなとぶ\\nおばけよける".replaceAll("\\n", "\n"));
   await expect(page.getByRole("alert")).toContainText("『よける』");
@@ -254,7 +254,7 @@ test("マップの入口からプレイ画面に進める", async ({ page }) => 
   await page.goto("/stages");
   await page.getByRole("link", { name: /ステージ 1 かべで ジャンプ/ }).click();
   await expect(page).toHaveURL(new RegExp("/play/stage-1$"));
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator(".game-playview canvas[aria-label]").first()).toBeVisible();
 });
 
 test("ステージクリア後にマップへ戻ると旗と次のステージが表示される", async ({ page }) => {
@@ -297,7 +297,7 @@ test("プレイ画面はゲームを大きく表示し、狭い画面では一�
   } else {
     expect(columns).toHaveLength(1);
   }
-  await expect(page.locator("canvas")).toBeVisible();
+  await expect(page.locator(".game-playview canvas[aria-label]").first()).toBeVisible();
   await mkdir("test-artifacts", { recursive: true });
   await page.screenshot({ path: `test-artifacts/play-scene-${testInfo.project.name}.png`, animations: "disabled" });
 });
@@ -486,7 +486,7 @@ test("編集中は辞書を表示でき、キャンバスをドラッグして�
   await expect(guide).not.toContainText("すごいじゃんぷ");
   await expect(guide).not.toContainText("はねる");
 
-  const canvas = page.locator(".game-playview canvas");
+  const canvas = page.locator(".game-playview canvas[aria-label]");
   await expect(canvas).toBeVisible();
   const before = await canvas.evaluate((element) => element.toDataURL());
   const box = await canvas.boundingBox();

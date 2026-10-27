@@ -25,7 +25,7 @@ test("unsupported phrases are highlighted as full words, not one character", () 
 });
 
 test("the displayed editor placeholder is also a runnable program", () => {
-  const example = "かべをまえにみつけたらじゃんぷする";
+  const example = "かべがまえにあったらじゃんぷする";
   const parsed = analyzeProgram(example);
   assert.deepEqual(parsed.diagnostics, []);
   assert.deepEqual(parsed.rules, [{ action: "jump", conds: ["wall"], maxFires: undefined }]);

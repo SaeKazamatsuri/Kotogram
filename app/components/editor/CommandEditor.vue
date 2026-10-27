@@ -9,6 +9,7 @@ import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text
 import { EditorHistory } from "~/editor/history";
 import { getKeyboardExpanded, setKeyboardExpanded } from "~/editor/keyboard-preferences";
 import { syntaxPieces, TOKEN_CLASS } from "~/editor/syntax-colors";
+import { codeInputNotice, sanitizeCodeInput } from "~/editor/input-normalization";
 import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
 const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; initialText?: string; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
@@ -18,6 +19,7 @@ const textarea = ref<HTMLTextAreaElement | null>(null);
 const syntaxMirror = ref<HTMLElement | null>(null);
 const composing = ref(false);
 const composingText = ref<string | null>(null);
+const inputNotice = ref<string | null>(null);
 const keyboardVisible = ref(false);
 const dictionaryOpen = ref(false);
 const actionNames: Record<string, string> = {
@@ -37,15 +39,14 @@ const conditionEntries = computed(() => Object.entries(props.dictionary?.conditi
 const history = new EditorHistory({ text: text.value, start: text.value.length, end: text.value.length });
 const historyRevision = ref(0);
 
-function sanitize(input: string) {
-  return (input.normalize("NFC").match(/[ぁ-ゟー0-9０-９ \u3000\r\n]/g) ?? []).join("");
-}
+const sanitize = sanitizeCodeInput;
 function record(state: TextSelection) {
   history.record(state);
   historyRevision.value++;
 }
 function acceptInput(target: HTMLTextAreaElement) {
   const original = target.value;
+  inputNotice.value = codeInputNotice(original);
   const cleaned = sanitize(original);
   const cursor = sanitize(original.slice(0, target.selectionStart ?? original.length)).length;
   text.value = cleaned;
@@ -166,6 +167,7 @@ onMounted(() => {
 onBeforeUnmount(() => observer?.disconnect());
 
 function applyState(state: TextSelection) {
+  inputNotice.value = null;
   const element = textarea.value;
   text.value = state.text;
   if (!element) return;
@@ -291,12 +293,13 @@ defineExpose({ getText });
         @input="onInput"
         @compositionstart="onCompositionStart"
         @compositionend="onCompositionEnd"
-        placeholder="かべをまえにみつけたらじゃんぷする"
+        placeholder="かべがまえにあったらじゃんぷする"
         @scroll="onScroll"
       />
       </div>
     </div>
     <p v-if="firstError" role="alert" class="border-t border-[#de9ea9] bg-[#fff1ef] px-4 py-3 text-sm font-black text-[#9f203c]">{{ firstError.line }} 行目：{{ firstError.message }}</p>
+    <p v-if="inputNotice" role="status" class="border-t border-[#a5c5b8] bg-[#e8f3ec] px-4 py-2 text-sm font-bold text-[#245845]">{{ inputNotice }}</p>
     <div class="flex flex-wrap items-center gap-3 border-t-2 border-[#7083a0] bg-[#243551] p-3">
       <button type="button" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
       <button type="button" class="game-button game-button--night text-sm" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力 <Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>

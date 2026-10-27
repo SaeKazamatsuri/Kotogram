@@ -105,6 +105,13 @@ export function useStats() {
   }
 
   function reset() {
+    if (typeof window !== "undefined") {
+      try {
+        window.sessionStorage.removeItem("kotogram.tutorial.introDismissed");
+      } catch {
+        if (import.meta.dev) console.warn("Could not reset tutorial preference");
+      }
+    }
     clearClearedStageCodes();
     clearKeyboardPreferences();
     const storage = getStorage();
