@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import GameCharacterSprite from "~/components/game/CharacterSprite.vue";
-import { FIRST_STAGE_EXAMPLE, FIRST_STAGE_SHORT } from "~/stage/onboarding";
+import { FIRST_STAGE_SHORT } from "~/stage/onboarding";
 
-defineProps<{ chars: number }>();
+defineProps<{ chars: number; source: string }>();
 const emit = defineEmits<{ (e: "practice" | "result" | "next"): void }>();
 const page = ref(0);
 </script>
@@ -23,8 +23,8 @@ const page = ref(0);
         <p class="mt-3 text-base font-bold">今のコードは {{ chars }} 文字。これと 同じうごきを、もっと みじかい ことばでも 書けるんだ。</p>
       </div>
       <div v-else-if="page === 1" class="min-h-28">
-        <p class="mb-2 text-sm font-black">さっきの ことば</p>
-        <p class="rounded-xl bg-[#edf0f5] p-3 font-black break-all">{{ FIRST_STAGE_EXAMPLE }}</p>
+        <p class="mb-2 text-sm font-black">書いた ことば</p>
+        <p class="rounded-xl bg-[#edf0f5] p-3 font-black break-all">{{ source }}</p>
         <p class="my-2 text-center font-black text-[#23765c]">おなじ うごき ↓</p>
         <p class="rounded-xl bg-[#dff2e7] p-3 text-xl font-black">{{ FIRST_STAGE_SHORT }}</p>
       </div>
