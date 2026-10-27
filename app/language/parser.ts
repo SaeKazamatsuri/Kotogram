@@ -40,34 +40,22 @@ const DEFAULT_CONDITIONS: Record<string, string[]> = conditionsDictionary;
 export const SWITCH_ATTRIBUTES: readonly { raw: string; value: string }[] = [
   { raw: "あかい", value: "color:red" },
   { raw: "あか", value: "color:red" },
-  { raw: "赤", value: "color:red" },
-  { raw: "赤い", value: "color:red" },
   { raw: "みどり", value: "color:green" },
-  { raw: "緑", value: "color:green" },
   { raw: "あおい", value: "color:blue" },
   { raw: "あお", value: "color:blue" },
-  { raw: "青", value: "color:blue" },
-  { raw: "青い", value: "color:blue" },
   { raw: "きいろい", value: "color:yellow" },
   { raw: "きいろ", value: "color:yellow" },
-  { raw: "黄色", value: "color:yellow" },
-  { raw: "黄色い", value: "color:yellow" },
   { raw: "むらさき", value: "color:purple" },
-  { raw: "紫", value: "color:purple" },
   { raw: "まる", value: "shape:circle" },
-  { raw: "丸", value: "shape:circle" },
   { raw: "○", value: "shape:circle" },
   { raw: "ばつ", value: "shape:cross" },
   { raw: "×", value: "shape:cross" },
   { raw: "ばってん", value: "shape:cross" },
   { raw: "さんかく", value: "shape:triangle" },
-  { raw: "三角", value: "shape:triangle" },
   { raw: "△", value: "shape:triangle" },
   { raw: "しかく", value: "shape:square" },
-  { raw: "四角", value: "shape:square" },
   { raw: "□", value: "shape:square" },
   { raw: "ほし", value: "shape:star" },
-  { raw: "星", value: "shape:star" },
   { raw: "☆", value: "shape:star" },
 ];
 const DEFAULT_ACTIONS: Record<Action, string[]> = actionsDictionary;
@@ -137,7 +125,7 @@ function createLexicon(vocabulary: Vocabulary) {
     for (const [value, variants] of Object.entries(source)) {
       for (const word of variants) {
         const raw = normalizeLine(word);
-        if (!raw || !/^[ぁ-ゟー一-龯々○×△□☆]+$/u.test(raw)) continue;
+        if (!raw || !/^[ぁ-ゟー○×△□☆]+$/u.test(raw)) continue;
         const meaning = kind + ":" + value;
         const previous = seen.get(raw);
         if (previous && previous !== meaning) throw new Error("Conflicting vocabulary: " + raw);

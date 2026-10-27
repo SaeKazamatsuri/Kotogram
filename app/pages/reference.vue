@@ -73,7 +73,7 @@ onMounted(async () => {
 
       <section class="game-panel space-y-4 p-5" aria-label="言葉辞書">
         <h2 class="text-xl font-black">パーサーの言葉辞書（全表記）</h2>
-        <p class="text-sm">入力時にはひらがな・数字を使用します。ここにはJSON辞書とパーサーの修飾語を含む全表記を掲載しています。</p>
+        <p class="text-sm">入力はひらがな・数字が基本です。色・形の記号にも対応しています。ここにはJSON辞書とパーサーの修飾語を含む全表記を掲載しています。</p>
         <div class="grid gap-5 md:grid-cols-2">
           <div>
             <h3 class="mb-2 text-lg font-black">対象・条件</h3>
