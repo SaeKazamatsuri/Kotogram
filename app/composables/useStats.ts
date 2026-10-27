@@ -109,7 +109,7 @@ export function useStats() {
       try {
         window.sessionStorage.removeItem("kotogram.tutorial.introDismissed");
       } catch {
-        void 0;
+        if (import.meta.dev) console.warn("Could not reset tutorial preference");
       }
     }
     clearClearedStageCodes();
