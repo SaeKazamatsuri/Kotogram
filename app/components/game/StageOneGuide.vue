@@ -16,15 +16,15 @@ const last = computed(() => props.step >= steps.value.length - 1);
     <div class="stage-guide__hero" aria-hidden="true"><GameCharacterSprite /></div>
     <div class="stage-guide__speech">
       <div class="stage-guide__header">
-        <span>いっしょに やってみよう</span>
+        <span class="stage-guide__heading">いっしょに やってみよう</span>
         <span v-if="!practice" class="stage-guide__count">{{ step + 1 }} / {{ steps.length }}</span>
       </div>
       <p aria-live="polite">{{ current?.message }}</p>
       <p v-if="current?.example" class="stage-guide__example">{{ current.example }}</p>
       <div class="stage-guide__actions">
-        <button v-if="step === 1 && stageId === 'stage-1' && !practice" type="button" @click="emit('keyboard')">かな入力を ひらく</button>
-        <button v-if="!last" type="button" @click="emit('next')">つぎの ヒント</button>
-        <button type="button" class="stage-guide__dismiss" @click="emit('close')">{{ practice || last ? "わかった！" : "あとで" }}</button>
+        <button v-if="step === 1 && stageId === 'stage-1' && !practice" type="button" aria-label="かな入力を ひらく" @click="emit('keyboard')"><Icon name="lucide:keyboard" class="stage-guide__action-icon" aria-hidden="true" /><span class="stage-guide__action-text">かな入力を ひらく</span></button>
+        <button v-if="!last" type="button" aria-label="つぎの ヒント" @click="emit('next')"><Icon name="lucide:arrow-right" class="stage-guide__action-icon" aria-hidden="true" /><span class="stage-guide__action-text">つぎの ヒント</span></button>
+        <button type="button" class="stage-guide__dismiss"  :aria-label="practice || last ? 'わかった！' : 'あとで'" @click="emit('close')"><Icon :name="practice || last ? 'lucide:check' : 'lucide:x'" class="stage-guide__action-icon" aria-hidden="true" /><span class="stage-guide__action-text">{{ practice || last ? "わかった！" : "あとで" }}</span></button>
       </div>
     </div>
   </aside>
@@ -43,5 +43,16 @@ const last = computed(() => props.step >= steps.value.length - 1);
 .stage-guide__actions button { display: inline-flex; align-items: center; min-height: 36px; padding: 5px 11px; border-radius: 9px; background: #25896c; color: white; font-size: 13px; font-weight: 900; }
 .stage-guide__actions .stage-guide__dismiss { background: #e8edf1; color: #354b63; }
 .stage-guide__actions button:focus-visible { outline: 3px solid #f4a736; outline-offset: 2px; }
-@media (max-width: 639px) { .stage-guide { width: calc(100% - 14px); gap: 4px; } .stage-guide__hero { flex-basis: 45px; width: 45px; } .stage-guide__speech { padding: 9px; } .stage-guide__speech p { font-size: 12px; } .stage-guide__speech .stage-guide__example { font-size: 13px; } }
+@media (max-width: 639px) {
+  .stage-guide { position: absolute; z-index: 14; bottom: 6px; left: 6px; right: 6px; width: auto; max-width: none; max-height: calc(100% - 12px); margin: 0; overflow-y: auto; overscroll-behavior: contain; }
+  .stage-guide__hero, .stage-guide__heading, .stage-guide__action-text { display: none; }
+  .stage-guide__speech { padding: 7px 9px; border-width: 2px; border-radius: 12px; box-shadow: 0 3px 0 #16243c; }
+  .stage-guide__header { justify-content: flex-end; margin-bottom: 2px; font-size: 10px; }
+  .stage-guide__speech p { font-size: 12px; line-height: 1.35; }
+  .stage-guide__speech .stage-guide__example { margin-top: 4px; padding: 4px 6px; font-size: 12px; line-height: 1.35; }
+  .stage-guide__actions { gap: 6px; margin-top: 5px; }
+  .stage-guide__actions button { justify-content: center; width: 40px; height: 40px; min-height: 40px; padding: 0; }
+  .stage-guide__action-icon { display: inline-block; width: 19px; height: 19px; }
+}
+@media (min-width: 640px) { .stage-guide__action-icon { display: none; } }
 </style>
