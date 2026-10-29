@@ -13,7 +13,7 @@ import { codeInputNotice, sanitizeCodeInput } from "~/editor/input-normalization
 import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
 const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; initialText?: string; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
-const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void; (e: "tutorial-input" | "tutorial-dictionary"): void }>();
+const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run" | "tutorial-input" | "tutorial-dictionary"): void }>();
 const text = ref(props.initialText ?? "");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const syntaxMirror = ref<HTMLElement | null>(null);
