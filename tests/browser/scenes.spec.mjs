@@ -509,7 +509,10 @@ test("編集中は辞書を表示でき、キャンバスをドラッグして�
 
 test("参照情報は専用URLだけで開き、全語彙と開発情報を確認できる", async ({ page }) => {
   await page.goto("/play/stage-1");
-  await expect(page.locator('a[href="/reference"]')).toHaveCount(0);
+  await expect(page.locator('a[href^="/reference"]')).toHaveCount(0);
+  await page.getByRole("button", { name: "使える言葉" }).click();
+  await expect(page.getByRole("region", { name: "使える言葉の辞書" })).toContainText("じゃんぷ");
+  await expect(page.locator('a[href^="/reference"]')).toHaveCount(0);
   await page.goto("/reference");
   await expect(page.getByRole("heading", { name: "ことグラム 参照情報" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "パーサーの言葉辞書（全表記）" })).toBeVisible();

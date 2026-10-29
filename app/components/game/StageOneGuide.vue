@@ -23,7 +23,6 @@ const last = computed(() => props.step >= steps.value.length - 1);
       <p v-if="current?.example" class="stage-guide__example">{{ current.example }}</p>
       <div class="stage-guide__actions">
         <button v-if="step === 1 && stageId === 'stage-1' && !practice" type="button" @click="emit('keyboard')">かな入力を ひらく</button>
-        <NuxtLink v-if="last && !practice" to="/reference/" class="stage-guide__reference">ことばの じてんを 見る</NuxtLink>
         <button v-if="!last" type="button" @click="emit('next')">つぎの ヒント</button>
         <button type="button" class="stage-guide__dismiss" @click="emit('close')">{{ practice || last ? "わかった！" : "あとで" }}</button>
       </div>
@@ -41,8 +40,8 @@ const last = computed(() => props.step >= steps.value.length - 1);
 .stage-guide__speech p { font-size: 14px; line-height: 1.6; font-weight: 800; }
 .stage-guide__speech .stage-guide__example { overflow-wrap: anywhere; margin-top: 6px; padding: 6px 8px; border-radius: 8px; background: #e6f1ec; color: #183a2d; font-size: 16px; }
 .stage-guide__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 8px; }
-.stage-guide__actions button, .stage-guide__reference { display: inline-flex; align-items: center; min-height: 36px; padding: 5px 11px; border-radius: 9px; background: #25896c; color: white; font-size: 13px; font-weight: 900; }
+.stage-guide__actions button { display: inline-flex; align-items: center; min-height: 36px; padding: 5px 11px; border-radius: 9px; background: #25896c; color: white; font-size: 13px; font-weight: 900; }
 .stage-guide__actions .stage-guide__dismiss { background: #e8edf1; color: #354b63; }
-.stage-guide__actions button:focus-visible, .stage-guide__reference:focus-visible { outline: 3px solid #f4a736; outline-offset: 2px; }
+.stage-guide__actions button:focus-visible { outline: 3px solid #f4a736; outline-offset: 2px; }
 @media (max-width: 639px) { .stage-guide { width: calc(100% - 14px); gap: 4px; } .stage-guide__hero { flex-basis: 45px; width: 45px; } .stage-guide__speech { padding: 9px; } .stage-guide__speech p { font-size: 12px; } .stage-guide__speech .stage-guide__example { font-size: 13px; } }
 </style>
