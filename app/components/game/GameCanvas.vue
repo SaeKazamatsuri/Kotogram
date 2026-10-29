@@ -25,7 +25,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "clear", result: { elapsedTicks: number; seconds: number; objectives: ObjectiveProgress; goalChoice: { label: string; bonusBp: number } | null }): void;
   (e: "fail", payload: FailPayload & { lastExecutedLine: number | null }): void;
-  (e: "preview-drag"): void;
+  (e: "preview-drag" | "preview-interact" | "inspect"): void;
   (e: "trace", payload: { active: number[]; sustained: SustainedHighlight[]; monitoring: number[]; waiting: number | null; repeat: number | null; progress: string | null }): void;
 }>();
 
@@ -213,6 +213,7 @@ function onPreviewPointerDown(event: PointerEvent) {
   hoveredObject.value = null;
   previewDrag = { pointerId: event.pointerId, clientX: event.clientX, clientY: event.clientY, position: previewX, moved: false };
   canvas.value?.setPointerCapture(event.pointerId);
+  emit("preview-interact");
 }
 
 function canvasPoint(event: PointerEvent): { x: number; y: number } | null {
@@ -232,6 +233,7 @@ function inspectPointer(event: PointerEvent) {
   if (!point) return;
   const view = !props.running && previewX > 0 ? { ...game, px: game.px + previewX } : game;
   hoveredObject.value = inspectGameObject(view, point.x, point.y);
+  if (hoveredObject.value) emit("inspect");
   hoverPosition.value = {
     x: Math.max(12, Math.min(88, point.x / GAME.width * 100)),
     y: Math.max(14, Math.min(85, point.y / GAME.height * 100)),
@@ -271,9 +273,11 @@ function onPreviewKeydown(event: KeyboardEvent) {
   if (props.running) return;
   if (event.key === "ArrowRight" || event.key === "ArrowLeft") {
     event.preventDefault();
+    emit("preview-interact");
     previewMove(previewX + (event.key === "ArrowRight" ? 180 : -180));
   } else if (event.key === "Home") {
     event.preventDefault();
+    emit("preview-interact");
     previewMove(0);
   }
 }
@@ -301,7 +305,7 @@ onBeforeUnmount(stop);
           <Icon name="lucide:mouse-pointer-2" class="game-icon" />
           <Icon name="lucide:move-horizontal" class="game-icon" />
         </div>
-        <span class="rounded-lg bg-[#17263f]/90 px-3 py-1 text-sm font-black text-[#fffaf1]">おしたまま 左右に うごかそう</span>
+        <span class="drag-demo__label rounded-lg bg-[#17263f]/90 px-3 py-1 text-sm font-black text-[#fffaf1]">おしたまま 左右に うごかそう</span>
       </div>
       <div v-if="hoveredObject" role="tooltip" class="pointer-events-none absolute z-10 -translate-x-1/2 -translate-y-full rounded-lg border-2 border-[#38485c] bg-[#fffaf1] px-3 py-1.5 text-sm font-black text-[#172439] shadow-md" :style="{ left: hoverPosition.x + '%', top: hoverPosition.y + '%' }">{{ hoveredObject.name }}</div>
     </div>
@@ -311,5 +315,6 @@ onBeforeUnmount(stop);
 <style scoped>
 .drag-demo__motion { animation: drag-demo-move 2.3s ease-in-out infinite alternate; }
 @keyframes drag-demo-move { 0%, 15% { transform: translateX(38px); } 75%, 100% { transform: translateX(-38px); } }
+@media (max-width: 639px) { .drag-demo__label { display: none; } .drag-demo__motion { padding: 5px 10px; } }
 @media (prefers-reduced-motion: reduce) { .drag-demo__motion { animation: none; } }
 </style>
