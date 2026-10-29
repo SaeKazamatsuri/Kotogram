@@ -27,7 +27,8 @@ export function failureLearningHint(reason: string): string {
 }
 
 export type TutorialTarget = "canvas" | "editor" | "run" | "dictionary";
-export type TutorialStep = { target: TutorialTarget; message: string; example?: string; dragDemo?: boolean };
+export type TutorialAction = "drag" | "edit" | "run" | "inspect" | "dictionary" | "preview";
+export type TutorialStep = { target: TutorialTarget; action: TutorialAction; message: string; example?: string; dragDemo?: boolean };
 
 const newGimmickLessons: Record<string, string[]> = {
   "stage-2": ["こんどは あなも あるよ。ステージを うごかして、どこに あるか たしかめよう。"],
@@ -69,19 +70,19 @@ export function tutorialStorageKey(stageId: string): string {
 
 export function stageTutorialSteps(stageId: string, practice = false): TutorialStep[] {
   if (stageId === "stage-1") {
-    if (practice) return [{ target: "editor", message: "さっきの ことばを みじかく してみよう。コードを書きかえて「動かす」を おしてね。", example: FIRST_STAGE_SHORT }];
+    if (practice) return [{ target: "editor", action: "edit", message: "さっきの ことばを みじかく してみよう。コードを書きかえて「動かす」を おしてね。", example: FIRST_STAGE_SHORT }];
     return [
-      { target: "canvas", message: "ここが ステージだよ。画面を おしたまま 左右に うごかすと、先が 見られるよ。", dragDemo: true },
-      { target: "editor", message: "「コードを書く」に ことばを 入れてみよう。いつもの 日本語で いいよ。キーが むずかしければ「かな入力」も つかえるよ。", example: FIRST_STAGE_EXAMPLE },
-      { target: "run", message: "書けたら、光っている「動かす」ボタンを おしてみよう。どう うごくかな？" },
-      { target: "canvas", message: "かべや しかけに マウスを のせると 名前が わかるよ。タブレットなら タップしてね。" },
-      { target: "dictionary", message: "「使える言葉」を おすと、この ステージで つかえる ことばが 見られるよ。まよったら 開いてみよう。" },
+      { target: "canvas", action: "drag", message: "ここが ステージだよ。画面を おしたまま 左右に うごかすと、先が 見られるよ。", dragDemo: true },
+      { target: "editor", action: "edit", message: "「コードを書く」に ことばを 入れてみよう。いつもの 日本語で いいよ。キーが むずかしければ「かな入力」も つかえるよ。", example: FIRST_STAGE_EXAMPLE },
+      { target: "run", action: "run", message: "書けたら、光っている「動かす」ボタンを おしてみよう。どう うごくかな？" },
+      { target: "canvas", action: "inspect", message: "かべや しかけに マウスを のせると 名前が わかるよ。タブレットなら タップしてね。" },
+      { target: "dictionary", action: "dictionary", message: "「使える言葉」を おすと、この ステージで つかえる ことばが 見られるよ。まよったら 開いてみよう。" },
     ];
   }
   const lessons = newGimmickLessons[stageId];
   if (!lessons) return [];
   return [
-    ...lessons.map(message => ({ target: "canvas" as const, message })),
-    { target: "dictionary", message: "書き方に まよったら「使える言葉」を おしてみてね。答えを えらぶのは きみだよ。" },
+    ...lessons.map(message => ({ target: "canvas" as const, action: "preview" as const, message })),
+    { target: "dictionary", action: "dictionary", message: "書き方に まよったら「使える言葉」を おしてみてね。答えを えらぶのは きみだよ。" },
   ];
 }
