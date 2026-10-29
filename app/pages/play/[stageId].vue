@@ -474,7 +474,6 @@ watch(stageId, () => {
   .play-screen__desktop-label { display: none; }
   .play-screen__drag-tip, .play-screen__guide-toggle { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; }
   .play-screen__navigation .game-button { gap: 4px; padding-inline: 10px; }
-  .game-workspace--stage { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
 }
 @media (min-width: 640px) {
   .play-screen__mobile-icon { display: none; }
@@ -488,5 +487,8 @@ watch(stageId, () => {
   .play-screen__title { margin-bottom: 6px; }
   .play-screen__editor { border-right: 0; }
   .game-playview { border-top: 2px solid #647b9b; }
+}
+@media (max-width: 639px) {
+  .game-workspace--stage { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
 }
 </style>
