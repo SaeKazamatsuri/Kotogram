@@ -13,7 +13,7 @@ import { codeInputNotice, sanitizeCodeInput } from "~/editor/input-normalization
 import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
 const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; initialText?: string; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
-const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
+const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void; (e: "tutorial-input" | "tutorial-dictionary"): void }>();
 const text = ref(props.initialText ?? "");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const syntaxMirror = ref<HTMLElement | null>(null);
@@ -58,6 +58,7 @@ function acceptInput(target: HTMLTextAreaElement) {
     });
   }
   updateMetrics();
+  emit("tutorial-input");
 }
 function onInput(event: Event) {
   if (props.running) return;
@@ -207,6 +208,7 @@ function onSoftKey(key: SoftKey) {
   const cursor = sanitize(result.text.slice(0, result.start)).length;
   record({ text: normalized, start: cursor, end: cursor });
   applyState({ text: normalized, start: cursor, end: cursor });
+  emit("tutorial-input");
 }
 function run() {
   if (!composing.value && analysis.value.diagnostics.length === 0) emit("run");
@@ -215,6 +217,10 @@ function toggleKeyboard() {
   if (props.running) return;
   keyboardVisible.value = !keyboardVisible.value;
   setKeyboardExpanded("code", keyboardVisible.value);
+}
+function toggleDictionary() {
+  dictionaryOpen.value = !dictionaryOpen.value;
+  emit("tutorial-dictionary");
 }
 function openKeyboard() {
   if (props.running) return;
@@ -237,11 +243,11 @@ defineExpose({ getText, openKeyboard });
         <span class="rounded-full bg-[#17263f] px-3 py-1 text-sm font-black text-white">{{ charCount }} 字</span>
       </div>
     </div>
-    <div class="flex flex-wrap items-center gap-2 bg-[#e3eaf1] px-3 py-2 text-[#23344e]">
-      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canUndo || composing" @click="undo" aria-label="もどす"><Icon name="lucide:undo-2" class="game-icon" aria-hidden="true"/> もどす</button>
-      <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/> やり直す</button>
-      <button type="button" data-tour-target="dictionary" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" :aria-expanded="dictionaryOpen" @click="dictionaryOpen = !dictionaryOpen"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/> 使える言葉</button>
-      <button type="button" class="ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/> 全部消す</button>
+    <div class="editor-controls flex flex-wrap items-center gap-2 bg-[#e3eaf1] px-3 py-2 text-[#23344e]">
+      <button type="button" class="editor-controls__button flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canUndo || composing" @click="undo" aria-label="もどす"><Icon name="lucide:undo-2" class="game-icon" aria-hidden="true"/><span class="editor-control-label">もどす</span></button>
+      <button type="button" class="editor-controls__button flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/><span class="editor-control-label">やり直す</span></button>
+      <button type="button" data-tour-target="dictionary" class="editor-controls__button flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" aria-label="使える言葉" :aria-expanded="dictionaryOpen" @click="toggleDictionary"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/><span class="editor-control-label">使える言葉</span></button>
+      <button type="button" class="editor-controls__button ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" aria-label="全部消す" :disabled="running || !text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/><span class="editor-control-label">全部消す</span></button>
     </div>
     <div v-if="dictionaryOpen" class="max-h-56 shrink-0 overflow-y-auto border-b-2 border-[#95a8bd] bg-[#f5f7ee] px-4 py-3 text-[#1d3045]" role="region" aria-label="使える言葉の辞書">
       <div class="grid gap-3 sm:grid-cols-2">
@@ -308,12 +314,23 @@ defineExpose({ getText, openKeyboard });
     </div>
     <p v-if="firstError" role="alert" class="border-t border-[#de9ea9] bg-[#fff1ef] px-4 py-3 text-sm font-black text-[#9f203c]">{{ firstError.line }} 行目：{{ firstError.message }}</p>
     <p v-if="inputNotice" role="status" class="border-t border-[#a5c5b8] bg-[#e8f3ec] px-4 py-2 text-sm font-bold text-[#245845]">{{ inputNotice }}</p>
-    <div class="flex flex-wrap items-center gap-3 border-t-2 border-[#7083a0] bg-[#243551] p-3">
-      <button type="button" data-tour-target="run" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
-      <button type="button" class="game-button game-button--night text-sm" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力 <Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>
+    <div class="editor-footer flex flex-wrap items-center gap-3 border-t-2 border-[#7083a0] bg-[#243551] p-3">
+      <button type="button" data-tour-target="run" aria-label="動かす" class="editor-footer__run game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/><span class="editor-control-label">動かす</span></button>
+      <button type="button" class="editor-footer__keyboard game-button game-button--night text-sm" aria-label="かな入力" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/><span class="editor-control-label">かな入力</span><Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon editor-footer__chevron" aria-hidden="true"/></button>
     </div>
     <div v-if="keyboardVisible" id="code-kana-keyboard" class="border-t border-[#7083a0] bg-[#243551] p-3">
       <KanaKeyboard :disabled="running || composing" @press="onSoftKey" />
     </div>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 639px) {
+  .editor-control-label, .editor-footer__chevron { display: none; }
+  .editor-controls { flex-wrap: nowrap; gap: 6px; padding: 6px; }
+  .editor-controls__button { flex: 0 0 44px; justify-content: center; width: 44px; height: 44px; padding: 0; }
+  .editor-footer { flex-wrap: nowrap; gap: 8px; padding: 7px; }
+  .editor-footer__run { min-width: 0; min-height: 44px; }
+  .editor-footer__keyboard { flex: 0 0 48px; justify-content: center; min-width: 48px; min-height: 44px; padding: 0; }
+}
+</style>
