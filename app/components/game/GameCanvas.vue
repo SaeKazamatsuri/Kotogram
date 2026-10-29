@@ -297,7 +297,7 @@ onBeforeUnmount(stop);
 </script>
 
 <template>
-  <div class="flex flex-col gap-3">
+  <div class="flex w-full min-w-0 flex-col gap-3">
     <div class="relative">
       <canvas ref="canvas" data-tour-target="canvas" class="block w-full rounded-2xl border-[3px] border-[#b7dfcd] bg-[#98cbbf] shadow-[0_8px_0_#14263f]" :class="{ 'cursor-grab touch-none active:cursor-grabbing': !running }" :tabindex="running ? -1 : 0" :aria-label="running ? 'ゲームを実行中' : 'ステージの下見。ドラッグか左右キーで動かし、オブジェクトをタップすると名前を表示'" @pointerdown="onPreviewPointerDown" @pointermove="onPreviewPointerMove" @pointerup="onPreviewPointerEnd" @pointercancel="onPreviewPointerEnd" @pointerleave="clearHover" @keydown="onPreviewKeydown" />
       <div v-if="showDragHelp && !running" class="drag-demo pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-2" aria-hidden="true">
