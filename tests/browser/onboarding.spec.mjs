@@ -126,7 +126,7 @@ test("ドラッグの見本から操作すると、次のステップに進み�
   expect(Math.abs(highlighted.y - editor.y)).toBeLessThan(4);
 });
 
-test("対象の名前とステージ辞書、ことばの辞典まで順番に案内する", async ({ page }) => {
+test("対象の名前とステージ辞書を順番に案内し、辞典リンクは表示しない", async ({ page }) => {
   await page.goto("/play/stage-1");
   const guide = page.getByRole("region", { name: "主人公のあんない" });
   for (let step = 0; step < 3; step++) await guide.getByRole("button", { name: "つぎの ヒント" }).click();
@@ -134,7 +134,7 @@ test("対象の名前とステージ辞書、ことばの辞典まで順番に�
   await expect(guide).toContainText("タップ");
   await guide.getByRole("button", { name: "つぎの ヒント" }).click();
   await expect(guide).toContainText("使える言葉");
-  await expect(guide.getByRole("link", { name: "ことばの じてんを 見る" })).toHaveAttribute("href", "/reference/");
+  await expect(guide.getByRole("link")).toHaveCount(0);
   await page.getByRole("button", { name: "使える言葉" }).click();
   await expect(page.getByRole("region", { name: "使える言葉の辞書" })).toBeVisible();
 });
