@@ -157,3 +157,67 @@ test("新しいしかけを初めて遊ぶと説明を表示し、閉じても�
   await page.getByRole("button", { name: "あんないを 見る" }).click();
   await expect(guide).toBeVisible();
 });
+
+
+test("矢印はフォーカスだけでは消えず、コードを入力したら消える", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const guide = page.getByRole("region", { name: "主人公のあんない" });
+  await guide.getByRole("button", { name: "つぎの ヒント" }).click();
+  const arrow = page.locator(".tutorial-connector");
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await expect(arrow).toBeVisible();
+  await editor.focus();
+  await expect(arrow).toBeVisible();
+  await editor.fill("かべとぶ");
+  await expect(arrow).toHaveCount(0);
+  await expect(guide).toBeVisible();
+});
+
+test("辞書の矢印は辞書を操作したときにだけ消える", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const guide = page.getByRole("region", { name: "主人公のあんない" });
+  for (let index = 0; index < 4; index++) await guide.getByRole("button", { name: "つぎの ヒント" }).click();
+  await expect(page.locator(".tutorial-connector")).toBeVisible();
+  await page.getByRole("button", { name: "使える言葉" }).click();
+  await expect(page.locator(".tutorial-connector")).toHaveCount(0);
+  await expect(guide).toBeVisible();
+});
+
+test("矢印の線は先端より手前で終わる", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  const connector = page.locator(".tutorial-connector__line");
+  await expect(connector.locator("polygon")).toBeVisible();
+  const tipGap = await connector.evaluate((svg) => {
+    const line = svg.querySelector("path");
+    const head = svg.querySelector("polygon");
+    const end = line.getPointAtLength(line.getTotalLength());
+    const [x, y] = head.getAttribute("points").split(" ")[0].split(",").map(Number);
+    return Math.hypot(end.x - x, end.y - y);
+  });
+  expect(tipGap).toBeGreaterThan(10);
+});
+
+test("せまいスマホでもガイドとアイコン操作が画面内に収まる", async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 640 });
+  await page.goto("/play/stage-1");
+  const guide = page.getByRole("region", { name: "主人公のあんない" });
+  await expect(guide).toBeVisible();
+  const dictionary = page.getByRole("button", { name: "使える言葉" });
+  await expect(dictionary).toBeVisible();
+  await expect(dictionary.locator(".editor-control-label")).toBeHidden();
+  const layout = await page.evaluate(() => {
+    const bubble = document.querySelector("[data-tutorial-bubble]").getBoundingClientRect();
+    const game = document.querySelector(".game-playview").getBoundingClientRect();
+    const dictionaryButton = document.querySelector('[data-tour-target="dictionary"]').getBoundingClientRect();
+    return { bubble: { left: bubble.left, right: bubble.right, top: bubble.top, bottom: bubble.bottom },
+      game: { top: game.top, bottom: game.bottom }, dictionaryButton: { right: dictionaryButton.right, width: dictionaryButton.width },
+      documentWidth: document.documentElement.scrollWidth };
+  });
+  expect(layout.bubble.left).toBeGreaterThanOrEqual(0);
+  expect(layout.bubble.right).toBeLessThanOrEqual(320);
+  expect(layout.bubble.top).toBeGreaterThanOrEqual(layout.game.top);
+  expect(layout.bubble.bottom).toBeLessThanOrEqual(layout.game.bottom + 1);
+  expect(layout.dictionaryButton.right).toBeLessThanOrEqual(320);
+  expect(layout.dictionaryButton.width).toBeLessThanOrEqual(48);
+  expect(layout.documentWidth).toBeLessThanOrEqual(320);
+});
