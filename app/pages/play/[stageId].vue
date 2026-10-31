@@ -7,7 +7,7 @@ import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
 import StageOneGuide from "~/components/game/StageOneGuide.vue";
 import TutorialConnector from "~/components/game/TutorialConnector.vue";
-import { hasStageTutorial, stageTutorialSteps, tutorialStorageKey, shouldShowFirstClearLesson } from "~/stage/onboarding";
+import { hasStageTutorial, stageTutorialSteps, tutorialStorageKey, shouldShowFirstClearLesson, type TutorialAction } from "~/stage/onboarding";
 import { calculateScores, countSourceCharacters, getScoreReference, LANGUAGE_VERSION, type BestRuns, type ScoredRun } from "~/scoring/score";
 import { createScope, getOrCreatePlayerId, RankingClient, type RunSubmission } from "~/ranking/client";
 import { useParser } from "~/composables/useParser";
@@ -38,15 +38,23 @@ const stageNumber = computed(() => Number(stageId.value.replace("stage-", "")) |
 const hintOpen = ref(false);
 const guideStep = ref(0);
 const guideVisible = ref(true);
+const completedTutorialActions = ref<TutorialAction[]>([]);
 const practiceShort = ref(false);
 const firstClearLesson = ref(false);
 const canShowGuide = computed(() => hasStageTutorial(stageId.value) && !running.value && !failed.value && !cleared.value);
 const showGuide = computed(() => canShowGuide.value && guideVisible.value);
 const guideSteps = computed(() => stageTutorialSteps(stageId.value, practiceShort.value));
 const guideTarget = computed(() => guideSteps.value[Math.min(guideStep.value, guideSteps.value.length - 1)]?.target ?? "canvas");
-const showDragHelp = computed(() => showGuide.value && guideSteps.value[guideStep.value]?.dragDemo === true);
+const guideAction = computed(() => guideSteps.value[Math.min(guideStep.value, guideSteps.value.length - 1)]?.action ?? "preview");
+const showGuideArrow = computed(() => showGuide.value && !completedTutorialActions.value.includes(guideAction.value));
+const showDragHelp = computed(() => showGuideArrow.value && guideSteps.value[guideStep.value]?.dragDemo === true);
+
+function recordTutorialAction(action: TutorialAction) {
+  if (!completedTutorialActions.value.includes(action)) completedTutorialActions.value = [...completedTutorialActions.value, action];
+}
 
 function onPreviewDrag() {
+  recordTutorialAction("drag");
   if (stageId.value === "stage-1" && showGuide.value && !practiceShort.value && guideStep.value === 0) guideStep.value = 1;
 }
 
@@ -65,6 +73,7 @@ function practiceShortForm() {
   practiceShort.value = true;
   guideStep.value = 0;
   guideVisible.value = true;
+  completedTutorialActions.value = [];
   closeClear();
 }
 
@@ -95,7 +104,6 @@ const mastery = ref<MasteryResult | null>(null);
 const running = ref(false);
 const cleared = ref(false);
 const failed = ref(false);
-// Remains visible after the failure modal closes, until the player edits or retries.
 const failureLine = ref<number | null>(null);
 watch(editorLines, () => { if (!running.value) failureLine.value = null; });
 const failInfo = ref<{ reason: FailReason; hint: string } | null>(null);
@@ -169,6 +177,7 @@ async function loadCurrentStage() {
   practiceShort.value = false;
   guideStep.value = 0;
   guideVisible.value = true;
+  completedTutorialActions.value = [];
   if (import.meta.client) {
     try {
       guideVisible.value = !isCleared(id) && window.sessionStorage.getItem(tutorialStorageKey(id)) !== "1";
@@ -237,6 +246,7 @@ function onRun() {
     playSe("warning");
     return;
   }
+  recordTutorialAction("run");
   unlockAudio();
   setBgm(stageBgmName(stageId.value, "run"));
   playSe("start");
@@ -371,12 +381,14 @@ watch(stageId, () => {
             :repeat-line="executionTrace.repeat"
             :repeat-progress="executionTrace.progress"
             @run="onRun"
+             @tutorial-input="recordTutorialAction('edit')"
+             @tutorial-dictionary="recordTutorialAction('dictionary')"
           />
         </section>
         <section ref="gamePanel" class="game-playview relative flex min-h-0 min-w-0 flex-col overflow-y-auto" aria-label="ゲーム画面">
           <span v-if="running" role="status" class="absolute right-5 top-5 z-10 rounded-full border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]">動いているよ</span>
-          <span v-if="!running" class="pointer-events-none absolute right-5 top-5 z-10 rounded-full border border-[#f8dca5] bg-[#172439] px-3 py-1 text-xs font-black text-[#fff0cf]">ドラッグで先を見る</span>
-          <button v-if="canShowGuide" type="button" class="absolute left-4 top-4 z-10 rounded-xl border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]" @click="guideVisible = !guideVisible">{{ guideVisible ? "あんないを とじる" : "あんないを 見る" }}</button>
+          <span v-if="!running" class="play-screen__drag-tip pointer-events-none absolute right-5 top-5 z-10 rounded-full border border-[#f8dca5] bg-[#172439] px-3 py-1 text-xs font-black text-[#fff0cf]" aria-label="ドラッグで先を見る"><Icon name="lucide:move-horizontal" class="game-icon play-screen__mobile-icon" aria-hidden="true" /><span class="play-screen__desktop-label">ドラッグで先を見る</span></span>
+          <button v-if="canShowGuide" type="button" class="play-screen__guide-toggle absolute left-4 top-4 z-10 rounded-xl border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]" :aria-label="guideVisible ? 'あんないを とじる' : 'あんないを 見る'" @click="guideVisible = !guideVisible"><Icon :name="guideVisible ? 'lucide:message-square-off' : 'lucide:message-square-text'" class="game-icon play-screen__mobile-icon" aria-hidden="true" /><span class="play-screen__desktop-label">{{ guideVisible ? "あんないを とじる" : "あんないを 見る" }}</span></button>
           <div class="relative flex min-h-0 flex-1 items-center p-3 sm:p-5">
             <GameCanvas
               :key="stageId"
@@ -386,6 +398,8 @@ watch(stageId, () => {
               :show-drag-help="showDragHelp"
               :source-map="sourceMap"
               @preview-drag="onPreviewDrag"
+               @preview-interact="recordTutorialAction('preview')"
+               @inspect="recordTutorialAction('inspect')"
               @trace="executionTrace = $event"
               @clear="onClear"
               @fail="onFail"
@@ -400,7 +414,7 @@ watch(stageId, () => {
             <p v-if="hintOpen" class="mt-3 rounded-xl bg-[#17263f] p-4 text-sm font-bold leading-relaxed text-white">{{ stage.meta.hint }}</p>
           </div>
         </section>
-        <TutorialConnector v-if="showGuide" :target="guideTarget" />
+        <TutorialConnector v-if="showGuideArrow" :target="guideTarget" />
       </div>
     </div>
 
@@ -455,6 +469,15 @@ watch(stageId, () => {
 .game-playview {
   background: radial-gradient(ellipse at 50% -10%, #41677a 0%, #263d58 52%, #1d2f4d 100%);
 }
+@media (max-width: 639px) {
+  .play-screen__mobile-icon { display: inline-block; }
+  .play-screen__desktop-label { display: none; }
+  .play-screen__drag-tip, .play-screen__guide-toggle { display: grid; place-items: center; width: 36px; height: 36px; padding: 0; }
+  .play-screen__navigation .game-button { gap: 4px; padding-inline: 10px; }
+}
+@media (min-width: 640px) {
+  .play-screen__mobile-icon { display: none; }
+}
 @media (max-width: 960px) {
   .game-workspace--stage {
     grid-template-columns: minmax(0, 1fr);
@@ -464,5 +487,8 @@ watch(stageId, () => {
   .play-screen__title { margin-bottom: 6px; }
   .play-screen__editor { border-right: 0; }
   .game-playview { border-top: 2px solid #647b9b; }
+}
+@media (max-width: 639px) {
+  .game-workspace--stage { grid-template-rows: minmax(0, 1fr) minmax(0, 1fr); }
 }
 </style>
