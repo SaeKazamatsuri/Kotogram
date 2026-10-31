@@ -63,10 +63,29 @@ const visibleControls = computed(() => props.mode === "nickname" ? controls.filt
         :key="i"
         type="button"
         :disabled="disabled"
-        class="min-h-11 rounded-xl border-2 border-[#3b495d] bg-[#ffcd77] px-2 text-sm font-black text-[#273449] hover:bg-[#ffdf9e] focus-visible:outline-2 focus-visible:outline-[#fff7e8] disabled:opacity-40"
+        class="inline-flex min-h-11 items-center justify-center rounded-xl border-2 border-[#3b495d] bg-[#ffcd77] px-2 text-sm font-black text-[#273449] hover:bg-[#ffdf9e] focus-visible:outline-2 focus-visible:outline-[#fff7e8] disabled:opacity-40"
+        :aria-label="control.label"
         @pointerdown.prevent
         @click="emit('press', control.key)"
-      ><Icon v-if="control.icon" :name="control.icon" class="game-icon mr-1" aria-hidden="true"/>{{ control.label }}</button>
+      >
+        <svg
+          v-if="control.key.kind === 'dakuten' || control.key.kind === 'handakuten'"
+          class="size-8 shrink-0"
+          viewBox="0 0 32 32"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="4.5"
+          stroke-linecap="round"
+          aria-hidden="true"
+        >
+          <path v-if="control.key.kind === 'dakuten'" d="M8 22L13 9M19 22L24 9" />
+          <circle v-else cx="16" cy="16" r="9" />
+        </svg>
+        <template v-else>
+          <Icon v-if="control.icon" :name="control.icon" class="game-icon mr-1" aria-hidden="true"/>
+          {{ control.label }}
+        </template>
+      </button>
     </div>
   </section>
 </template>
