@@ -72,3 +72,32 @@ test("IMEの未確定文字の入力中も確定済みのコードの色分け�
   await expect(mirror).toContainText("あなをみつけたらじゃんぷする");
   await expect(page.getByRole("button", { name: "動かす" })).toBeEnabled();
 });
+
+test("濁点と半濁点の記号を大きく表示し、スマートフォンでも文字を変換できる", async ({ page }) => {
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto("/play/stage-1");
+  await page.getByRole("button", { name: "かな入力" }).click();
+
+  const keyboard = page.getByRole("region", { name: "ひらがなキーボード" });
+  for (const name of ["゛", "゜"]) {
+    const key = keyboard.getByRole("button", { name });
+    const symbol = key.locator("svg");
+    await expect(symbol).toBeVisible();
+    await expect(symbol).toHaveCSS("width", "32px");
+    await expect(symbol).toHaveCSS("height", "32px");
+    const box = await key.boundingBox();
+    expect(box?.height).toBeGreaterThanOrEqual(44);
+    expect(box?.width).toBeGreaterThanOrEqual(44);
+  }
+
+  const editor = page.getByRole("textbox", { name: "コードを書く" });
+  await editor.fill("か");
+  await editor.evaluate(element => element.setSelectionRange(1, 1));
+  await keyboard.getByRole("button", { name: "゛" }).click();
+  await expect(editor).toHaveValue("が");
+
+  await editor.fill("は");
+  await editor.evaluate(element => element.setSelectionRange(1, 1));
+  await keyboard.getByRole("button", { name: "゜" }).click();
+  await expect(editor).toHaveValue("ぱ");
+});
