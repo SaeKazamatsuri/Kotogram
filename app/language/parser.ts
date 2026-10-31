@@ -78,6 +78,8 @@ const CONTROL: { raw: string; kind: TokenKind }[] = [
   { raw: "あったら", kind: "then" },
   { raw: "あれば", kind: "then" },
   { raw: "いるときは", kind: "then" },
+  { raw: "いるとき", kind: "then" },
+  { raw: "いたら", kind: "then" },
   { raw: "きたら", kind: "then" },
   { raw: "ならば", kind: "then" },
   { raw: "なら", kind: "then" },

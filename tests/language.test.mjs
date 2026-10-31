@@ -258,6 +258,41 @@ test("ふせる is a synonym of しゃがむ in standalone and conditional comma
   assert.deepEqual(valid("おばけがきたらふせる").rules, valid("おばけがきたらしゃがむ").rules);
 });
 
+test("くぐる and くぐって support ghost avoidance with natural conditions", () => {
+  assert.ok(actionsDictionary.crouch.includes("くぐる"));
+  assert.ok(actionsDictionary.crouch.includes("くぐって"));
+  const canonical = valid("おばけがきたらしゃがむ");
+  for (const source of [
+    "おばけがいたらくぐる",
+    "おばけがいたらくぐって",
+    "おばけがいるときくぐる",
+    "おばけがきたらくぐる",
+    "おばけがいたらふせる",
+  ]) {
+    assert.deepEqual(valid(source).rules, canonical.rules, source);
+    assert.deepEqual(valid(source).program, canonical.program, source);
+  }
+  assert.deepEqual(
+    tokenizeLine("おばけがいたらくぐる", 1).map(token => token.kind),
+    ["condition", "particle", "then", "action"],
+  );
+  assert.deepEqual(valid("くぐる").program, valid("しゃがむ").program);
+  assert.ok(analyzeProgram("おばけがいるたらくぐる").diagnostics.length > 0);
+
+  const stage = {
+    goal: 1400,
+    scrollSpeed: 3,
+    objects: [
+      { type: "ghost", position: 600 },
+      { type: "ghost", position: 1000 },
+    ],
+  };
+  const result = runToCompletion(createGame(stage, valid("おばけがいたらくぐる").rules));
+  assert.equal(result.status, "cleared");
+  assert.ok(result.ghosts.every(ghost => ghost.cleared));
+  assert.equal(result.fired[0].size, 2);
+});
+
 test("kanji aliases are not part of the parser dictionary, including extensions", () => {
   for (const input of [
     "壁をとぶ",
