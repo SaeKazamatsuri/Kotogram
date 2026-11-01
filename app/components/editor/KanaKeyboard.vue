@@ -72,7 +72,7 @@ const visibleRows = computed(() => {
         </div>
       </div>
     </div>
-    <div class="mt-2 grid grid-cols-4 gap-2 sm:grid-cols-8">
+    <div class="mt-2 grid gap-2" :class="isCompact ? 'grid-cols-4 min-[900px]:grid-cols-8' : 'grid-cols-4 sm:grid-cols-8'">
       <button
         v-for="(control, i) in visibleControls"
         :key="i"
