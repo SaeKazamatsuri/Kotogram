@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { getAudioMuted, setAudioMuted, setBgm, unlockAudio } from "~/game/audio";
+import { createTripleEscapeDetector } from "~/game/escape-shortcut";
+import { useNextPlayer } from "~/composables/useNextPlayer";
 
 const route = useRoute();
 const muted = ref(false);
+const nextPlayer = useNextPlayer();
+const tripleEscape = createTripleEscapeDetector();
 
 function preventContextMenu(event: MouseEvent) {
   event.preventDefault();
@@ -19,7 +23,16 @@ function syncRouteMusic() {
   if (!route.path.startsWith("/play/")) setBgm(route.path === "/" ? "title_adventure" : "title_loop");
 }
 
-watch(() => route.path, syncRouteMusic);
+watch(() => route.path, () => {
+  tripleEscape.reset();
+  syncRouteMusic();
+});
+
+function onShortcutKeydown(event: KeyboardEvent) {
+  if (!tripleEscape.keydown(event)) return;
+  event.preventDefault();
+  nextPlayer();
+}
 
 onMounted(() => {
   muted.value = getAudioMuted();
@@ -27,12 +40,16 @@ onMounted(() => {
   window.addEventListener("pointerdown", unlockAudio, true);
   window.addEventListener("keydown", unlockAudio, true);
   window.addEventListener("contextmenu", preventContextMenu);
+  window.addEventListener("keydown", onShortcutKeydown, true);
+  window.addEventListener("blur", tripleEscape.reset);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("pointerdown", unlockAudio, true);
   window.removeEventListener("keydown", unlockAudio, true);
   window.removeEventListener("contextmenu", preventContextMenu);
+  window.removeEventListener("keydown", onShortcutKeydown, true);
+  window.removeEventListener("blur", tripleEscape.reset);
 });
 </script>
 
