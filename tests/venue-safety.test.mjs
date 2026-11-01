@@ -10,8 +10,11 @@ test("admin route cannot silently mark every stage as cleared", () => {
 
 test("shared-device reset asks for explicit confirmation", () => {
   const home = readFileSync(new URL("../app/pages/stages.vue", import.meta.url), "utf8");
-  assert.match(home, /window\.confirm\(/);
-  assert.match(home, /次の人/);
+  const nextPlayer = readFileSync(new URL("../app/composables/useNextPlayer.ts", import.meta.url), "utf8");
+  assert.match(home, /useNextPlayer\(/);
+  assert.match(nextPlayer, /window\.confirm\(/);
+  assert.match(nextPlayer, /reset\(\)/);
+  assert.match(nextPlayer, /kotogram\.recentClear/);
 });
 
 test("font scaling controls no longer appear in the shared layout", () => {
