@@ -150,7 +150,7 @@ test("画面をスクロールせずにコード欄とかな入力を操作で�
     } else {
       await keyboard.getByRole("button", { name: "は をにゅうりょく" }).click();
     }
-    await expect(page.getByRole("textbox", { name: "コードを書く" })).toContainText("");
+    await expect(page.getByRole("textbox", { name: "コードを書く" })).toHaveValue(viewport.width < 1151 ? "は1" : "は");
     await page.getByRole("button", { name: "ゲームを見る" }).click();
     await expect(page.locator(".game-playview canvas")).toBeVisible();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
