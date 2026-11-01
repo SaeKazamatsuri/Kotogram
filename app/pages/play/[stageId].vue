@@ -505,7 +505,7 @@ watch(stageId, () => {
   .game-workspace--stage.game-workspace--keyboard-open {
     grid-template-rows: minmax(150px, .33fr) minmax(0, 1fr);
   }
-  .play-screen__keyboard-dock { padding: 4px; gap: 2px; }
+  .play-screen__keyboard-dock { padding: 0; gap: 0; }
 }
 @media (max-height: 700px) {
   .play-screen--keyboard-open .play-screen__navigation,
