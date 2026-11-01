@@ -12,14 +12,9 @@ export function useNextPlayer() {
     try {
       window.sessionStorage.removeItem("kotogram.recentClear");
     } catch {
-      returnToTitle();
-      return true;
+      if (import.meta.dev) console.warn("Could not clear recent stage feedback");
     }
-    returnToTitle();
+    void router.push("/");
     return true;
   };
-
-  function returnToTitle() {
-    void router.push("/");
-  }
 }
