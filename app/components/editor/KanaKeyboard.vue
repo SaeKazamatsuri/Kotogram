@@ -39,13 +39,13 @@ const visibleRows = computed(() => {
 </script>
 
 <template>
-  <section :aria-label="mode === 'nickname' ? '名前用かなキーボード' : 'ひらがなキーボード'" class="rounded-2xl border-2 p-3" :class="mode === 'nickname' ? 'border-[#98b8aa] bg-[#f7fff9] text-[#22483d]' : 'border-[#646b89] bg-[#25304d] text-[#fff7e8]'">
-    <div v-if="isCompact" class="mb-2 grid grid-cols-3 gap-1">
+  <section :aria-label="mode === 'nickname' ? '名前用かなキーボード' : 'ひらがなキーボード'" class="rounded-2xl border-2" :class="[mode === 'nickname' ? 'border-[#98b8aa] bg-[#f7fff9] text-[#22483d]' : 'border-[#646b89] bg-[#25304d] text-[#fff7e8]', isCompact ? 'p-2' : 'p-3']">
+    <div v-if="isCompact" class="mb-1 grid grid-cols-3 gap-1">
       <button v-for="page in pages" :key="page.id" type="button" :disabled="disabled" :aria-pressed="activePage === page.id" class="min-h-11 rounded-xl border-2 px-1 text-sm font-black" :class="activePage === page.id ? 'border-[#ffcd77] bg-[#ffcd77] text-[#273449]' : 'border-[#8a97ac] bg-[#354563] text-white'" @pointerdown.prevent @click="activePage = page.id">{{ page.label }}</button>
     </div>
     <div class="pb-1" :class="isCompact ? 'overflow-hidden' : 'overflow-x-auto'" @pointerdown.prevent>
       <div :class="mode === 'nickname' || isCompact ? 'min-w-0' : 'min-w-[430px]'">
-        <div class="grid gap-1" :class="isCompact ? 'grid-cols-5 min-h-[236px] content-start' : mode === 'nickname' ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-10'">
+        <div class="grid" :class="isCompact ? 'grid-cols-5 min-h-[228px] content-start gap-[2px]' : mode === 'nickname' ? 'grid-cols-5 gap-1 sm:grid-cols-10' : 'grid-cols-10 gap-1'">
           <template v-for="(row, i) in visibleRows" :key="i">
             <template v-for="(kana, j) in row" :key="`${i}-${j}`">
               <button
@@ -72,7 +72,7 @@ const visibleRows = computed(() => {
         </div>
       </div>
     </div>
-    <div class="mt-2 grid gap-2" :class="isCompact ? 'grid-cols-4 min-[900px]:grid-cols-8' : 'grid-cols-4 sm:grid-cols-8'">
+    <div class="grid" :class="isCompact ? 'mt-1 grid-cols-4 gap-1 min-[900px]:grid-cols-8' : 'mt-2 grid-cols-4 gap-2 sm:grid-cols-8'">
       <button
         v-for="(control, i) in visibleControls"
         :key="i"
