@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import type { SoftKey } from "~/editor/text-input";
 
-const props = defineProps<{ disabled?: boolean; mode?: "code" | "nickname" }>();
+const props = defineProps<{ disabled?: boolean; mode?: "code" | "nickname"; compact?: boolean }>();
 const emit = defineEmits<{ (e: "press", key: SoftKey): void }>();
 
 const rows = [
@@ -24,14 +24,29 @@ const controls: { label: string; icon?: string; key: SoftKey }[] = [
   { label: "改行", key: { kind: "insert", text: "\n" } },
 ];
 const visibleControls = computed(() => props.mode === "nickname" ? controls.filter((control) => control.label !== "改行") : controls);
+const activePage = ref<"first" | "second" | "numbers">("first");
+const pages = [
+  { id: "first", label: "あ〜な" },
+  { id: "second", label: "は〜わ" },
+  { id: "numbers", label: "数字" },
+] as const;
+const isCompact = computed(() => props.compact && props.mode !== "nickname");
+const visibleRows = computed(() => {
+  if (!isCompact.value) return rows;
+  if (activePage.value === "numbers") return [numbers.slice(0, 5), numbers.slice(5)];
+  return rows.map(row => activePage.value === "first" ? row.slice(0, 5) : row.slice(5));
+});
 </script>
 
 <template>
   <section :aria-label="mode === 'nickname' ? '名前用かなキーボード' : 'ひらがなキーボード'" class="rounded-2xl border-2 p-3" :class="mode === 'nickname' ? 'border-[#98b8aa] bg-[#f7fff9] text-[#22483d]' : 'border-[#646b89] bg-[#25304d] text-[#fff7e8]'">
-    <div class="overflow-x-auto pb-1" @pointerdown.prevent>
-      <div :class="mode === 'nickname' ? 'min-w-0' : 'min-w-[430px]'">
-        <div class="grid gap-1" :class="mode === 'nickname' ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-10'">
-          <template v-for="(row, i) in rows" :key="i">
+    <div v-if="isCompact" class="mb-2 grid grid-cols-3 gap-1">
+      <button v-for="page in pages" :key="page.id" type="button" :disabled="disabled" :aria-pressed="activePage === page.id" class="min-h-11 rounded-xl border-2 px-1 text-sm font-black" :class="activePage === page.id ? 'border-[#ffcd77] bg-[#ffcd77] text-[#273449]' : 'border-[#8a97ac] bg-[#354563] text-white'" @pointerdown.prevent @click="activePage = page.id">{{ page.label }}</button>
+    </div>
+    <div class="pb-1" :class="isCompact ? 'overflow-hidden' : 'overflow-x-auto'" @pointerdown.prevent>
+      <div :class="mode === 'nickname' || isCompact ? 'min-w-0' : 'min-w-[430px]'">
+        <div class="grid gap-1" :class="isCompact ? 'grid-cols-5 min-h-[236px] content-start' : mode === 'nickname' ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-10'">
+          <template v-for="(row, i) in visibleRows" :key="i">
             <template v-for="(kana, j) in row" :key="`${i}-${j}`">
               <button
                 v-if="kana && kana !== '、'"
@@ -45,7 +60,7 @@ const visibleControls = computed(() => props.mode === "nickname" ? controls.filt
             </template>
           </template>
         </div>
-        <div class="mt-2 grid gap-1" :class="mode === 'nickname' ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-10'">
+        <div v-if="!isCompact" class="mt-2 grid gap-1" :class="mode === 'nickname' ? 'grid-cols-5 sm:grid-cols-10' : 'grid-cols-10'">
           <button
             v-for="digit in numbers"
             :key="digit"
