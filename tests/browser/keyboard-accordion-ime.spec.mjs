@@ -152,13 +152,15 @@ test("画面をスクロールせずにコード欄とかな入力を操作で�
     }
     await expect(page.getByRole("textbox", { name: "コードを書く" })).toHaveValue(viewport.width < 1151 ? "は1" : "は");
     await page.getByRole("button", { name: "ゲームを見る" }).click();
-    await expect(page.locator(".game-playview canvas")).toBeVisible();
+    await expect(page.locator('.game-playview canvas[data-tour-target="canvas"]')).toBeVisible();
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
   }
 });
 
 test("ゲームと入力欄の右クリックでコンテキストメニューを開かない", async ({ page }) => {
   await page.goto("/play/stage-1");
+  await expect(page.locator('.game-playview canvas[data-tour-target="canvas"]')).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "コードを書く" })).toBeVisible();
   const prevented = await page.evaluate(() => {
     const targets = [
       document.querySelector(".game-playview canvas"),
