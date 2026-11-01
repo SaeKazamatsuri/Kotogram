@@ -7,7 +7,6 @@ import { playSe, unlockAudio } from "~/game/audio";
 
 type Item = { id: string; title: string; file: string };
 
-const router = useRouter();
 const { getManifest } = useStageLoader();
 const { getAll } = useStats();
 const nextPlayer = useNextPlayer();
