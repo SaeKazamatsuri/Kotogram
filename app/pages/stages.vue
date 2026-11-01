@@ -7,9 +7,9 @@ import { playSe, unlockAudio } from "~/game/audio";
 
 type Item = { id: string; title: string; file: string };
 
-const router = useRouter();
 const { getManifest } = useStageLoader();
-const { getAll, reset } = useStats();
+const { getAll } = useStats();
+const nextPlayer = useNextPlayer();
 const loading = ref(true);
 const error = ref<string | null>(null);
 const stages = ref<Item[]>([]);
@@ -50,16 +50,9 @@ function onChooseStage() {
 }
 
 function onReset() {
-  if (typeof window !== "undefined" && !window.confirm("次の人のために、きろくを消してもいい？")) return;
-  reset();
+  if (!nextPlayer()) return;
   stats.value = {};
   recentlyClearedId.value = null;
-  try {
-    window.sessionStorage.removeItem("kotogram.recentClear");
-  } catch {
-    recentlyClearedId.value = null;
-  }
-  void router.push("/");
 }
 
 function moveMap(direction: -1 | 1) {
