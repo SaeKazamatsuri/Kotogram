@@ -4,7 +4,6 @@ import { analyzeProgram, type Vocabulary } from "~/language/parser";
 import type { SustainedHighlight } from "~/game/action-highlights";
 import { countSourceCharacters } from "~/scoring/score";
 import LineGutter from "./LineGutter.vue";
-import KanaKeyboard from "./KanaKeyboard.vue";
 import { editWithSoftKey, type SoftKey, type TextSelection } from "~/editor/text-input";
 import { EditorHistory } from "~/editor/history";
 import { getKeyboardExpanded, setKeyboardExpanded } from "~/editor/keyboard-preferences";
@@ -13,7 +12,7 @@ import { codeInputNotice, sanitizeCodeInput } from "~/editor/input-normalization
 import { suggestedStageWords, type StageWords } from "~/stage/vocabulary";
 
 const props = defineProps<{ stage?: StageWords; dictionary?: Vocabulary; lines?: string[]; initialText?: string; running?: boolean; activeLines?: number[]; sustainedLines?: SustainedHighlight[]; monitoringLines?: number[]; failureLine?: number | null; waitingLine?: number | null; repeatLine?: number | null; repeatProgress?: string | null }>();
-const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void }>();
+const emit = defineEmits<{ (e: "update:lines", value: string[]): void; (e: "run"): void; (e: "keyboard-visibility", value: boolean): void }>();
 const text = ref(props.initialText ?? "");
 const textarea = ref<HTMLTextAreaElement | null>(null);
 const syntaxMirror = ref<HTMLElement | null>(null);
@@ -158,6 +157,7 @@ watch(() => [props.activeLines?.join(","), props.failureLine], () => {
 let observer: ResizeObserver | null = null;
 onMounted(() => {
   keyboardVisible.value = getKeyboardExpanded("code");
+  emit("keyboard-visibility", keyboardVisible.value);
   updateMetrics();
   if (textarea.value && typeof ResizeObserver !== "undefined") {
     observer = new ResizeObserver(updateMetrics);
@@ -209,27 +209,38 @@ function onSoftKey(key: SoftKey) {
   applyState({ text: normalized, start: cursor, end: cursor });
 }
 function run() {
-  if (!composing.value && analysis.value.diagnostics.length === 0) emit("run");
+  if (composing.value || analysis.value.diagnostics.length > 0) return;
+  closeKeyboard();
+  emit("run");
+}
+function setKeyboardVisibility(visible: boolean) {
+  if (keyboardVisible.value === visible) return;
+  keyboardVisible.value = visible;
+  setKeyboardExpanded("code", visible);
+  emit("keyboard-visibility", visible);
 }
 function toggleKeyboard() {
-  if (props.running) return;
-  keyboardVisible.value = !keyboardVisible.value;
-  setKeyboardExpanded("code", keyboardVisible.value);
+  if (!props.running) setKeyboardVisibility(!keyboardVisible.value);
 }
 function openKeyboard() {
   if (props.running) return;
-  if (!keyboardVisible.value) {
-    keyboardVisible.value = true;
-    setKeyboardExpanded("code", true);
-  }
+  dictionaryOpen.value = false;
+  setKeyboardVisibility(true);
+}
+function closeKeyboard() {
+  setKeyboardVisibility(false);
+}
+function toggleDictionary() {
+  if (!dictionaryOpen.value) closeKeyboard();
+  dictionaryOpen.value = !dictionaryOpen.value;
 }
 function getText() { return text.value; }
-defineExpose({ getText, openKeyboard });
+defineExpose({ getText, openKeyboard, closeKeyboard, pressSoftKey: onSoftKey });
 </script>
 
 <template>
-  <div class="flex h-full min-h-0 min-w-0 flex-col overflow-y-auto">
-    <div class="flex min-h-14 items-center justify-between gap-3 border-b border-[#7083a0] bg-[#243551] px-5 py-3 text-[#fffaf1]">
+  <div class="flex h-full min-h-0 min-w-0 flex-col overflow-hidden" :class="{ 'command-editor--keyboard-open': keyboardVisible }">
+    <div class="command-editor__heading flex min-h-14 items-center justify-between gap-3 border-b border-[#7083a0] bg-[#243551] px-5 py-3 text-[#fffaf1]">
       <h2 class="flex items-center gap-2 text-base font-black"><Icon name="lucide:code-2" class="game-icon text-[#aaf0d0]" aria-hidden="true"/> コードを書く</h2>
       <div class="flex items-center gap-2">
         <span v-if="running" role="status" class="rounded-full bg-[#aaf0d0] px-3 py-1 text-sm font-black text-[#17342c]">▶ 動作中</span>
@@ -237,10 +248,10 @@ defineExpose({ getText, openKeyboard });
         <span class="rounded-full bg-[#17263f] px-3 py-1 text-sm font-black text-white">{{ charCount }} 字</span>
       </div>
     </div>
-    <div class="flex flex-wrap items-center gap-2 bg-[#e3eaf1] px-3 py-2 text-[#23344e]">
+    <div class="command-editor__tools flex flex-wrap items-center gap-2 bg-[#e3eaf1] px-3 py-2 text-[#23344e]">
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canUndo || composing" @click="undo" aria-label="もどす"><Icon name="lucide:undo-2" class="game-icon" aria-hidden="true"/> もどす</button>
       <button type="button" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !canRedo || composing" @click="redo" aria-label="やり直す"><Icon name="lucide:redo-2" class="game-icon" aria-hidden="true"/> やり直す</button>
-      <button type="button" data-tour-target="dictionary" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" :aria-expanded="dictionaryOpen" @click="dictionaryOpen = !dictionaryOpen"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/> 使える言葉</button>
+      <button type="button" data-tour-target="dictionary" class="flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black" :aria-expanded="dictionaryOpen" @click="toggleDictionary"><Icon name="lucide:book-open" class="game-icon" aria-hidden="true"/> 使える言葉</button>
       <button type="button" class="ml-auto flex min-h-11 items-center gap-2 rounded-xl border border-[#95a8bd] bg-white px-3 text-sm font-black disabled:opacity-50" :disabled="running || !text || composing" @click="clearText"><Icon name="lucide:trash-2" class="game-icon" aria-hidden="true"/> 全部消す</button>
     </div>
     <div v-if="dictionaryOpen" class="max-h-56 shrink-0 overflow-y-auto border-b-2 border-[#95a8bd] bg-[#f5f7ee] px-4 py-3 text-[#1d3045]" role="region" aria-label="使える言葉の辞書">
@@ -260,7 +271,7 @@ defineExpose({ getText, openKeyboard });
         </section>
       </div>
     </div>
-    <div class="flex min-h-[130px] min-w-0 flex-1 overflow-hidden bg-[#fffaf1]">
+    <div class="flex min-w-0 flex-1 overflow-hidden bg-[#fffaf1]" :class="keyboardVisible ? 'min-h-[70px]' : 'min-h-[130px]'">
       <LineGutter
         :states="lineStates"
         :active-lines="activeLines"
@@ -312,8 +323,12 @@ defineExpose({ getText, openKeyboard });
       <button type="button" data-tour-target="run" class="game-button game-button--mint flex-1 text-lg disabled:opacity-50" :disabled="running || analysis.diagnostics.length > 0 || composing" @click="run"><Icon name="lucide:play" class="game-icon" aria-hidden="true"/> 動かす</button>
       <button type="button" class="game-button game-button--night text-sm" :disabled="running" aria-controls="code-kana-keyboard" :aria-expanded="keyboardVisible" @click="toggleKeyboard"><Icon name="lucide:keyboard" class="game-icon" aria-hidden="true"/> かな入力 <Icon :name="keyboardVisible ? 'lucide:chevron-up' : 'lucide:chevron-down'" class="game-icon" aria-hidden="true"/></button>
     </div>
-    <div v-if="keyboardVisible" id="code-kana-keyboard" class="border-t border-[#7083a0] bg-[#243551] p-3">
-      <KanaKeyboard :disabled="running || composing" @press="onSoftKey" />
-    </div>
   </div>
 </template>
+
+<style scoped>
+@media (max-width: 699px) {
+  .command-editor--keyboard-open .command-editor__heading,
+  .command-editor--keyboard-open .command-editor__tools { display: none; }
+}
+</style>
