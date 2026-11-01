@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import CommandEditor from "~/components/editor/CommandEditor.vue";
+import KanaKeyboard from "~/components/editor/KanaKeyboard.vue";
+import type { SoftKey } from "~/editor/text-input";
 import GameCanvas from "~/components/game/GameCanvas.vue";
 import StageClearModal from "~/components/game/StageClearModal.vue";
 import StageFailModal from "~/components/game/StageFailModal.vue";
@@ -87,6 +89,14 @@ const editorRef = ref<InstanceType<typeof CommandEditor> | null>(null);
 const editorPanel = ref<HTMLElement | null>(null);
 const gamePanel = ref<HTMLElement | null>(null);
 const editorLines = ref<string[]>([]);
+const keyboardVisible = ref(false);
+const keyboardCompact = ref(true);
+function updateKeyboardCompact() {
+  keyboardCompact.value = window.innerWidth <= 1150;
+}
+function onKeyboardKey(key: SoftKey) {
+  editorRef.value?.pressSoftKey(key);
+}
 const restoredCode = ref("");
 const program = ref<GameProgram | undefined>(undefined);
 const sourceMap = ref<SourceMap | undefined>(undefined);
@@ -191,6 +201,7 @@ async function loadCurrentStage() {
   sourceMap.value = undefined;
   executionTrace.value = { active: [], sustained: [], monitoring: [], waiting: null, repeat: null, progress: null };
   editorLines.value = [];
+  keyboardVisible.value = false;
   restoredCode.value = "";
   savedName.value = "";
   saveError.value = "";
@@ -222,8 +233,13 @@ async function loadCurrentStage() {
   }
 }
 
-onMounted(() => { void loadCurrentStage(); });
+onMounted(() => {
+  updateKeyboardCompact();
+  window.addEventListener("resize", updateKeyboardCompact);
+  void loadCurrentStage();
+});
 onBeforeUnmount(() => {
+  window.removeEventListener("resize", updateKeyboardCompact);
   sessionGeneration++;
   loadRequest++;
 });
@@ -237,6 +253,7 @@ function onRun() {
     playSe("warning");
     return;
   }
+  editorRef.value?.closeKeyboard();
   unlockAudio();
   setBgm(stageBgmName(stageId.value, "run"));
   playSe("start");
@@ -339,7 +356,7 @@ watch(stageId, () => {
 </script>
 
 <template>
-  <div class="play-screen scene-enter mx-auto w-full max-w-[1460px]">
+  <div class="play-screen scene-enter mx-auto w-full max-w-[1460px]" :class="{ 'play-screen--keyboard-open': keyboardVisible && !running }">
     <div class="play-screen__navigation flex shrink-0 items-center justify-between gap-3">
       <NuxtLink to="/stages" class="game-button game-button--night text-sm"><Icon name="lucide:arrow-left" class="game-icon" aria-hidden="true"/> ステージへ</NuxtLink>
       <span class="game-chip" aria-label="ステージ番号">ステージ {{ stageNumber }} / {{ stageItems.length || '—' }}</span>
@@ -353,8 +370,8 @@ watch(stageId, () => {
     </div>
 
     <div v-else-if="stage" class="game-surface play-screen__surface min-h-0 flex-1 overflow-hidden">
-      <div class="game-workspace game-workspace--stage relative h-full min-h-0 gap-0">
-        <section ref="editorPanel" class="play-screen__editor min-h-0 min-w-0 overflow-y-auto border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
+      <div class="game-workspace game-workspace--stage relative h-full min-h-0 gap-0" :class="{ 'game-workspace--keyboard-open': keyboardVisible && !running }">
+        <section ref="editorPanel" class="play-screen__editor min-h-0 min-w-0 overflow-hidden border-b-2 border-[#647b9b] bg-[#243551] lg:border-b-0 lg:border-r-2" aria-label="コードを書く">
           <CommandEditor
             :key="stageId"
             ref="editorRef"
@@ -371,9 +388,11 @@ watch(stageId, () => {
             :repeat-line="executionTrace.repeat"
             :repeat-progress="executionTrace.progress"
             @run="onRun"
+            @keyboard-visibility="keyboardVisible = $event"
           />
         </section>
-        <section ref="gamePanel" class="game-playview relative flex min-h-0 min-w-0 flex-col overflow-y-auto" aria-label="ゲーム画面">
+        <section ref="gamePanel" class="game-playview relative flex min-h-0 min-w-0 flex-col overflow-hidden" aria-label="ゲーム画面">
+          <div v-show="!keyboardVisible || running" class="relative flex min-h-0 flex-1 flex-col">
           <span v-if="running" role="status" class="absolute right-5 top-5 z-10 rounded-full border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]">動いているよ</span>
           <span v-if="!running" class="pointer-events-none absolute right-5 top-5 z-10 rounded-full border border-[#f8dca5] bg-[#172439] px-3 py-1 text-xs font-black text-[#fff0cf]">ドラッグで先を見る</span>
           <button v-if="canShowGuide" type="button" class="absolute left-4 top-4 z-10 rounded-xl border border-[#aaf0d0] bg-[#172439] px-3 py-1 text-sm font-black text-[#aaf0d0]" @click="guideVisible = !guideVisible">{{ guideVisible ? "あんないを とじる" : "あんないを 見る" }}</button>
@@ -399,8 +418,16 @@ watch(stageId, () => {
             </button>
             <p v-if="hintOpen" class="mt-3 rounded-xl bg-[#17263f] p-4 text-sm font-bold leading-relaxed text-white">{{ stage.meta.hint }}</p>
           </div>
+          </div>
+          <div v-if="keyboardVisible && !running" id="code-kana-keyboard" class="play-screen__keyboard-dock" aria-label="かな入力パネル">
+            <div class="flex min-h-9 shrink-0 items-center justify-between gap-2">
+              <span class="text-sm font-black text-[#fffaf1]">かな入力</span>
+              <button type="button" class="min-h-9 rounded-lg border border-[#aaf0d0] bg-[#354563] px-3 text-sm font-black text-white" @click="editorRef?.closeKeyboard()"><Icon name="lucide:eye" class="game-icon" aria-hidden="true"/> ゲームを見る</button>
+            </div>
+            <KanaKeyboard :compact="keyboardCompact" @press="onKeyboardKey" />
+          </div>
         </section>
-        <TutorialConnector v-if="showGuide" :target="guideTarget" />
+        <TutorialConnector v-if="showGuide && !keyboardVisible" :target="guideTarget" />
       </div>
     </div>
 
@@ -451,6 +478,7 @@ watch(stageId, () => {
   grid-template-columns: minmax(340px, .8fr) minmax(0, 1.2fr);
 }
 .play-screen__editor { overscroll-behavior: contain; }
+.play-screen__keyboard-dock { min-width: 0; min-height: 0; display: flex; flex: 1; flex-direction: column; justify-content: center; gap: 6px; overflow: hidden; padding: 8px; }
 .game-playview { overscroll-behavior: contain; }
 .game-playview {
   background: radial-gradient(ellipse at 50% -10%, #41677a 0%, #263d58 52%, #1d2f4d 100%);
@@ -464,5 +492,23 @@ watch(stageId, () => {
   .play-screen__title { margin-bottom: 6px; }
   .play-screen__editor { border-right: 0; }
   .game-playview { border-top: 2px solid #647b9b; }
+}
+@media (min-width: 700px) and (max-width: 960px) {
+  .game-workspace--stage.game-workspace--keyboard-open {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+  }
+  .game-workspace--keyboard-open .play-screen__editor { border-right: 2px solid #647b9b; border-bottom: 0; }
+  .game-workspace--keyboard-open .game-playview { border-top: 0; }
+}
+@media (max-width: 699px) {
+  .game-workspace--stage.game-workspace--keyboard-open {
+    grid-template-rows: minmax(150px, .33fr) minmax(0, 1fr);
+  }
+  .play-screen__keyboard-dock { padding: 4px; gap: 2px; }
+}
+@media (max-height: 700px) {
+  .play-screen--keyboard-open .play-screen__navigation,
+  .play-screen--keyboard-open .play-screen__title { display: none; }
 }
 </style>
