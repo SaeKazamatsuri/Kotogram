@@ -5,6 +5,10 @@ import { getAudioMuted, setAudioMuted, setBgm, unlockAudio } from "~/game/audio"
 const route = useRoute();
 const muted = ref(false);
 
+function preventContextMenu(event: MouseEvent) {
+  event.preventDefault();
+}
+
 function toggleAudio() {
   const next = !muted.value;
   setAudioMuted(next);
@@ -22,11 +26,13 @@ onMounted(() => {
   syncRouteMusic();
   window.addEventListener("pointerdown", unlockAudio, true);
   window.addEventListener("keydown", unlockAudio, true);
+  window.addEventListener("contextmenu", preventContextMenu);
 });
 
 onBeforeUnmount(() => {
   window.removeEventListener("pointerdown", unlockAudio, true);
   window.removeEventListener("keydown", unlockAudio, true);
+  window.removeEventListener("contextmenu", preventContextMenu);
 });
 </script>
 

@@ -101,3 +101,77 @@ test("濁点と半濁点の記号を大きく表示し、スマートフォン�
   await keyboard.getByRole("button", { name: "゜" }).click();
   await expect(editor).toHaveValue("ぱ");
 });
+
+test("画面をスクロールせずにコード欄とかな入力を操作できる", async ({ page }) => {
+  for (const viewport of [
+    { width: 1366, height: 768 },
+    { width: 1024, height: 600 },
+    { width: 960, height: 540 },
+    { width: 390, height: 844 },
+    { width: 390, height: 667 },
+  ]) {
+    await page.setViewportSize(viewport);
+    await page.goto("/play/stage-1");
+    const toggle = page.getByRole("button", { name: "かな入力" });
+    if (await toggle.getAttribute("aria-expanded") === "false") await toggle.click();
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    const keyboard = page.getByRole("region", { name: "ひらがなキーボード" });
+    await expect(keyboard).toBeVisible();
+    const result = await page.evaluate(() => {
+      const editor = document.querySelector('textarea[aria-label="コードを書く"]');
+      const dock = document.querySelector("#code-kana-keyboard");
+      const keyboard = dock?.querySelector('section[aria-label="ひらがなキーボード"]');
+      const visibleKeys = Array.from(keyboard?.querySelectorAll("button") ?? []).filter(key => key.getBoundingClientRect().height > 0);
+      const inside = (element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && rect.height > 0 && rect.top >= -2 && rect.bottom <= window.innerHeight + 2 && rect.left >= -2 && rect.right <= window.innerWidth + 2;
+      };
+      return {
+        pageHeight: document.documentElement.scrollHeight,
+        viewportHeight: window.innerHeight,
+        editorVisible: editor && inside(editor) && editor.getBoundingClientRect().height >= 70,
+        dockVisible: dock && inside(dock) && dock.scrollHeight <= dock.clientHeight + 2,
+        keyboardVisible: keyboard && inside(keyboard),
+        allKeysVisible: visibleKeys.every(inside),
+      };
+    });
+    expect(result, JSON.stringify(viewport)).toMatchObject({
+      editorVisible: true,
+      dockVisible: true,
+      keyboardVisible: true,
+      allKeysVisible: true,
+    });
+    expect(result.pageHeight).toBeLessThanOrEqual(result.viewportHeight + 2);
+    if (viewport.width < 1151) {
+      await keyboard.getByRole("button", { name: "は〜わ" }).click();
+      await keyboard.getByRole("button", { name: "は をにゅうりょく" }).click();
+      await keyboard.getByRole("button", { name: "数字" }).click();
+      await keyboard.getByRole("button", { name: "1 をにゅうりょく" }).click();
+    } else {
+      await keyboard.getByRole("button", { name: "は をにゅうりょく" }).click();
+    }
+    await expect(page.getByRole("textbox", { name: "コードを書く" })).toHaveValue(viewport.width < 1151 ? "は1" : "は");
+    await page.getByRole("button", { name: "ゲームを見る" }).click();
+    await expect(page.locator('.game-playview canvas[data-tour-target="canvas"]')).toBeVisible();
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+  }
+});
+
+test("ゲームと入力欄の右クリックでコンテキストメニューを開かない", async ({ page }) => {
+  await page.goto("/play/stage-1");
+  await expect(page.locator('.game-playview canvas[data-tour-target="canvas"]')).toBeVisible();
+  await expect(page.getByRole("textbox", { name: "コードを書く" })).toBeVisible();
+  const prevented = await page.evaluate(() => {
+    const targets = [
+      document.querySelector(".game-playview canvas"),
+      document.querySelector('textarea[aria-label="コードを書く"]'),
+      document.body,
+    ];
+    return targets.map(target => {
+      const event = new MouseEvent("contextmenu", { bubbles: true, cancelable: true, button: 2 });
+      target?.dispatchEvent(event);
+      return event.defaultPrevented;
+    });
+  });
+  expect(prevented).toEqual([true, true, true]);
+});
